@@ -86,3 +86,4 @@ Api.getChatMember({
   on_result: "/onVerifyResult " + index + " " + checkParam,
   on_error: "/onVerifyError " + index + " " + checkParam
 });
+

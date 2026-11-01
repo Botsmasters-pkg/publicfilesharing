@@ -16,6 +16,7 @@ if (!isAdmin) return;
 if (!params) return;
 var type = params.trim().toLowerCase();
 Bot.setProperty("temp_fc_type_" + user.telegramid, type, "string");
+Bot.setProperty("admin_state_" + user.telegramid, "waiting_fc_channel", "string");
 
 var msg = "";
 if (type === "public") {
@@ -57,5 +58,3 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
-
-Bot.run({ command: "/fcSaveChannel" });

@@ -40,3 +40,4 @@ unjoined.push(ch);
 Bot.setProperty("verify_unjoined_" + user.telegramid, unjoined, "json");
 
 Bot.runCommand("/verifyStep " + (index + 1) + " " + checkParam);
+

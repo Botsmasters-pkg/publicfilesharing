@@ -1,7 +1,7 @@
 /*CMD
   command: /onFcCustomTimer
   help: 
-  need_reply: true
+  need_reply: false
   auto_retry_time: 
   folder: 
   answer: 
@@ -18,6 +18,7 @@ var text = message.trim().toLowerCase();
 var idx = Bot.getProperty("temp_fc_custom_idx_" + user.telegramid, 0);
 
 if (text === "/cancel" || text === "cancel" || text === "❌ cancel") {
+  Bot.setProperty("admin_state_" + user.telegramid, "", "string");
   Bot.sendMessage("❌ Custom timer cancelled.");
   Bot.runCommand("/fcSelectTimer " + idx);
   return;
@@ -53,9 +54,8 @@ if (!dayMatch && !hourMatch && !minMatch) {
 
 if (totalMinutes <= 0) {
   Bot.sendMessage("⚠️ Invalid format! Please enter valid duration like `45m`, `2h`, `1h 30m`, or `1d`.\n_Or send /cancel to exit._");
-  Bot.run({ command: "/onFcCustomTimer" });
   return;
 }
 
+Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 Bot.runCommand("/fcApplyTimer " + idx + " " + totalMinutes);
-

@@ -49,3 +49,4 @@ if (isMember) {
     Bot.runCommand("/verifyStep " + (index + 1) + " " + checkParam);
   }
 }
+

@@ -21,3 +21,4 @@ if (request && request.chat_join_request) {
     user_id: uId
   });
 }
+

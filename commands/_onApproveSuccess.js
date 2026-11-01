@@ -23,3 +23,4 @@ if (ch) {
 
 // Join request was successfully approved by Telegram! User is verified!
 Bot.runCommand("/verifyStep " + (index + 1) + " " + checkParam);
+

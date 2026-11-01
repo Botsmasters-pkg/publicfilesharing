@@ -24,6 +24,7 @@ if (!forceChannels[idx]) {
 
 var ch = forceChannels[idx];
 Bot.setProperty("temp_fc_custom_idx_" + user.telegramid, idx, "integer");
+Bot.setProperty("admin_state_" + user.telegramid, "waiting_custom_timer", "string");
 
 var msg = "⏳ *Custom Auto-Expiry Timer*\n`———————————————————————`\n\n" +
   "Configure custom timer for Channel #" + (idx + 1) + " (`" + ch.id + "`)\n\n" +
@@ -54,6 +55,3 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
-
-Bot.run({ command: "/onFcCustomTimer" });
-

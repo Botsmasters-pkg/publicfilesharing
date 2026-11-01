@@ -32,3 +32,4 @@ if (ch.enabled === false) {
 Bot.setProperty("forceChannels", forceChannels, "json");
 
 Bot.runCommand("/fcList");
+

@@ -14,6 +14,7 @@ var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658")
 if (!isAdmin) return;
 
 if (message === "❌ Cancel" || message === "/cancel") {
+  Bot.setProperty("admin_state_" + user.telegramid, "", "string");
   Bot.sendMessage("Broadcast cancelled.");
   Bot.runCommand("/admin");
   return;
@@ -21,9 +22,12 @@ if (message === "❌ Cancel" || message === "/cancel") {
 
 var allUsers = Bot.getProperty("allBotUsers", []);
 if (!allUsers || allUsers.length === 0) {
+  Bot.setProperty("admin_state_" + user.telegramid, "", "string");
   Bot.sendMessage("⚠️ No users found in database to broadcast.");
   return;
 }
+
+Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 
 var successCount = 0;
 var failedCount = 0;
@@ -74,21 +78,18 @@ if (request.photo && request.photo.length > 0) {
     }
   }
 } else {
-  Bot.sendMessage("⚠️ Please send valid text, photo, or video.");
   return;
 }
-
-var reportMsg = "📣 *Broadcast Completed!*\n`———————————————————————`\n\n" +
-  "👥 *Total Target Users:* *" + allUsers.length + "*\n" +
-  "✅ *Successful Deliveries:* *" + successCount + "*\n" +
-  "❌ *Failed Deliveries (Blocked/Inactive):* *" + failedCount + "*";
 
 var keyb = [
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
 ];
 
 Api.sendMessage({
-  text: reportMsg,
+  text: "✅ *Broadcast Completed!*\n`———————————————————————`\n\n" +
+    "• Delivered successfully: *" + successCount + "*\n" +
+    "• Failed deliveries: *" + failedCount + "*\n" +
+    "• Total Target Users: *" + allUsers.length + "*",
   parse_mode: "Markdown",
   reply_markup: { inline_keyboard: keyb }
 });

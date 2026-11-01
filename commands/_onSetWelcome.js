@@ -14,43 +14,39 @@ var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658")
 if (!isAdmin) return;
 
 if (message === "❌ Cancel" || message === "/cancel") {
-  Bot.sendMessage("Action cancelled.");
+  Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+  Bot.sendMessage("Welcome message customization cancelled.");
   Bot.runCommand("/admin");
   return;
 }
 
-var wmObj = {
-  type: "text",
-  text: "",
-  media: "",
-  caption: ""
-};
+var wm = {};
 
 if (request.photo && request.photo.length > 0) {
-  var p = request.photo[request.photo.length - 1];
-  wmObj.type = "photo";
-  wmObj.media = p.file_id;
-  wmObj.caption = request.caption || "👋 Welcome to our Bot!";
+  var photoId = request.photo[request.photo.length - 1].file_id;
+  wm.type = "photo";
+  wm.media = photoId;
+  wm.caption = request.caption || "";
 } else if (request.video) {
-  wmObj.type = "video";
-  wmObj.media = request.video.file_id;
-  wmObj.caption = request.caption || "👋 Welcome to our Bot!";
+  wm.type = "video";
+  wm.media = request.video.file_id;
+  wm.caption = request.caption || "";
 } else if (message) {
-  wmObj.type = "text";
-  wmObj.text = message.trim();
+  wm.type = "text";
+  wm.text = message;
 } else {
-  Bot.sendMessage("⚠️ Please send valid text, photo, or video.");
   return;
 }
 
-Bot.setProperty("welcomeMessage", wmObj, "json");
+Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+Bot.setProperty("welcomeMessage", wm, "json");
 
 var keyb = [
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
 ];
 
 Api.sendMessage({
-  text: "✅ *Welcome Message Successfully Updated!*\n\nAll new and existing users will now see this when starting the bot.",
+  text: "✅ *Welcome Message successfully updated!*\n\nNew users will now see your customized message when they start the bot.",
   parse_mode: "Markdown",
   reply_markup: { inline_keyboard: keyb }
 });

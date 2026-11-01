@@ -1,7 +1,7 @@
 /*CMD
   command: /fcSaveChannelLink
   help: 
-  need_reply: true
+  need_reply: false
   auto_retry_time: 
   folder: 
   answer: 
@@ -17,6 +17,7 @@ if (!message) return;
 var text = message.trim();
 
 if (text === "/cancel" || text === "❌ Cancel" || text.toLowerCase() === "cancel") {
+  Bot.setProperty("admin_state_" + user.telegramid, "", "string");
   Bot.sendMessage("❌ Channel addition cancelled.");
   Bot.runCommand("/adminForceChannel");
   return;
@@ -28,6 +29,9 @@ var type = Bot.getProperty("temp_fc_type_" + user.telegramid, "private");
 var forceChannels = Bot.getProperty("forceChannels", []);
 
 var link = text;
+
+// Clear admin waiting state
+Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 
 var newChannel = {
   id: id,

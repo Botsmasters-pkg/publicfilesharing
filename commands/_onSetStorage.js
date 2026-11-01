@@ -17,11 +17,13 @@ if (!message) return;
 
 var text = message.trim();
 if (text === "❌ Cancel" || text === "/cancel") {
+  Bot.setProperty("admin_state_" + user.telegramid, "", "string");
   Bot.sendMessage("Action cancelled.");
   Bot.runCommand("/admin");
   return;
 }
 
+Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 Bot.setProperty("storageChannel", text, "string");
 
 var keyb = [
@@ -33,4 +35,3 @@ Api.sendMessage({
   parse_mode: "Markdown",
   reply_markup: { inline_keyboard: keyb }
 });
-

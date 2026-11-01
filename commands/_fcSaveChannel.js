@@ -1,7 +1,7 @@
 /*CMD
   command: /fcSaveChannel
   help: 
-  need_reply: true
+  need_reply: false
   auto_retry_time: 
   folder: 
   answer: 
@@ -13,13 +13,15 @@ CMD*/
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-if (message) {
-  var t = message.trim();
-  if (t === "/cancel" || t === "❌ Cancel" || t.toLowerCase() === "cancel") {
-    Bot.sendMessage("❌ Channel addition cancelled.");
-    Bot.runCommand("/adminForceChannel");
-    return;
-  }
+var hasForward = request.message && request.message.forward_from_chat;
+if (!message && !hasForward) return;
+
+var text = (message || "").trim();
+if (text === "/cancel" || text === "❌ Cancel" || text.toLowerCase() === "cancel") {
+  Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+  Bot.sendMessage("❌ Channel addition cancelled.");
+  Bot.runCommand("/adminForceChannel");
+  return;
 }
 
 var type = Bot.getProperty("temp_fc_type_" + user.telegramid, "public");
@@ -30,7 +32,7 @@ var link = "";
 var name = "";
 
 // Check if message was forwarded from a channel
-if (request.message && request.message.forward_from_chat) {
+if (hasForward) {
   var fwChat = request.message.forward_from_chat;
   id = fwChat.id.toString();
   name = fwChat.title || ("Channel " + (forceChannels.length + 1));
@@ -38,8 +40,7 @@ if (request.message && request.message.forward_from_chat) {
     id = "@" + fwChat.username;
     link = "https://t.me/" + fwChat.username;
   }
-} else if (message) {
-  var text = message.trim();
+} else if (text) {
   var parts = text.split(/\s+/);
 
   if (type === "public") {
@@ -76,8 +77,14 @@ if (request.message && request.message.forward_from_chat) {
   }
 }
 
+if (!id) {
+  Bot.sendMessage("⚠️ Could not detect channel. Please send username (e.g. `@MyChannel`) or channel link.");
+  return;
+}
+
 // If link is still empty and channel is private or request, ask for invite link!
 if (!link && (type === "private" || type === "request")) {
+  Bot.setProperty("admin_state_" + user.telegramid, "waiting_fc_link", "string");
   Bot.setProperty("temp_fc_id_" + user.telegramid, id, "string");
   Bot.setProperty("temp_fc_name_" + user.telegramid, name || id, "string");
 
@@ -94,10 +101,11 @@ if (!link && (type === "private" || type === "request")) {
     parse_mode: "Markdown",
     reply_markup: { inline_keyboard: cancelKey }
   });
-
-  Bot.run({ command: "/fcSaveChannelLink" });
   return;
 }
+
+// Clear admin waiting state
+Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 
 // Complete the addition
 var newChannel = {

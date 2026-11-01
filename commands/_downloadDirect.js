@@ -30,6 +30,12 @@ var targetUniqueId = file.fileUniqueId || file.file_unique_id || uniqueId;
 var targetFileName = file.fileName || file.file_name || "File";
 var targetFileType = file.fileType || "document";
 
+// Full Name & Username Auto-Detection
+var uFirst = user.first_name || "";
+var uLast = user.last_name || "";
+var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
+var uHandle = user.username ? ("@" + user.username) : "";
+
 // Log download traffic for file owner
 var trafficKey = targetUniqueId;
 var traffic = Bot.getProperty("traffic_" + trafficKey, { count: 0, downloaders: [] });
@@ -39,7 +45,7 @@ traffic.downloaders = traffic.downloaders || [];
 var now = new Date().toISOString().slice(0, 19).replace("T", " ");
 traffic.downloaders.push({
   id: user.telegramid,
-  name: user.first_name || "User",
+  name: uFull,
   username: user.username || "",
   date: now
 });
@@ -51,7 +57,7 @@ downloadLogs.push({
   fileId: file.id || 0,
   fileUniqueId: targetUniqueId,
   downloaderId: user.telegramid,
-  downloaderName: user.first_name || "User",
+  downloaderName: uFull,
   downloaderUsername: user.username || "",
   timestamp: new Date().toISOString()
 });

@@ -22,34 +22,57 @@ if (isAdmin) {
   keyboard += "\n🛠 Admin Panel";
 }
 
-// Welcome Message (Admin Customizable: Text, Photo, or Video)
+// Full Name & Username Auto-Detection
+var uFirst = user.first_name || "";
+var uLast = user.last_name || "";
+var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
+var uHandle = user.username ? ("@" + user.username) : "";
+var uMention = "[" + uFull + "](tg://user?id=" + user.telegramid + ")";
+
+function formatPlaceholders(text) {
+  if (!text) return "";
+  return text
+    .replace(/\{name\}/gi, uFull)
+    .replace(/\{fullname\}/gi, uFull)
+    .replace(/\{first_name\}/gi, uFirst || uFull)
+    .replace(/\{last_name\}/gi, uLast)
+    .replace(/\{username\}/gi, uHandle || uFull)
+    .replace(/\{mention\}/gi, uMention)
+    .replace(/\{id\}/gi, user.telegramid);
+}
+
+// Welcome Message (Admin Customizable: Text, Photo, or Video with dynamic placeholders)
 var wm = Bot.getProperty("welcomeMessage", {
   type: "text",
-  text: "👋 Hi [" + (user.first_name || "User") + "](tg://user?id=" + user.telegramid + ")!\n\nI am File Store Bot. You can securely upload, store and share your files.\n\nChoose an option below to get started:",
+  text: "",
   media: "",
   caption: ""
 });
 
-// Send Keyboard First
+var defaultText = "👋 Hi " + uMention + (uHandle ? " (" + uHandle + ")" : "") + "!\n\nI am File Store Bot. You can securely upload, store and share your files.\n\nChoose an option below to get started:";
+
+// Send Keyboard
 Bot.sendKeyboard(keyboard, "👇 Use the menu below to navigate:");
 
 // Send Welcome Message
 if (wm.type === "photo" && wm.media) {
+  var photoCap = wm.caption ? formatPlaceholders(wm.caption) : defaultText;
   Api.sendPhoto({
     chat_id: user.telegramid,
     photo: wm.media,
-    caption: wm.caption || wm.text || "👋 Welcome to File Store Bot!",
+    caption: photoCap,
     parse_mode: "Markdown"
   });
 } else if (wm.type === "video" && wm.media) {
+  var videoCap = wm.caption ? formatPlaceholders(wm.caption) : defaultText;
   Api.sendVideo({
     chat_id: user.telegramid,
     video: wm.media,
-    caption: wm.caption || wm.text || "👋 Welcome to File Store Bot!",
+    caption: videoCap,
     parse_mode: "Markdown"
   });
 } else {
-  var welcomeText = wm.text || ("👋 Hi [" + (user.first_name || "User") + "](tg://user?id=" + user.telegramid + ")!\n\nI am File Store Bot. You can securely upload, store and share your files.\n\nChoose an option below to get started:");
+  var welcomeText = wm.text ? formatPlaceholders(wm.text) : defaultText;
   Api.sendMessage({
     chat_id: user.telegramid,
     text: welcomeText,

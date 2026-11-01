@@ -59,6 +59,12 @@ if (request.document) {
   return;
 }
 
+// User Full Name & Username Auto-Detection
+var uFirst = user.first_name || "";
+var uLast = user.last_name || "";
+var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
+var uHandle = user.username ? ("@" + user.username) : "None";
+
 // Storage Channel Config (Default: -1004304151228)
 var storageChannelId = Bot.getProperty("storageChannel", "-1004304151228");
 
@@ -75,7 +81,7 @@ var uploadRecord = {
   fileType: fileType,
   mimeType: mimeType,
   userId: user.telegramid,
-  ownerName: user.first_name || "User",
+  ownerName: uFull,
   ownerUsername: user.username || "",
   storageChannelId: storageChannelId,
   status: "failed",
@@ -89,7 +95,7 @@ try {
     "📁 *Name:* " + fileName + "\n" +
     "📊 *Size:* " + fileSize + "\n" +
     "🏷️ *Type:* " + fileType.toUpperCase() + "\n" +
-    "👤 *Owner:* `" + user.telegramid + "` (@" + (user.username || "None") + ")\n" +
+    "👤 *Owner:* " + uFull + " (`" + user.telegramid + "` | " + uHandle + ")\n" +
     "🔗 *Link:* " + uniqueLink;
 
   if (fileType === "photo") {

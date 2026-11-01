@@ -23,12 +23,19 @@ if (allUsers.indexOf(user.telegramid) === -1) {
   Bot.setProperty("allBotUsers", allUsers, "json");
 }
 
-// Save user info
+// Full Name & Username Auto-Detection
+var uFirst = user.first_name || "";
+var uLast = user.last_name || "";
+var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
+var uHandle = user.username || "";
+
+// Save comprehensive user info
 Bot.setProperty("userInfo_" + user.telegramid, {
   id: user.telegramid,
-  first_name: user.first_name || "",
-  last_name: user.last_name || "",
-  username: user.username || "",
+  first_name: uFirst,
+  last_name: uLast,
+  full_name: uFull,
+  username: uHandle,
   joined_at: new Date().toISOString()
 }, "json");
 

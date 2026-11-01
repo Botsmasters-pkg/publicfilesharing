@@ -16,12 +16,9 @@ if (!isAdmin) return;
 var current = Bot.getProperty("welcomeMessage", "Default Welcome Message");
 
 var msg = "👋 *Custom Welcome Message Settings*\n`———————————————————————`\n\n";
-msg += "*Current Message:*\n" + current + "\n\n";
-msg += "*To update:*\n";
-msg += "Send: `/setWelcome <Your New Welcome Message>`\n\n";
-msg += "_Example:_\n`/setWelcome Hello! Welcome to our File Store Bot.`\n\n";
-msg += "*To reset to default:*\n";
-msg += "Send: `/clearWelcome`";
+msg += "📌 *Current Welcome Message:*\n" + current + "\n\n";
+msg += "👉 *Simply send your new welcome message text directly:*\n";
+msg += "_(You don't need to type any slash command, just send your text!)_";
 
 var keyb = [
   [{ text: "🔄 Reset to Default", callback_data: "/clearWelcome" }],
@@ -42,3 +39,6 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
+
+// Automatically listen for the next message as the new welcome text
+Bot.run({ command: "/onSetWelcome" });

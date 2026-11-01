@@ -12,13 +12,12 @@ CMD*/
 
 if (!params) return;
 
-var result = Bot.getProperty(user.telegramid + "" + params) || Bot.getProperty("file_" + params);
+var uniqueId = params.trim();
+var result = Bot.getProperty(user.telegramid + "" + uniqueId) || Bot.getProperty("file_" + uniqueId);
 if (!result) {
   Bot.sendMessage("⚠️ *File not found or expired.*", { parse_mode: "Markdown" });
   return;
 }
-
-var uniqueId = result.file_unique_id || params;
 
 var inlkey = [
   [
@@ -39,15 +38,35 @@ var inlkey = [
   ]
 ];
 
-Api.sendDocument({
-  document: result.file_id,
-  caption:
-    "*🗂 File Info*\n`———————————————————————`\n📦 *File Name :* " +
-    (result.file_name || "Document") +
-    "\n📊 *File Size :* " +
-    (result.file_size || "N/A") +
-    "\n📁 *File Type :* " +
-    (result.mime_type || "document"),
-  parse_mode: "Markdown",
-  reply_markup: { inline_keyboard: inlkey }
-});
+var caption = "*🗂 File Info*\n`———————————————————————`\n📦 *File Name :* " +
+  (result.file_name || "File") +
+  "\n📊 *File Size :* " +
+  (result.file_size || "N/A") +
+  "\n📁 *File Type :* " +
+  ((result.file_type || result.mime_type || "document").toUpperCase());
+
+if (result.file_type === "photo") {
+  Api.sendPhoto({
+    chat_id: user.telegramid,
+    photo: result.file_id,
+    caption: caption,
+    parse_mode: "Markdown",
+    reply_markup: { inline_keyboard: inlkey }
+  });
+} else if (result.file_type === "video") {
+  Api.sendVideo({
+    chat_id: user.telegramid,
+    video: result.file_id,
+    caption: caption,
+    parse_mode: "Markdown",
+    reply_markup: { inline_keyboard: inlkey }
+  });
+} else {
+  Api.sendDocument({
+    chat_id: user.telegramid,
+    document: result.file_id,
+    caption: caption,
+    parse_mode: "Markdown",
+    reply_markup: { inline_keyboard: inlkey }
+  });
+}

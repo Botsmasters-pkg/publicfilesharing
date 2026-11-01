@@ -15,3 +15,4 @@ if (!isAdmin) return;
 
 Bot.setProperty("welcomeMessage", null);
 Bot.sendMessage("✅ *Welcome message reset to default!*", { parse_mode: "Markdown" });
+

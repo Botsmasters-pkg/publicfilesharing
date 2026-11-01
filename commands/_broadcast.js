@@ -37,3 +37,4 @@ for (var i = 0; i < allUsers.length; i++) {
 }
 
 Bot.sendMessage("✅ *Broadcast Sent!*\nDelivered to *" + count + "* users.", { parse_mode: "Markdown" });
+

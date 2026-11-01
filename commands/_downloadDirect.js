@@ -44,14 +44,14 @@ Bot.setProperty("traffic_" + trafficKey, traffic, "json");
 var totalDownloads = Bot.getProperty("totalDownloadsCount", 0) + 1;
 Bot.setProperty("totalDownloadsCount", totalDownloads, "integer");
 
-// Send Document
-Api.sendDocument({
-  document: file.file_id,
-  caption:
-    "*🗂 File Received!*\n`———————————————————————`\n📦 *File Name :* " +
-    (file.file_name || "Document") +
-    "\n📊 *File Size :* " +
-    (file.file_size || "N/A") +
-    "\n\n_Powered by @" + bot.name + "_",
-  parse_mode: "Markdown"
-});
+var caption = "*🗂 File Received!*\n`———————————————————————`\n📦 *File Name :* " + (file.file_name || "File") + "\n\n_Powered by @" + bot.name + "_";
+
+if (file.file_type === "photo") {
+  Api.sendPhoto({ chat_id: user.telegramid, photo: file.file_id, caption: caption, parse_mode: "Markdown" });
+} else if (file.file_type === "video") {
+  Api.sendVideo({ chat_id: user.telegramid, video: file.file_id, caption: caption, parse_mode: "Markdown" });
+} else if (file.file_type === "audio") {
+  Api.sendAudio({ chat_id: user.telegramid, audio: file.file_id, caption: caption, parse_mode: "Markdown" });
+} else {
+  Api.sendDocument({ chat_id: user.telegramid, document: file.file_id, caption: caption, parse_mode: "Markdown" });
+}

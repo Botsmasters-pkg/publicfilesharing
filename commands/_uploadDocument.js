@@ -43,7 +43,8 @@ if (exists) {
 // Add to user file list
 var fileEntry = {
   file_unique_id: result.file_unique_id,
-  file_name: result.file_name || "Document"
+  file_name: result.file_name || "File",
+  file_type: result.file_type || "document"
 };
 userFileList.push(fileEntry);
 User.setProperty("userFileList", userFileList, "json");
@@ -61,13 +62,28 @@ Bot.setProperty("totalFilesCount", totalCount, "integer");
 var storageChannel = Bot.getProperty("storageChannel");
 if (storageChannel) {
   try {
-    Api.sendDocument({
-      chat_id: storageChannel,
-      document: result.file_id,
-      caption: "📦 *Storage Backup*\n`———————————————————————`\nName: *" + (result.file_name || "File") + "*\nSize: " + (result.file_size || "N/A") + "\nOwner: " + user.telegramid + " (@" + (user.username || "None") + ")",
-      parse_mode: "Markdown"
-    });
+    var caption = "📦 *Storage Backup*\n`———————————————————————`\nName: *" + (result.file_name || "File") + "*\nSize: " + (result.file_size || "N/A") + "\nOwner: `" + user.telegramid + "` (@" + (user.username || "None") + ")";
+    if (result.file_type === "photo") {
+      Api.sendPhoto({ chat_id: storageChannel, photo: result.file_id, caption: caption, parse_mode: "Markdown" });
+    } else if (result.file_type === "video") {
+      Api.sendVideo({ chat_id: storageChannel, video: result.file_id, caption: caption, parse_mode: "Markdown" });
+    } else if (result.file_type === "audio") {
+      Api.sendAudio({ chat_id: storageChannel, audio: result.file_id, caption: caption, parse_mode: "Markdown" });
+    } else {
+      Api.sendDocument({ chat_id: storageChannel, document: result.file_id, caption: caption, parse_mode: "Markdown" });
+    }
   } catch (err) {}
 }
 
-Bot.sendMessage("✅ *File Successfully Added To Database!*", { parse_mode: "Markdown" });
+var keyb = [
+  [
+    { text: "📂 View in My Files", callback_data: "/fileinfo " + result.file_unique_id },
+    { text: "➰ Share Link", callback_data: "/shareFile " + result.file_unique_id }
+  ]
+];
+
+Api.sendMessage({
+  text: "✅ *File Successfully Saved To Database!*",
+  parse_mode: "Markdown",
+  reply_markup: { inline_keyboard: keyb }
+});

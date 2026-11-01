@@ -20,3 +20,4 @@ if (!params) {
 
 Bot.setProperty("welcomeMessage", params, "string");
 Bot.sendMessage("✅ *Welcome message updated successfully!*", { parse_mode: "Markdown" });
+

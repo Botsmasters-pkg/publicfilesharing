@@ -15,3 +15,4 @@ if (!isAdmin) return;
 
 Bot.setProperty("forceChannel", null);
 Bot.sendMessage("🗑️ *Force Channel removed.* Users can now download directly.", { parse_mode: "Markdown" });
+

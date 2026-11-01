@@ -16,15 +16,12 @@ if (!isAdmin) return;
 var current = Bot.getProperty("forceChannel", "None");
 
 var msg = "🔧 *Force Subscribe / Host Channel*\n`———————————————————————`\n\n";
-msg += "Current Force Channel: `" + current + "`\n\n";
-msg += "*How to set / change:*\n";
-msg += "1. Add this bot as an **Admin** in the channel.\n";
-msg += "2. Send command: `/setForce <Channel_Username_Or_ID>`\n";
-msg += "   _Example:_ `/setForce @mychannel` or `/setForce -1001234567890`\n\n";
-msg += "To remove: `/clearForce`";
+msg += "📌 *Current Channel:* `" + current + "`\n\n";
+msg += "👉 *Simply send the Channel @username or ID directly:*\n";
+msg += "_(You don't need to type any slash command, just send @channel or -100...)_";
 
 var keyb = [
-  [{ text: "❌ Clear Force Channel", callback_data: "/clearForce" }],
+  [{ text: "❌ Remove Channel", callback_data: "/clearForce" }],
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
 ];
 
@@ -42,3 +39,6 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
+
+// Automatically listen for the next message as the new force channel
+Bot.run({ command: "/onSetForce" });

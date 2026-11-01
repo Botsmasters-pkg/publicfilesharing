@@ -16,15 +16,12 @@ if (!isAdmin) return;
 var current = Bot.getProperty("storageChannel", "None");
 
 var msg = "🏷️ *Storage Channel Settings*\n`———————————————————————`\n\n";
-msg += "Current Storage Channel: `" + current + "`\n\n";
-msg += "*How to set / change:*\n";
-msg += "1. Add this bot as an **Admin** in your storage channel.\n";
-msg += "2. Send command: `/setStorage <Channel_Username_Or_ID>`\n";
-msg += "   _Example:_ `/setStorage @my_file_channel` or `/setStorage -1001234567890`\n\n";
-msg += "To remove: `/clearStorage`";
+msg += "📌 *Current Channel:* `" + current + "`\n\n";
+msg += "👉 *Simply send the Channel @username or ID directly:*\n";
+msg += "_(You don't need to type any slash command, just send @channel or -100...)_";
 
 var keyb = [
-  [{ text: "❌ Clear Storage", callback_data: "/clearStorage" }],
+  [{ text: "❌ Remove Channel", callback_data: "/clearStorage" }],
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
 ];
 
@@ -42,3 +39,6 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
+
+// Automatically listen for the next message as the new storage channel
+Bot.run({ command: "/onSetStorage" });

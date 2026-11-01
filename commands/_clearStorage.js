@@ -15,3 +15,4 @@ if (!isAdmin) return;
 
 Bot.setProperty("storageChannel", null);
 Bot.sendMessage("🗑️ *Storage Channel has been removed.*", { parse_mode: "Markdown" });
+

@@ -31,3 +31,4 @@ Api.getChatMember({
   on_result: "/onCheckJoin " + params,
   on_error: "/downloadDirect " + params
 });
+

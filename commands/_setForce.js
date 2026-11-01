@@ -20,3 +20,4 @@ if (!params) {
 
 Bot.setProperty("forceChannel", params.trim(), "string");
 Bot.sendMessage("✅ *Force Subscribe Channel has been set to:* `" + params.trim() + "`\nUsers will now be asked to join before downloading files.", { parse_mode: "Markdown" });
+

@@ -16,10 +16,9 @@ if (!isAdmin) return;
 var allUsers = Bot.getProperty("allBotUsers", []);
 
 var msg = "📣 *Broadcast System*\n`———————————————————————`\n\n";
-msg += "Total Registered Users: *" + allUsers.length + "*\n\n";
-msg += "*How to send a broadcast:*\n";
-msg += "Type: `/broadcast <Your Announcement>`\n\n";
-msg += "_Example:_\n`/broadcast Hello users! New server storage update is here.`";
+msg += "👥 *Total Registered Users:* *" + allUsers.length + "*\n\n";
+msg += "👉 *Simply send the message you want to broadcast directly:*\n";
+msg += "_(You can send text, photo with caption, or announcement - no slash command needed!)_";
 
 var keyb = [
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
@@ -39,3 +38,6 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
+
+// Automatically listen for the next message to broadcast
+Bot.run({ command: "/onBroadcast" });

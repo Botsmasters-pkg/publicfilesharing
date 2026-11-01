@@ -20,3 +20,4 @@ if (!params) {
 
 Bot.setProperty("storageChannel", params.trim(), "string");
 Bot.sendMessage("✅ *Storage Channel has been set to:* `" + params.trim() + "`\nAll new uploaded files will be backed up here.", { parse_mode: "Markdown" });
+

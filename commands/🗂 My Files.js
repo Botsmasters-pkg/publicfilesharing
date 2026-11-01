@@ -50,7 +50,8 @@ var inlkey = [];
 for (var i = 0; i < myFiles.length; i++) {
   var file = myFiles[i];
   var fileNum = i + 1;
-  var traffic = Bot.getProperty("traffic_" + file.fileUniqueId, { count: 0 });
+  var itemKey = file.uniqueKey || file.fileUniqueId;
+  var traffic = Bot.getProperty("traffic_" + itemKey, { count: 0 });
   var fType = (file.fileType || "document").toUpperCase();
 
   txt += "<b>" + fileNum + ". " + file.fileName + "</b>\n";
@@ -61,11 +62,11 @@ for (var i = 0; i < myFiles.length; i++) {
   inlkey.push([
     {
       text: "📄 " + fileNum + ". " + (file.fileName.length > 15 ? (file.fileName.slice(0, 15) + "...") : file.fileName),
-      callback_data: "/fileinfo " + file.fileUniqueId
+      callback_data: "/fileinfo " + itemKey
     },
     {
       text: "📊 Traffic (" + (traffic.count || 0) + ")",
-      callback_data: "/fileTraffic " + file.fileUniqueId
+      callback_data: "/fileTraffic " + itemKey
     }
   ]);
 }

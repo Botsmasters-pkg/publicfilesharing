@@ -65,12 +65,15 @@ var uLast = user.last_name || "";
 var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
 var uHandle = user.username ? ("@" + user.username) : "None";
 
+// Auto-detected Bot Username
+var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
+
 // Storage Channel Config (Default: -1004304151228)
 var storageChannelId = Bot.getProperty("storageChannel", "-1004304151228");
 
 var uploads = Bot.getProperty("uploads", []);
 var newId = uploads.length > 0 ? (uploads[uploads.length - 1].id + 1) : 1;
-var uniqueLink = "https://t.me/" + bot.name + "?start=" + uniqueId;
+var uniqueLink = "https://t.me/" + botUsername + "?start=" + uniqueId;
 
 var uploadRecord = {
   id: newId,

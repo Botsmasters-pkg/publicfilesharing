@@ -16,6 +16,11 @@
   group: 
 CMD*/
 
+// Auto-detect Bot's own Telegram username dynamically from Telegram API
+Api.getMe({
+  on_result: "/onGetBotUsername"
+});
+
 // Save user to allBotUsers
 var allUsers = Bot.getProperty("allBotUsers", []);
 if (allUsers.indexOf(user.telegramid) === -1) {
@@ -27,7 +32,7 @@ if (allUsers.indexOf(user.telegramid) === -1) {
 var uFirst = user.first_name || "";
 var uLast = user.last_name || "";
 var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
-var uHandle = user.username || "";
+var uHandle = user.username ? ("@" + user.username) : "";
 
 // Save comprehensive user info
 Bot.setProperty("userInfo_" + user.telegramid, {

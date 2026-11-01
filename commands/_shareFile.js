@@ -13,7 +13,8 @@ CMD*/
 if (!params) return;
 
 var uniqueId = params.trim();
-var shareLink = "https://t.me/" + bot.name + "?start=" + uniqueId;
+var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
+var shareLink = "https://t.me/" + botUsername + "?start=" + uniqueId;
 var shareButton = [
   [{ text: "📤 Share Link", url: "https://t.me/share/url?url=" + encodeURIComponent(shareLink) + "&text=" + encodeURIComponent("Download this file from Telegram:") }]
 ];

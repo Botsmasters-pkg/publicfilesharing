@@ -63,11 +63,13 @@ downloadLogs.push({
 });
 Bot.setProperty("downloadLogs", downloadLogs, "json");
 
+var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
+
 // Send File according to media type
 var caption = "📥 *File Download Complete!*\n`———————————————————————`\n" +
   "📦 *Name:* " + targetFileName + "\n" +
   "📊 *Size:* " + (file.fileSize || "N/A") + "\n\n" +
-  "_Downloaded via @" + bot.name + "_";
+  "_Downloaded via @" + botUsername + "_";
 
 if (targetFileType === "photo") {
   Api.sendPhoto({ chat_id: user.telegramid, photo: targetFileId, caption: caption, parse_mode: "Markdown" });

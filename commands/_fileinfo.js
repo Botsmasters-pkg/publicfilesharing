@@ -28,7 +28,8 @@ if (file.userId && file.userId != user.telegramid && !isAdmin) {
 }
 
 var traffic = Bot.getProperty("traffic_" + uniqueId, { count: 0 });
-var uniqueLink = file.uniqueLink || ("https://t.me/" + bot.name + "?start=" + uniqueId);
+var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
+var uniqueLink = file.uniqueLink || ("https://t.me/" + botUsername + "?start=" + uniqueId);
 var fType = (file.fileType || file.mimeType || "document").toUpperCase();
 
 var msg = "*🗂 File Dashboard*\n`———————————————————————`\n" +

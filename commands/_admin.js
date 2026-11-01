@@ -20,6 +20,8 @@ if (!isAdmin) {
   return;
 }
 
+var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
+
 var keyb = [
   [
     { text: "📊 Statistics Dashboard", callback_data: "/adminStats" },
@@ -34,12 +36,14 @@ var keyb = [
     { text: "💾 CSV Export", callback_data: "/adminExport" }
   ],
   [
-    { text: "🆘 Support Management", callback_data: "/adminSupport" }
+    { text: "🆘 Support Management", callback_data: "/adminSupport" },
+    { text: "🤖 Refresh Bot Info", callback_data: "/refreshBotInfo" }
   ]
 ];
 
 var msg = "🛠 *Super Admin Control Panel*\n`———————————————————————`\n" +
-  "Welcome, Admin! (ID: `" + user.telegramid + "`)\n\n" +
+  "• *Admin:* `" + user.telegramid + "`\n" +
+  "• *Bot Username:* @" + botUsername + "\n\n" +
   "Select a management section below:";
 
 if (request.data) {

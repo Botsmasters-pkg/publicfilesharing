@@ -39,3 +39,4 @@ if (!hoursMatch && !minsMatch && !daysMatch) {
 if (totalMinutes <= 0) totalMinutes = 60;
 
 Bot.runCommand("/fcSetTime " + totalMinutes);
+

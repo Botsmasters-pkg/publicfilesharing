@@ -58,3 +58,4 @@ if (totalMinutes <= 0) {
 }
 
 Bot.runCommand("/fcApplyTimer " + idx + " " + totalMinutes);
+

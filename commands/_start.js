@@ -53,6 +53,7 @@ var activeChannels = [];
 
 for (var i = 0; i < forceChannels.length; i++) {
   var ch = forceChannels[i];
+  if (ch.enabled === false) continue;
   if (!ch.expired) {
     if (ch.expiryTime > 0 && now >= ch.expiryTime) {
       ch.expired = true; // Auto-expired!
@@ -71,12 +72,7 @@ if (legacyForce && activeChannels.length === 0) {
 // Enforce Channel subscription for normal users
 if (activeChannels.length > 0 && !isAdmin) {
   var p = params ? params.trim() : "none";
-  Api.getChatMember({
-    chat_id: activeChannels[0].id,
-    user_id: user.telegramid,
-    on_result: "/onCheckJoin " + p,
-    on_error: (p !== "none" ? "/downloadDirect " + p : "/showMenu")
-  });
+  Bot.runCommand("/checkJoin " + p);
   return;
 }
 

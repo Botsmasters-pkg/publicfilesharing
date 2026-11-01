@@ -22,16 +22,18 @@ var forceChannels = Bot.getProperty("forceChannels", []);
 var now = Date.now();
 var activeChannels = [];
 
-// Filter active non-expired channels
 for (var i = 0; i < forceChannels.length; i++) {
   var ch = forceChannels[i];
-  if (!ch.expired) {
-    if (ch.expiryTime > 0 && now >= ch.expiryTime) {
-      ch.expired = true; // Auto-expired!
-    } else {
-      activeChannels.push(ch);
-    }
+  // Requirement #5: Skip disabled channels completely
+  if (ch.enabled === false) continue;
+
+  // Skip expired channels
+  if (ch.expired) continue;
+  if (ch.expiryTime > 0 && now >= ch.expiryTime) {
+    ch.expired = true;
+    continue;
   }
+  activeChannels.push(ch);
 }
 Bot.setProperty("forceChannels", forceChannels, "json");
 
@@ -55,11 +57,8 @@ if (activeChannels.length === 0) {
   return;
 }
 
-// Check first channel or primary
-var firstChannel = activeChannels[0];
-Api.getChatMember({
-  chat_id: firstChannel.id,
-  user_id: user.telegramid,
-  on_result: "/onCheckJoin " + checkParam,
-  on_error: (checkParam !== "none" ? "/downloadDirect " + checkParam : "/showMenu")
-});
+// Requirement #4: Sequential verification of ALL enabled channels
+Bot.setProperty("verify_queue_" + user.telegramid, activeChannels, "json");
+Bot.setProperty("verify_unjoined_" + user.telegramid, [], "json");
+
+Bot.runCommand("/verifyStep 0 " + checkParam);

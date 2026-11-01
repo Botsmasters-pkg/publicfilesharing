@@ -20,20 +20,22 @@ Bot.setProperty("temp_fc_type_" + user.telegramid, type, "string");
 var msg = "";
 if (type === "public") {
   msg = "📢 *Add Public Channel*\n`———————————————————————`\n\n" +
-    "👉 *Send the Channel Username or Link:*\n" +
-    "_(Example: `@MyChannel` or `https://t.me/MyChannel`)_\n\n" +
+    "👉 *Send the Channel Username, Link OR Forward a message from the channel:*\n" +
+    "• Username: `@MyChannel`\n" +
+    "• Public Link: `https://t.me/MyChannel`\n" +
+    "• Or simply forward any post from that channel here!\n\n" +
     "*(Make sure the bot is added as Administrator in the channel)*";
 } else if (type === "request") {
-  msg = "📩 *Add Private Request Channel*\n`———————————————————————`\n\n" +
-    "👉 *Send Channel ID and Join Request Link:*\n" +
-    "_(Example: `-1001234567890 https://t.me/+AbCdEfGhIjK`)_\n\n" +
-    "_Tip: Send both in one message separated by a space._\n" +
-    "*(Make sure the bot is added as Administrator in the channel)*";
+  msg = "📩 *Add Private Join Request Channel*\n`———————————————————————`\n\n" +
+    "👉 *Send Channel ID & Join Request Link OR Forward a message:*\n" +
+    "• Single line: `-1001234567890 https://t.me/+AbCdEfGhIjK`\n" +
+    "• Or send just Chat ID / forward a message, bot will ask for invite link next.\n\n" +
+    "*(Make sure the bot is added as Administrator with invite permissions)*";
 } else {
   msg = "🔒 *Add Private Channel*\n`———————————————————————`\n\n" +
-    "👉 *Send Channel ID and Invite Link:*\n" +
-    "_(Example: `-1001234567890 https://t.me/+AbCdEfGhIjK`)_\n\n" +
-    "_Tip: Send both in one message separated by a space._\n" +
+    "👉 *Send Channel ID & Private Invite Link OR Forward a message:*\n" +
+    "• Single line: `-1001234567890 https://t.me/+AbCdEfGhIjK`\n" +
+    "• Or send just Chat ID / forward a message, bot will ask for invite link next.\n\n" +
     "*(Make sure the bot is added as Administrator in the channel)*";
 }
 

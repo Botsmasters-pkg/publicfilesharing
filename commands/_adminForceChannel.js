@@ -15,12 +15,15 @@ if (!isAdmin) return;
 
 var forceChannels = Bot.getProperty("forceChannels", []);
 var activeCount = 0;
+var disabledCount = 0;
 var expiredCount = 0;
 var now = Date.now();
 
 for (var i = 0; i < forceChannels.length; i++) {
   var ch = forceChannels[i];
-  if (!ch.expired && (ch.expiryTime === 0 || now < ch.expiryTime)) {
+  if (ch.enabled === false) {
+    disabledCount++;
+  } else if (!ch.expired && (ch.expiryTime === 0 || now < ch.expiryTime)) {
     activeCount++;
   } else {
     expiredCount++;
@@ -28,9 +31,10 @@ for (var i = 0; i < forceChannels.length; i++) {
 }
 
 var msg = "🔧 *Force Channels Management*\n`———————————————————————`\n\n" +
-  "Manage mandatory subscription channels and configure Auto-Expiry timers.\n\n" +
+  "Manage mandatory subscription channels (Public, Private, Join Request).\n\n" +
   "📊 *Overview:*\n" +
-  "• Active Channels: *" + activeCount + "*\n" +
+  "• Active & Enabled: *" + activeCount + "*\n" +
+  "• Disabled Channels: *" + disabledCount + "*\n" +
   "• Expired Channels: *" + expiredCount + "*\n" +
   "• Total Channels: *" + forceChannels.length + "*\n\n" +
   "Select an action below:";

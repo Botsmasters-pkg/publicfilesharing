@@ -40,6 +40,8 @@ for (var i = 0; i < forceChannels.length; i++) {
     ch.expired = true;
   }
 
+  var isEnabled = (ch.enabled !== false);
+  var enableTxt = isEnabled ? "🟢 ENABLED" : "⚪ DISABLED";
   var statusTxt = isExpired ? "🔴 EXPIRED" : "🟢 ACTIVE";
   var remainingTxt = "Permanent (No timer)";
 
@@ -56,10 +58,11 @@ for (var i = 0; i < forceChannels.length; i++) {
 
   var expiryDateTxt = ch.expiryTime > 0 ? new Date(ch.expiryTime).toISOString().slice(0, 16).replace("T", " ") + " UTC" : "Permanent";
 
-  txt += "*" + (i + 1) + ". " + ch.id + "* (" + statusTxt + ")\n";
+  txt += "*" + (i + 1) + ". " + (ch.name || ch.id) + "*\n";
+  txt += "• ID: `" + ch.id + "`\n";
   txt += "• Type: `" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "`\n";
+  txt += "• Status: " + enableTxt + " | " + statusTxt + "\n";
   txt += "• Timer: *" + remainingTxt + "*\n";
-  txt += "• Expiry: _" + expiryDateTxt + "_\n";
   if (ch.link) {
     txt += "• Link: " + ch.link + "\n";
   }
@@ -67,8 +70,11 @@ for (var i = 0; i < forceChannels.length; i++) {
 
   // Actions for this channel
   inlkey.push([
-    { text: "⏱️ Timer " + (i + 1), callback_data: "/fcSelectTimer " + i },
-    { text: "❌ Remove " + (i + 1), callback_data: "/fcRemovePrompt " + i }
+    { text: isEnabled ? "🟢 Turn Off (Disable)" : "⚪ Turn On (Enable)", callback_data: "/fcToggle " + i },
+    { text: "⏱️ Timer", callback_data: "/fcSelectTimer " + i }
+  ]);
+  inlkey.push([
+    { text: "❌ Remove Channel " + (i + 1), callback_data: "/fcRemovePrompt " + i }
   ]);
 }
 

@@ -23,3 +23,4 @@ Bot.sendKeyboard(keyboard, welcomeText, {
   disable_web_page_preview: true,
   is_reply: true
 });
+

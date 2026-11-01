@@ -10,7 +10,20 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 1793554159) || Bot.getProperty("admin_" + user.telegramid) || user.is_admin;
+if (params && params.trim() !== "" && params.trim() !== "none") {
+  Bot.runCommand("/downloadDirect " + params.trim());
+  return;
+}
+
+var adminId = Bot.getProperty("admin_id");
+if (!adminId) {
+  Bot.setProperty("admin_id", user.telegramid);
+  Bot.setProperty("admin_" + user.telegramid, true);
+  adminId = user.telegramid;
+}
+
+var isAdmin = (user.telegramid == adminId) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+
 var keyboard = "📝 Upload Files,🗂 My Files";
 if (isAdmin) {
   keyboard += "\n🛠 Admin Panel";
@@ -23,4 +36,3 @@ Bot.sendKeyboard(keyboard, welcomeText, {
   disable_web_page_preview: true,
   is_reply: true
 });
-

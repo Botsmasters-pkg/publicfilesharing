@@ -10,7 +10,7 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 1793554159) || Bot.getProperty("admin_" + user.telegramid) || user.is_admin;
+var isAdmin = (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
 if (!isAdmin) return;
 
 Bot.setProperty("storageChannel", null);

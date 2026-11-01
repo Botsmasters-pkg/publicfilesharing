@@ -16,7 +16,7 @@ var uniqueId = params.trim();
 var result = Bot.getProperty(user.telegramid + "" + uniqueId) || Bot.getProperty("file_" + uniqueId);
 var traffic = Bot.getProperty("traffic_" + uniqueId, { count: 0, downloaders: [] });
 
-var isAdmin = (user.telegramid == 1793554159) || Bot.getProperty("admin_" + user.telegramid) || user.is_admin;
+var isAdmin = (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
 var isOwner = (result && result.owner_id && result.owner_id == user.telegramid) || (!result) || isAdmin;
 
 if (!isOwner) {

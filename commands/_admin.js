@@ -10,9 +10,24 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 1793554159) || Bot.getProperty("admin_" + user.telegramid) || user.is_admin;
+var adminId = Bot.getProperty("admin_id");
+if (!adminId) {
+  Bot.setProperty("admin_id", user.telegramid);
+  Bot.setProperty("admin_" + user.telegramid, true);
+  adminId = user.telegramid;
+}
+
+var isAdmin = (user.telegramid == adminId) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+
 if (!isAdmin) {
-  Bot.sendMessage("🚫 *Access Denied: Admins Only.*", { parse_mode: "Markdown" });
+  var keyb = [
+    [{ text: "👑 Claim Admin Access", callback_data: "/claimadmin" }]
+  ];
+  Api.sendMessage({
+    text: "🚫 *Access Denied: Admins Only.*\n\nYour Telegram ID: `" + user.telegramid + "`\n\nIf you are the bot owner, click below to claim admin access:",
+    parse_mode: "Markdown",
+    reply_markup: { inline_keyboard: keyb }
+  });
   return;
 }
 
@@ -31,18 +46,19 @@ var keyb = [
   ]
 ];
 
+var msg = "🛠 *Admin Control Panel*\n`———————————————————————`\nWelcome, Admin! (ID: `" + user.telegramid + "`)\nSelect an option below to manage the bot:";
+
 if (request.data) {
   Api.editMessageText({
     message_id: request.message.message_id,
-    text: "🛠 *Admin Control Panel*\n`———————————————————————`\nWelcome, Admin! Select an option below to manage the bot:",
+    text: msg,
     parse_mode: "Markdown",
     reply_markup: { inline_keyboard: keyb }
   });
 } else {
   Api.sendMessage({
-    text: "🛠 *Admin Control Panel*\n`———————————————————————`\nWelcome, Admin! Select an option below to manage the bot:",
+    text: msg,
     parse_mode: "Markdown",
     reply_markup: { inline_keyboard: keyb }
   });
 }
-

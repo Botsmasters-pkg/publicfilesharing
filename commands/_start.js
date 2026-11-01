@@ -16,26 +16,49 @@
   group: 
 CMD*/
 
-if (!params) {
-  Bot.sendKeyboard(
-    "📝 Upload Files,🗂 My Files\n",   "👋🏻 Hi ["+user.first_name+"](tg://user?id="+user.telegramid+")!\n\nI am File Store Bot, you can manage your files. by @botadminshere",
-  {disable_web_page_preview: true,is_reply: true
-})
-  return
+// Save user to allBotUsers
+var allUsers = Bot.getProperty("allBotUsers", []);
+if (allUsers.indexOf(user.telegramid) === -1) {
+  allUsers.push(user.telegramid);
+  Bot.setProperty("allBotUsers", allUsers, "json");
 }
-var id = params.slice(0, 10)
-var fil = params.slice(10, 30)
-var result = Bot.getProperty(id + "" + fil)
-Api.sendDocument({
-  document: result.file_id,
-  caption:
-    "*🗂File Info*\n`———————————————————————`\n📦File Name : *" +
-    result.file_name +
-    "*\n📊File Size : " +
-    result.file_size +
-    "\nFile Type : " +
-    result.mime_type +
-    "",
-  parse_mode: "Markdown"
-})
 
+// Save user info
+Bot.setProperty("userInfo_" + user.telegramid, {
+  id: user.telegramid,
+  first_name: user.first_name || "",
+  last_name: user.last_name || "",
+  username: user.username || "",
+  joined_at: new Date().toISOString()
+}, "json");
+
+var isAdmin = (user.telegramid == 1793554159) || Bot.getProperty("admin_" + user.telegramid) || user.is_admin;
+
+if (!params) {
+  var keyboard = "📝 Upload Files,🗂 My Files";
+  if (isAdmin) {
+    keyboard += "\n🛠 Admin Panel";
+  }
+
+  var customWelcome = Bot.getProperty("welcomeMessage");
+  var welcomeText = customWelcome || ("👋 Hi [" + user.first_name + "](tg://user?id=" + user.telegramid + ")!\n\nI am File Store Bot. You can securely upload, store and share your files.\n\nChoose an option below to get started:");
+
+  Bot.sendKeyboard(keyboard, welcomeText, {
+    disable_web_page_preview: true,
+    is_reply: true
+  });
+  return;
+}
+
+// Deep link download request
+var forceChannel = Bot.getProperty("forceChannel");
+if (forceChannel && !isAdmin) {
+  Api.getChatMember({
+    chat_id: forceChannel,
+    user_id: user.telegramid,
+    on_result: "/onCheckJoin " + params,
+    on_error: "/downloadDirect " + params
+  });
+} else {
+  Bot.runCommand("/downloadDirect " + params);
+}

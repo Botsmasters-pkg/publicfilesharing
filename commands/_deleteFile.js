@@ -1,7 +1,7 @@
 /*CMD
   command: /deleteFile
   help: 
-  need_reply: 
+  need_reply: false
   auto_retry_time: 
   folder: 
   answer: 
@@ -10,25 +10,33 @@
   group: 
 CMD*/
 
-if (!params) {
-  return
-}
+if (!params) return;
+
 if (request.data) {
-  var message_id = request.message.message_id
-  var chat_id = request.message.chat.id
-
   Api.deleteMessage({
-    chat_id: chat_id,
-    message_id: message_id
-  })
+    chat_id: request.message.chat.id,
+    message_id: request.message.message_id
+  });
 }
 
-var userFile = User.getProperty("userFileList")
-for (var index in userFile) {
-  var uniqueid = userFile[index].file_unique_id
-  if (uniqueid == params) {
-    userFile.splice(parseInt(index), 1)
+var uniqueId = params.trim();
+var userFile = User.getProperty("userFileList", []);
+var filtered = [];
+var found = false;
+
+for (var i = 0; i < userFile.length; i++) {
+  if (userFile[i].file_unique_id === uniqueId) {
+    found = true;
+  } else {
+    filtered.push(userFile[i]);
   }
 }
-User.setProperty("userFileList", userFile, "json")
-Bot.sendMessage("❌ File Has Been Deleted")
+
+User.setProperty("userFileList", filtered, "json");
+Bot.setProperty(user.telegramid + "" + uniqueId, null);
+
+if (found) {
+  Bot.sendMessage("❌ *File has been deleted from your list.*", { parse_mode: "Markdown" });
+} else {
+  Bot.sendMessage("⚠️ File was already removed.");
+}

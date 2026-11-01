@@ -32,14 +32,35 @@ Bot.setProperty("userInfo_" + user.telegramid, {
   joined_at: new Date().toISOString()
 }, "json");
 
-var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
-var forceChannel = Bot.getProperty("forceChannel");
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 
-// Check Force Channel on bot start or download
-if (forceChannel && !isAdmin) {
+// Check Force Channels Auto-Expiry and Active list
+var forceChannels = Bot.getProperty("forceChannels", []);
+var now = Date.now();
+var activeChannels = [];
+
+for (var i = 0; i < forceChannels.length; i++) {
+  var ch = forceChannels[i];
+  if (!ch.expired) {
+    if (ch.expiryTime > 0 && now >= ch.expiryTime) {
+      ch.expired = true; // Auto-expired!
+    } else {
+      activeChannels.push(ch);
+    }
+  }
+}
+Bot.setProperty("forceChannels", forceChannels, "json");
+
+var legacyForce = Bot.getProperty("forceChannel");
+if (legacyForce && activeChannels.length === 0) {
+  activeChannels.push({ id: legacyForce });
+}
+
+// Enforce Channel subscription for normal users
+if (activeChannels.length > 0 && !isAdmin) {
   var p = params ? params.trim() : "none";
   Api.getChatMember({
-    chat_id: forceChannel,
+    chat_id: activeChannels[0].id,
     user_id: user.telegramid,
     on_result: "/onCheckJoin " + p,
     on_error: (p !== "none" ? "/downloadDirect " + p : "/showMenu")
@@ -47,5 +68,5 @@ if (forceChannel && !isAdmin) {
   return;
 }
 
-// Show Menu
+// Proceed to Main Menu / Welcome Message or Download
 Bot.runCommand("/showMenu" + (params ? (" " + params) : ""));

@@ -20,23 +20,35 @@ if (request.data) {
 }
 
 var uniqueId = params.trim();
-var userFile = User.getProperty("userFileList", []);
+var userFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
 var filtered = [];
 var found = false;
 
-for (var i = 0; i < userFile.length; i++) {
-  if (userFile[i].file_unique_id === uniqueId) {
+for (var i = 0; i < userFiles.length; i++) {
+  if (userFiles[i].fileUniqueId === uniqueId || userFiles[i].file_unique_id === uniqueId) {
     found = true;
   } else {
-    filtered.push(userFile[i]);
+    filtered.push(userFiles[i]);
   }
 }
 
+Bot.setProperty("userFiles_" + user.telegramid, filtered, "json");
+// Legacy
 User.setProperty("userFileList", filtered, "json");
-Bot.setProperty(user.telegramid + "" + uniqueId, null);
+
+var backKey = [
+  [{ text: "📂 Go to My Files", callback_data: "/myfiles" }]
+];
 
 if (found) {
-  Bot.sendMessage("❌ *File has been deleted from your list.*", { parse_mode: "Markdown" });
+  Api.sendMessage({
+    text: "🗑️ *File Deleted!*\n\nThe file has been permanently removed from your My Files dashboard.",
+    parse_mode: "Markdown",
+    reply_markup: { inline_keyboard: backKey }
+  });
 } else {
-  Bot.sendMessage("⚠️ File was already removed.");
+  Api.sendMessage({
+    text: "⚠️ File was not found in your list.",
+    reply_markup: { inline_keyboard: backKey }
+  });
 }

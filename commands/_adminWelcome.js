@@ -10,18 +10,26 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-var current = Bot.getProperty("welcomeMessage", "Default Welcome Message");
+var wm = Bot.getProperty("welcomeMessage", {
+  type: "text",
+  text: "Default Welcome Message",
+  media: "",
+  caption: ""
+});
 
-var msg = "👋 *Custom Welcome Message Settings*\n`———————————————————————`\n\n";
-msg += "📌 *Current Welcome Message:*\n" + current + "\n\n";
-msg += "👉 *Simply send your new welcome message text directly:*\n";
-msg += "_(You don't need to type any slash command, just send your text!)_";
+var msg = "👋 *Custom Welcome Message Settings*\n`———————————————————————`\n\n" +
+  "• *Type:* `" + (wm.type || "text").toUpperCase() + "`\n" +
+  "• *Content:* " + (wm.text || wm.caption || "Default") + "\n\n" +
+  "👉 *How to customize:*\n" +
+  "• Send *Text* in chat to set as Welcome Text.\n" +
+  "• Send a *Photo* (with optional caption) to set as Welcome Photo.\n" +
+  "• Send a *Video* (with optional caption) to set as Welcome Video.";
 
 var keyb = [
-  [{ text: "🔄 Reset to Default", callback_data: "/clearWelcome" }],
+  [{ text: "🔄 Reset to Default Welcome", callback_data: "/clearWelcome" }],
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
 ];
 
@@ -40,5 +48,4 @@ if (request.data) {
   });
 }
 
-// Automatically listen for the next message as the new welcome text
 Bot.run({ command: "/onSetWelcome" });

@@ -10,19 +10,25 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-var current = Bot.getProperty("storageChannel", "None");
+var current = Bot.getProperty("storageChannel", "-1004304151228");
 
-var msg = "🏷️ *Storage Channel Settings*\n`———————————————————————`\n\n";
-msg += "📌 *Current Channel:* `" + current + "`\n\n";
-msg += "👉 *Simply send the Channel @username or ID directly:*\n";
-msg += "_(You don't need to type any slash command, just send @channel or -100...)_";
+var msg = "🏷️ *Storage Channel Management*\n`———————————————————————`\n\n" +
+  "📌 *Current Storage Channel ID:* `" + current + "`\n" +
+  "⚙️ *Default Channel ID:* `-1004304151228`\n\n" +
+  "All user uploads are automatically backed up to this channel.\n\n" +
+  "👉 *To update:* Simply send the new Channel ID (e.g. `-100...`) or @username in chat:\n" +
+  "_(Make sure the bot is an Administrator in the storage channel!)_";
 
 var keyb = [
-  [{ text: "❌ Remove Channel", callback_data: "/clearStorage" }],
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
+  [
+    { text: "🔄 Reset to Default (-1004304151228)", callback_data: "/resetStorageDefault" }
+  ],
+  [
+    { text: "⬅️ Back to Admin Panel", callback_data: "/admin" }
+  ]
 ];
 
 if (request.data) {
@@ -40,5 +46,4 @@ if (request.data) {
   });
 }
 
-// Automatically listen for the next message as the new storage channel
 Bot.run({ command: "/onSetStorage" });

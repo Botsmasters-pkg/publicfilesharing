@@ -12,45 +12,75 @@
   <<KEYBOARD
 
   KEYBOARD
-  aliases: 
+  aliases: /myfiles
   group: 
 CMD*/
 
-var userFileList = User.getProperty("userFileList", []);
+var userFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
 
-if (!userFileList || userFileList.length === 0) {
-  Bot.sendMessage("📂 *No files uploaded yet!*\n\n👉 Click *📝 Upload Files* below to upload your first file (Photo, Video, Document, etc.).\n\nOnce uploaded, you will see its *📊 Traffic* button right here to track downloads!", { parse_mode: "Markdown" });
+// Strict User Ownership: Only show successful uploads belonging to THIS user
+var myFiles = [];
+for (var k = 0; k < userFiles.length; k++) {
+  if (userFiles[k].status === "successful" && userFiles[k].userId == user.telegramid) {
+    myFiles.push(userFiles[k]);
+  }
+}
+
+if (!myFiles || myFiles.length === 0) {
+  var emptyMsg = "📂 *My Files Dashboard*\n`———————————————————————`\n\n" +
+    "You haven't uploaded any files yet.\n\n" +
+    "👉 Click *📝 Upload Files* below to upload your first file (Photos, Videos, Documents, Audio)!\n\n" +
+    "_Every file you upload will appear here with its Unique Link and Personal Traffic Tracking._";
+
+  if (request.data) {
+    Api.editMessageText({
+      message_id: request.message.message_id,
+      text: emptyMsg,
+      parse_mode: "Markdown"
+    });
+  } else {
+    Bot.sendMessage(emptyMsg, { parse_mode: "Markdown" });
+  }
   return;
 }
 
-var txt = "<b>🗂 Your Uploaded Files (" + userFileList.length + ")</b>\n<code>———————————————————————</code>\n\n";
+var txt = "<b>🗂 My Files Dashboard (" + myFiles.length + ")</b>\n<code>———————————————————————</code>\n\n";
 var inlkey = [];
 
-for (var i = 0; i < userFileList.length; i++) {
-  var item = userFileList[i];
+for (var i = 0; i < myFiles.length; i++) {
+  var file = myFiles[i];
   var fileNum = i + 1;
-  var fileData = Bot.getProperty(user.telegramid + "" + item.file_unique_id) || Bot.getProperty("file_" + item.file_unique_id) || item;
-  var fileName = fileData.file_name || ("File " + fileNum);
-  var traffic = Bot.getProperty("traffic_" + item.file_unique_id, { count: 0 });
+  var traffic = Bot.getProperty("traffic_" + file.fileUniqueId, { count: 0 });
+  var fType = (file.fileType || "document").toUpperCase();
 
-  txt += "<b>" + fileNum + ". " + fileName + "</b>\n";
+  txt += "<b>" + fileNum + ". " + file.fileName + "</b>\n";
+  txt += "• Type: <code>" + fType + "</code> | Size: <code>" + (file.fileSize || "N/A") + "</code>\n";
   txt += "• Downloads: <b>" + (traffic.count || 0) + "</b>\n";
-  txt += "• ID: <code>" + item.file_unique_id + "</code>\n\n";
+  txt += "• Link: <code>" + file.uniqueLink + "</code>\n\n";
 
   inlkey.push([
     {
-      text: "📄 File " + fileNum + " Info",
-      callback_data: "/fileinfo " + item.file_unique_id
+      text: "📄 " + fileNum + ". " + (file.fileName.length > 15 ? (file.fileName.slice(0, 15) + "...") : file.fileName),
+      callback_data: "/fileinfo " + file.fileUniqueId
     },
     {
       text: "📊 Traffic (" + (traffic.count || 0) + ")",
-      callback_data: "/fileTraffic " + item.file_unique_id
+      callback_data: "/fileTraffic " + file.fileUniqueId
     }
   ]);
 }
 
-Api.sendMessage({
-  text: txt,
-  parse_mode: "HTML",
-  reply_markup: { inline_keyboard: inlkey }
-});
+if (request.data) {
+  Api.editMessageText({
+    message_id: request.message.message_id,
+    text: txt,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: inlkey }
+  });
+} else {
+  Api.sendMessage({
+    text: txt,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: inlkey }
+  });
+}

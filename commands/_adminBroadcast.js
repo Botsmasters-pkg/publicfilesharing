@@ -10,18 +10,22 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
 var allUsers = Bot.getProperty("allBotUsers", []);
 
-var msg = "📣 *Broadcast System*\n`———————————————————————`\n\n";
-msg += "👥 *Total Registered Users:* *" + allUsers.length + "*\n\n";
-msg += "👉 *Simply send the message you want to broadcast directly:*\n";
-msg += "_(You can send text, photo with caption, or announcement - no slash command needed!)_";
+var msg = "📣 *Broadcast System*\n`———————————————————————`\n\n" +
+  "👥 *Total Registered Bot Users:* *" + allUsers.length + "*\n\n" +
+  "Supported Broadcast Types:\n" +
+  "• *Text Announcement*\n" +
+  "• *Photo with Caption*\n" +
+  "• *Video with Caption*\n\n" +
+  "👉 *Send the message, photo, or video you want to broadcast now:*\n" +
+  "_(No command prefix needed, just send it directly)_";
 
 var keyb = [
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
+  [{ text: "⬅️ Cancel & Back", callback_data: "/admin" }]
 ];
 
 if (request.data) {
@@ -39,5 +43,4 @@ if (request.data) {
   });
 }
 
-// Automatically listen for the next message to broadcast
 Bot.run({ command: "/onBroadcast" });

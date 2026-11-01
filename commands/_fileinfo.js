@@ -13,59 +13,66 @@ CMD*/
 if (!params) return;
 
 var uniqueId = params.trim();
-var result = Bot.getProperty(user.telegramid + "" + uniqueId) || Bot.getProperty("file_" + uniqueId);
-if (!result) {
+var file = Bot.getProperty("file_" + uniqueId) || Bot.getProperty(user.telegramid + "" + uniqueId);
+if (!file) {
   Bot.sendMessage("⚠️ *File not found or expired.*", { parse_mode: "Markdown" });
   return;
 }
 
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
+
+// Strict User Ownership: Only owner or admin can inspect this file dashboard
+if (file.userId && file.userId != user.telegramid && !isAdmin) {
+  Bot.sendMessage("🚫 *Access Denied:* You do not own this file.", { parse_mode: "Markdown" });
+  return;
+}
+
+var traffic = Bot.getProperty("traffic_" + uniqueId, { count: 0 });
+var uniqueLink = file.uniqueLink || ("https://t.me/" + bot.name + "?start=" + uniqueId);
+var fType = (file.fileType || file.mimeType || "document").toUpperCase();
+
+var msg = "*🗂 File Dashboard*\n`———————————————————————`\n" +
+  "📦 *Name:* `" + (file.fileName || "File") + "`\n" +
+  "📊 *Size:* `" + (file.fileSize || "N/A") + "`\n" +
+  "🏷️ *Type:* `" + fType + "`\n" +
+  "📈 *Total Downloads:* *" + (traffic.count || 0) + "*\n" +
+  "📅 *Uploaded At:* _" + (file.timestamp ? file.timestamp.slice(0, 19).replace('T', ' ') : "N/A") + "_\n\n" +
+  "🔗 *Unique Download Link:*\n`" + uniqueLink + "`";
+
 var inlkey = [
   [
-    {
-      text: "❌ Delete File",
-      callback_data: "/deleteFile " + uniqueId
-    },
-    {
-      text: "➰ Share File",
-      callback_data: "/shareFile " + uniqueId
-    }
+    { text: "❌ Delete File", callback_data: "/deleteFile " + uniqueId },
+    { text: "📤 Share Link", url: "https://t.me/share/url?url=" + encodeURIComponent(uniqueLink) + "&text=" + encodeURIComponent("Download " + (file.fileName || "File") + ":") }
   ],
   [
-    {
-      text: "📊 Traffic",
-      callback_data: "/fileTraffic " + uniqueId
-    }
+    { text: "📊 Download Traffic (" + (traffic.count || 0) + ")", callback_data: "/fileTraffic " + uniqueId }
+  ],
+  [
+    { text: "⬅️ Back to My Files", callback_data: "/myfiles" }
   ]
 ];
 
-var caption = "*🗂 File Info*\n`———————————————————————`\n📦 *File Name :* " +
-  (result.file_name || "File") +
-  "\n📊 *File Size :* " +
-  (result.file_size || "N/A") +
-  "\n📁 *File Type :* " +
-  ((result.file_type || result.mime_type || "document").toUpperCase());
-
-if (result.file_type === "photo") {
+if (file.fileType === "photo") {
   Api.sendPhoto({
     chat_id: user.telegramid,
-    photo: result.file_id,
-    caption: caption,
+    photo: file.fileId || file.file_id,
+    caption: msg,
     parse_mode: "Markdown",
     reply_markup: { inline_keyboard: inlkey }
   });
-} else if (result.file_type === "video") {
+} else if (file.fileType === "video") {
   Api.sendVideo({
     chat_id: user.telegramid,
-    video: result.file_id,
-    caption: caption,
+    video: file.fileId || file.file_id,
+    caption: msg,
     parse_mode: "Markdown",
     reply_markup: { inline_keyboard: inlkey }
   });
 } else {
   Api.sendDocument({
     chat_id: user.telegramid,
-    document: result.file_id,
-    caption: caption,
+    document: file.fileId || file.file_id,
+    caption: msg,
     parse_mode: "Markdown",
     reply_markup: { inline_keyboard: inlkey }
   });

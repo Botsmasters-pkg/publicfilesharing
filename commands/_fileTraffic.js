@@ -13,48 +13,42 @@ CMD*/
 if (!params) return;
 
 var uniqueId = params.trim();
-var result = Bot.getProperty(user.telegramid + "" + uniqueId) || Bot.getProperty("file_" + uniqueId);
+var file = Bot.getProperty("file_" + uniqueId) || Bot.getProperty(user.telegramid + "" + uniqueId);
 var traffic = Bot.getProperty("traffic_" + uniqueId, { count: 0, downloaders: [] });
 
-var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
-var isOwner = (result && result.owner_id && result.owner_id == user.telegramid) || (!result) || isAdmin;
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 
-if (!isOwner) {
-  Bot.sendMessage("🚫 *You are not authorized to view this file's traffic.*", { parse_mode: "Markdown" });
+// Strict User Ownership & Privacy: Only file owner or admin can view this file's traffic
+if (file && file.userId && file.userId != user.telegramid && !isAdmin) {
+  Bot.sendMessage("🚫 *Access Denied:* You cannot view traffic for files you do not own.", { parse_mode: "Markdown" });
   return;
 }
 
-var fileName = (result && result.file_name) ? result.file_name : ("File " + uniqueId);
+var fileName = (file && file.fileName) ? file.fileName : ("File " + uniqueId);
 var totalDownloads = traffic.count || 0;
 var downloaders = traffic.downloaders || [];
 
-var txt = "📊 *Download Traffic Report*\n`———————————————————————`\n";
-txt += "📦 *File:* `" + fileName + "`\n";
-txt += "📈 *Total Downloads:* *" + totalDownloads + "*\n\n";
+var txt = "📊 *Personal Download Traffic Report*\n`———————————————————————`\n" +
+  "📦 *File:* `" + fileName + "`\n" +
+  "📈 *Total Successful Downloads:* *" + totalDownloads + "*\n\n";
 
 if (downloaders.length === 0) {
-  txt += "_No users have downloaded this file yet._\n";
+  txt += "_No one has downloaded this file yet._\n\nShare your Unique Link to get downloads!";
 } else {
-  txt += "*👥 Downloader Users (" + downloaders.length + "):*\n";
-  var startIdx = Math.max(0, downloaders.length - 25);
-  for (var i = downloaders.length - 1; i >= startIdx; i--) {
+  txt += "*👥 Download History (Who Downloaded):*\n";
+  // Display recent 30 downloaders
+  var start = Math.max(0, downloaders.length - 30);
+  for (var i = downloaders.length - 1; i >= start; i--) {
     var d = downloaders[i];
     var uName = d.username ? ("@" + d.username) : (d.name || "User");
-    txt += "• " + uName + " (ID: `" + d.id + "`)";
-    if (d.date) {
-      txt += " - _" + d.date + "_";
-    }
-    txt += "\n";
+    txt += "• *" + uName + "*\n";
+    txt += "  └ ID: `#" + d.id + "` | 📅 _" + (d.date || "N/A") + "_\n";
   }
 }
 
 var backKey = [
-  [
-    {
-      text: "⬅️ Back to File",
-      callback_data: "/fileinfo " + uniqueId
-    }
-  ]
+  [{ text: "⬅️ Back to File", callback_data: "/fileinfo " + uniqueId }],
+  [{ text: "📂 Back to My Files", callback_data: "/myfiles" }]
 ];
 
 if (request.data) {
@@ -71,4 +65,3 @@ if (request.data) {
     reply_markup: { inline_keyboard: backKey }
   });
 }
-

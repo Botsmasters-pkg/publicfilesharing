@@ -10,19 +10,40 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-var current = Bot.getProperty("forceChannel", "None");
+var forceChannels = Bot.getProperty("forceChannels", []);
+var activeCount = 0;
+var expiredCount = 0;
+var now = Date.now();
 
-var msg = "🔧 *Force Subscribe / Host Channel*\n`———————————————————————`\n\n";
-msg += "📌 *Current Channel:* `" + current + "`\n\n";
-msg += "👉 *Simply send the Channel @username or ID directly:*\n";
-msg += "_(You don't need to type any slash command, just send @channel or -100...)_";
+for (var i = 0; i < forceChannels.length; i++) {
+  var ch = forceChannels[i];
+  if (!ch.expired && (ch.expiryTime === 0 || now < ch.expiryTime)) {
+    activeCount++;
+  } else {
+    expiredCount++;
+  }
+}
+
+var msg = "🔧 *Force Channels Management*\n`———————————————————————`\n\n" +
+  "Manage mandatory subscription channels with Auto-Expiry timers.\n\n" +
+  "📊 *Overview:*\n" +
+  "• Active Channels: *" + activeCount + "*\n" +
+  "• Expired Channels: *" + expiredCount + "*\n" +
+  "• Total Channels: *" + forceChannels.length + "*\n\n" +
+  "Select an action below:";
 
 var keyb = [
-  [{ text: "❌ Remove Channel", callback_data: "/clearForce" }],
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
+  [
+    { text: "➕ Add Channel", callback_data: "/fcAdd" },
+    { text: "📄 List Channels", callback_data: "/fcList" }
+  ],
+  [
+    { text: "❌ Remove Channel", callback_data: "/fcRemoveMenu" },
+    { text: "⬅️ Back to Admin Panel", callback_data: "/admin" }
+  ]
 ];
 
 if (request.data) {
@@ -39,6 +60,3 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
-
-// Automatically listen for the next message as the new force channel
-Bot.run({ command: "/onSetForce" });

@@ -20,13 +20,18 @@ if (!file) {
   file = Bot.getProperty(id + "" + fil) || Bot.getProperty(uniqueId);
 }
 
-if (!file || !file.file_id) {
-  Bot.sendMessage("⚠️ *File not found or link has expired.*", { parse_mode: "Markdown" });
+if (!file || (!file.fileId && !file.file_id)) {
+  Bot.sendMessage("⚠️ *File Not Found or Link Expired!*", { parse_mode: "Markdown" });
   return;
 }
 
-// Log traffic for owner
-var trafficKey = file.file_unique_id || uniqueId;
+var targetFileId = file.fileId || file.file_id;
+var targetUniqueId = file.fileUniqueId || file.file_unique_id || uniqueId;
+var targetFileName = file.fileName || file.file_name || "File";
+var targetFileType = file.fileType || "document";
+
+// Log download traffic for file owner
+var trafficKey = targetUniqueId;
 var traffic = Bot.getProperty("traffic_" + trafficKey, { count: 0, downloaders: [] });
 traffic.count = (traffic.count || 0) + 1;
 traffic.downloaders = traffic.downloaders || [];
@@ -40,18 +45,30 @@ traffic.downloaders.push({
 });
 Bot.setProperty("traffic_" + trafficKey, traffic, "json");
 
-// Update total downloads stat
-var totalDownloads = Bot.getProperty("totalDownloadsCount", 0) + 1;
-Bot.setProperty("totalDownloadsCount", totalDownloads, "integer");
+// Save to global downloadLogs for stats and CSV export
+var downloadLogs = Bot.getProperty("downloadLogs", []);
+downloadLogs.push({
+  fileId: file.id || 0,
+  fileUniqueId: targetUniqueId,
+  downloaderId: user.telegramid,
+  downloaderName: user.first_name || "User",
+  downloaderUsername: user.username || "",
+  timestamp: new Date().toISOString()
+});
+Bot.setProperty("downloadLogs", downloadLogs, "json");
 
-var caption = "*🗂 File Received!*\n`———————————————————————`\n📦 *File Name :* " + (file.file_name || "File") + "\n\n_Powered by @" + bot.name + "_";
+// Send File according to media type
+var caption = "📥 *File Download Complete!*\n`———————————————————————`\n" +
+  "📦 *Name:* " + targetFileName + "\n" +
+  "📊 *Size:* " + (file.fileSize || "N/A") + "\n\n" +
+  "_Downloaded via @" + bot.name + "_";
 
-if (file.file_type === "photo") {
-  Api.sendPhoto({ chat_id: user.telegramid, photo: file.file_id, caption: caption, parse_mode: "Markdown" });
-} else if (file.file_type === "video") {
-  Api.sendVideo({ chat_id: user.telegramid, video: file.file_id, caption: caption, parse_mode: "Markdown" });
-} else if (file.file_type === "audio") {
-  Api.sendAudio({ chat_id: user.telegramid, audio: file.file_id, caption: caption, parse_mode: "Markdown" });
+if (targetFileType === "photo") {
+  Api.sendPhoto({ chat_id: user.telegramid, photo: targetFileId, caption: caption, parse_mode: "Markdown" });
+} else if (targetFileType === "video") {
+  Api.sendVideo({ chat_id: user.telegramid, video: targetFileId, caption: caption, parse_mode: "Markdown" });
+} else if (targetFileType === "audio" || targetFileType === "voice") {
+  Api.sendAudio({ chat_id: user.telegramid, audio: targetFileId, caption: caption, parse_mode: "Markdown" });
 } else {
-  Api.sendDocument({ chat_id: user.telegramid, document: file.file_id, caption: caption, parse_mode: "Markdown" });
+  Api.sendDocument({ chat_id: user.telegramid, document: targetFileId, caption: caption, parse_mode: "Markdown" });
 }

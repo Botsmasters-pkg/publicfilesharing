@@ -10,25 +10,59 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-var allUsers = Bot.getProperty("allBotUsers", []);
-var allFiles = Bot.getProperty("allBotFiles", []);
-var totalFilesCount = Bot.getProperty("totalFilesCount", allFiles.length);
-var totalDownloads = Bot.getProperty("totalDownloadsCount", 0);
-var storageChannel = Bot.getProperty("storageChannel", "Not Configured");
-var forceChannel = Bot.getProperty("forceChannel", "Not Configured");
+var users = Bot.getProperty("allBotUsers", []);
+var uploads = Bot.getProperty("uploads", []);
+var logs = Bot.getProperty("downloadLogs", []);
 
-var msg = "📈 *Global Bot Statistics*\n`———————————————————————`\n\n";
-msg += "👥 *Total Users:* " + allUsers.length + "\n";
-msg += "📦 *Total Files Uploaded:* " + totalFilesCount + "\n";
-msg += "📥 *Total Downloads:* " + totalDownloads + "\n";
-msg += "🏷️ *Storage Channel:* `" + storageChannel + "`\n";
-msg += "🔧 *Host/Force Channel:* `" + forceChannel + "`\n";
+// Real database calculations
+var totalAttempts = uploads.length;
+var successfulUploads = 0;
+var failedUploads = 0;
+var successfulUsersSet = {};
+var failedUsersSet = {};
+
+for (var i = 0; i < uploads.length; i++) {
+  var up = uploads[i];
+  if (up.status === "successful") {
+    successfulUploads++;
+    if (up.userId) {
+      successfulUsersSet[up.userId] = true;
+    }
+  } else {
+    failedUploads++;
+    if (up.userId) {
+      failedUsersSet[up.userId] = true;
+    }
+  }
+}
+
+var totalSuccessfulUsers = Object.keys(successfulUsersSet).length;
+var totalFailedUsers = Object.keys(failedUsersSet).length;
+var totalDownloads = logs.length;
+var storageChannel = Bot.getProperty("storageChannel", "-1004304151228");
+
+var msg = "📈 *Professional Upload & Bot Statistics*\n`———————————————————————`\n\n" +
+  "👥 *Total Registered Users:* *" + users.length + "*\n\n" +
+  "📦 *Upload Analytics:*\n" +
+  "• Total Upload Attempts: *" + totalAttempts + "*\n" +
+  "• Total Successful Uploads: *" + successfulUploads + "*\n" +
+  "• Total Failed Uploads: *" + failedUploads + "*\n" +
+  "• Total Uploaded Files: *" + successfulUploads + "*\n\n" +
+  "👤 *User Performance:*\n" +
+  "• Total Successful Users: *" + totalSuccessfulUsers + "*\n" +
+  "• Total Failed Users: *" + totalFailedUsers + "*\n\n" +
+  "📥 *Traffic Analytics:*\n" +
+  "• Total Real Downloads: *" + totalDownloads + "*\n\n" +
+  "🗄️ *Storage & System:*\n" +
+  "• Storage Channel: `" + storageChannel + "`\n" +
+  "• Total Storage Records: *" + uploads.length + "*\n\n" +
+  "_All statistics are calculated live from real database records._";
 
 var keyb = [
-  [{ text: "🔄 Refresh", callback_data: "/adminStats" }],
+  [{ text: "🔄 Refresh Stats", callback_data: "/adminStats" }],
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
 ];
 
@@ -46,4 +80,3 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
-

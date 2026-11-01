@@ -10,7 +10,7 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 
 if (!isAdmin) {
   Api.sendMessage({
@@ -22,20 +22,25 @@ if (!isAdmin) {
 
 var keyb = [
   [
-    { text: "📊 Bot Statistics", callback_data: "/adminStats" },
-    { text: "🏷️ Storage Channel", callback_data: "/adminStorage" }
+    { text: "📊 Statistics Dashboard", callback_data: "/adminStats" },
+    { text: "🔧 Force Channels", callback_data: "/adminForceChannel" }
   ],
   [
-    { text: "🔧 Force Sub Channel", callback_data: "/adminForceChannel" },
+    { text: "🏷️ Storage Channel", callback_data: "/adminStorage" },
     { text: "👋 Welcome Message", callback_data: "/adminWelcome" }
   ],
   [
     { text: "📣 Broadcast", callback_data: "/adminBroadcast" },
     { text: "💾 CSV Export", callback_data: "/adminExport" }
+  ],
+  [
+    { text: "🆘 Support Management", callback_data: "/adminSupport" }
   ]
 ];
 
-var msg = "🛠 *Admin Control Panel*\n`———————————————————————`\nWelcome, Admin! (ID: `" + user.telegramid + "`)\nSelect an option below to manage the bot:";
+var msg = "🛠 *Super Admin Control Panel*\n`———————————————————————`\n" +
+  "Welcome, Admin! (ID: `" + user.telegramid + "`)\n\n" +
+  "Select a management section below:";
 
 if (request.data) {
   Api.editMessageText({

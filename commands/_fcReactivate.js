@@ -31,20 +31,16 @@ var msg = "🔄 *Reactivate Channel:* *" + ch.name + "*\n`———————�
 
 var keyb = [
   [
-    { text: "⏱ 5 Minutes", callback_data: "/fcApplyReactivate 5" },
-    { text: "⏱ 10 Minutes", callback_data: "/fcApplyReactivate 10" }
+    { text: "⏱ 5m", callback_data: "/fcApplyReactivate 5" },
+    { text: "⏱ 10m", callback_data: "/fcApplyReactivate 10" },
+    { text: "⏱ 15m", callback_data: "/fcApplyReactivate 15" },
+    { text: "⏱ 30m", callback_data: "/fcApplyReactivate 30" }
   ],
   [
-    { text: "⏱ 15 Minutes", callback_data: "/fcApplyReactivate 15" },
-    { text: "⏱ 30 Minutes", callback_data: "/fcApplyReactivate 30" }
-  ],
-  [
-    { text: "⏱ 1 Hour", callback_data: "/fcApplyReactivate 60" },
-    { text: "⏱ 2 Hours", callback_data: "/fcApplyReactivate 120" }
-  ],
-  [
-    { text: "⏱ 6 Hours", callback_data: "/fcApplyReactivate 360" },
-    { text: "⏱ 12 Hours", callback_data: "/fcApplyReactivate 720" }
+    { text: "⏱ 1h", callback_data: "/fcApplyReactivate 60" },
+    { text: "⏱ 2h", callback_data: "/fcApplyReactivate 120" },
+    { text: "⏱ 6h", callback_data: "/fcApplyReactivate 360" },
+    { text: "⏱ 12h", callback_data: "/fcApplyReactivate 720" }
   ],
   [
     { text: "⏱ 24 Hours", callback_data: "/fcApplyReactivate 1440" },
@@ -69,4 +65,3 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
-

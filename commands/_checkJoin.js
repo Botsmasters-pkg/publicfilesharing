@@ -10,8 +10,6 @@
   group: 
 CMD*/
 
-if (!params) return;
-
 if (request.data) {
   Api.deleteMessage({
     chat_id: request.message.chat.id,
@@ -19,16 +17,21 @@ if (request.data) {
   });
 }
 
+var checkParam = (params && params.trim() !== "") ? params.trim() : "none";
 var forceChannel = Bot.getProperty("forceChannel");
+
 if (!forceChannel) {
-  Bot.runCommand("/downloadDirect " + params);
+  if (checkParam !== "none") {
+    Bot.runCommand("/downloadDirect " + checkParam);
+  } else {
+    Bot.runCommand("/showMenu");
+  }
   return;
 }
 
 Api.getChatMember({
   chat_id: forceChannel,
   user_id: user.telegramid,
-  on_result: "/onCheckJoin " + params,
-  on_error: "/downloadDirect " + params
+  on_result: "/onCheckJoin " + checkParam,
+  on_error: (checkParam !== "none" ? "/downloadDirect " + checkParam : "/showMenu")
 });
-

@@ -33,7 +33,21 @@ Bot.setProperty("userInfo_" + user.telegramid, {
 }, "json");
 
 var isAdmin = (user.telegramid == 1793554159) || Bot.getProperty("admin_" + user.telegramid) || user.is_admin;
+var forceChannel = Bot.getProperty("forceChannel");
 
+// Check Force Channel on bot start or download
+if (forceChannel && !isAdmin) {
+  var p = params ? params.trim() : "none";
+  Api.getChatMember({
+    chat_id: forceChannel,
+    user_id: user.telegramid,
+    on_result: "/onCheckJoin " + p,
+    on_error: (p !== "none" ? "/downloadDirect " + p : "/showMenu")
+  });
+  return;
+}
+
+// If no force channel or user is admin:
 if (!params) {
   var keyboard = "📝 Upload Files,🗂 My Files";
   if (isAdmin) {
@@ -46,18 +60,6 @@ if (!params) {
   Bot.sendKeyboard(keyboard, welcomeText, {
     disable_web_page_preview: true,
     is_reply: true
-  });
-  return;
-}
-
-// Deep link download request
-var forceChannel = Bot.getProperty("forceChannel");
-if (forceChannel && !isAdmin) {
-  Api.getChatMember({
-    chat_id: forceChannel,
-    user_id: user.telegramid,
-    on_result: "/onCheckJoin " + params,
-    on_error: "/downloadDirect " + params
   });
 } else {
   Bot.runCommand("/downloadDirect " + params);

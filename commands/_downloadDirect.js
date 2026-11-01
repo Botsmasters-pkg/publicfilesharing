@@ -12,23 +12,19 @@ CMD*/
 
 if (!params) return;
 
-var uniqueId = params.trim();
-var file = Bot.getProperty("file_" + uniqueId);
+var targetId = params.trim();
+var file = Bot.getProperty("file_" + targetId);
 if (!file) {
-  var id = uniqueId.slice(0, 10);
-  var fil = uniqueId.slice(10, 40);
-  file = Bot.getProperty(id + "" + fil) || Bot.getProperty(uniqueId);
+  var id = targetId.slice(0, 10);
+  var fil = targetId.slice(10, 40);
+  file = Bot.getProperty(id + "" + fil) || Bot.getProperty(targetId);
 }
 
-if (!file || (!file.fileId && !file.file_id)) {
-  Bot.sendMessage("⚠️ *File Not Found or Link Expired!*", { parse_mode: "Markdown" });
-  return;
-}
-
-var targetFileId = file.fileId || file.file_id;
-var targetUniqueId = file.fileUniqueId || file.file_unique_id || uniqueId;
-var targetFileName = file.fileName || file.file_name || "File";
-var targetFileType = file.fileType || "document";
+// targetFileId is either from database record or targetId directly (Telegram File ID)
+var targetFileId = (file && (file.fileId || file.file_id)) ? (file.fileId || file.file_id) : targetId;
+var targetUniqueId = (file && (file.fileUniqueId || file.file_unique_id)) ? (file.fileUniqueId || file.file_unique_id) : targetId;
+var targetFileName = (file && (file.fileName || file.file_name)) ? (file.fileName || file.file_name) : "File";
+var targetFileType = (file && file.fileType) ? file.fileType : "document";
 
 // Full Name & Username Auto-Detection
 var uFirst = user.first_name || "";
@@ -50,11 +46,15 @@ traffic.downloaders.push({
   date: now
 });
 Bot.setProperty("traffic_" + trafficKey, traffic, "json");
+// Also save under targetId if different
+if (targetId !== trafficKey) {
+  Bot.setProperty("traffic_" + targetId, traffic, "json");
+}
 
 // Save to global downloadLogs for stats and CSV export
 var downloadLogs = Bot.getProperty("downloadLogs", []);
 downloadLogs.push({
-  fileId: file.id || 0,
+  fileId: (file && file.id) ? file.id : 0,
   fileUniqueId: targetUniqueId,
   downloaderId: user.telegramid,
   downloaderName: uFull,
@@ -68,7 +68,7 @@ var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxi
 // Send File according to media type
 var caption = "📥 *File Download Complete!*\n`———————————————————————`\n" +
   "📦 *Name:* " + targetFileName + "\n" +
-  "📊 *Size:* " + (file.fileSize || "N/A") + "\n\n" +
+  (file && file.fileSize ? ("📊 *Size:* " + file.fileSize + "\n\n") : "\n") +
   "_Downloaded via @" + botUsername + "_";
 
 if (targetFileType === "photo") {

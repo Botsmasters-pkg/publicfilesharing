@@ -29,7 +29,8 @@ if (file.userId && file.userId != user.telegramid && !isAdmin) {
 
 var traffic = Bot.getProperty("traffic_" + uniqueId, { count: 0 });
 var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
-var uniqueLink = file.uniqueLink || ("https://t.me/" + botUsername + "?start=" + uniqueId);
+var targetFileId = file.fileId || file.file_id || uniqueId;
+var uniqueLink = file.uniqueLink || ("https://t.me/" + botUsername + "?start=" + targetFileId);
 var fType = (file.fileType || file.mimeType || "document").toUpperCase();
 
 var msg = "*🗂 File Dashboard*\n`———————————————————————`\n" +
@@ -56,7 +57,7 @@ var inlkey = [
 if (file.fileType === "photo") {
   Api.sendPhoto({
     chat_id: user.telegramid,
-    photo: file.fileId || file.file_id,
+    photo: targetFileId,
     caption: msg,
     parse_mode: "Markdown",
     reply_markup: { inline_keyboard: inlkey }
@@ -64,7 +65,7 @@ if (file.fileType === "photo") {
 } else if (file.fileType === "video") {
   Api.sendVideo({
     chat_id: user.telegramid,
-    video: file.fileId || file.file_id,
+    video: targetFileId,
     caption: msg,
     parse_mode: "Markdown",
     reply_markup: { inline_keyboard: inlkey }
@@ -72,7 +73,7 @@ if (file.fileType === "photo") {
 } else {
   Api.sendDocument({
     chat_id: user.telegramid,
-    document: file.fileId || file.file_id,
+    document: targetFileId,
     caption: msg,
     parse_mode: "Markdown",
     reply_markup: { inline_keyboard: inlkey }

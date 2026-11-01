@@ -16,3 +16,4 @@ Api.getMe({
 
 var current = Bot.getProperty("bot_username", bot.name);
 Bot.sendMessage("🔄 *Detecting Bot Username...*\nCurrent: @" + current + "\n\n_Refreshed from Telegram API!_", { parse_mode: "Markdown" });
+

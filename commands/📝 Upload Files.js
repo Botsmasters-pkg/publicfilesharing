@@ -73,7 +73,9 @@ var storageChannelId = Bot.getProperty("storageChannel", "-1004304151228");
 
 var uploads = Bot.getProperty("uploads", []);
 var newId = uploads.length > 0 ? (uploads[uploads.length - 1].id + 1) : 1;
-var uniqueLink = "https://t.me/" + botUsername + "?start=" + uniqueId;
+
+// Unique Link formatted with exact Telegram File ID as requested:
+var uniqueLink = "https://t.me/" + botUsername + "?start=" + fileId;
 
 var uploadRecord = {
   id: newId,
@@ -119,6 +121,9 @@ if (isSuccess) {
   uploadRecord.status = "successful";
   uploads.push(uploadRecord);
   Bot.setProperty("uploads", uploads, "json");
+
+  // Save under BOTH File ID and File Unique ID for instant lookup
+  Bot.setProperty("file_" + fileId, uploadRecord, "json");
   Bot.setProperty("file_" + uniqueId, uploadRecord, "json");
 
   // Save to user specific list for My Files
@@ -128,6 +133,7 @@ if (isSuccess) {
 
   // Legacy compatibility
   Bot.setProperty(user.telegramid + "" + uniqueId, uploadRecord, "json");
+  Bot.setProperty(user.telegramid + "" + fileId, uploadRecord, "json");
 
   var keyb = [
     [{ text: "📂 View in My Files", callback_data: "/myfiles" }],

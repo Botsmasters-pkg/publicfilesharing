@@ -14,7 +14,7 @@ var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658")
 if (!isAdmin) return;
 
 if (!params) return;
-var idx = parseInt(params);
+var idx = parseInt(params.trim());
 
 var forceChannels = Bot.getProperty("forceChannels", []);
 if (!forceChannels[idx]) {
@@ -25,9 +25,9 @@ if (!forceChannels[idx]) {
 var ch = forceChannels[idx];
 
 var msg = "⚠️ *Confirm Channel Removal*\n`———————————————————————`\n\n" +
-  "Are you sure you want to remove the channel:\n" +
-  "• Name: *" + ch.name + "*\n" +
-  "• ID: `" + ch.id + "`\n\n" +
+  "Are you sure you want to remove this channel?\n" +
+  "• Channel: `" + (ch.id || ch.name) + "`\n" +
+  "• Type: `" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "`\n\n" +
   "_This will immediately remove its JOIN button from the user panel._";
 
 var keyb = [
@@ -51,4 +51,3 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
-

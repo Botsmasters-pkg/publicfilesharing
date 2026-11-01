@@ -28,7 +28,7 @@ for (var i = 0; i < forceChannels.length; i++) {
 }
 
 var msg = "🔧 *Force Channels Management*\n`———————————————————————`\n\n" +
-  "Manage mandatory subscription channels with Auto-Expiry timers.\n\n" +
+  "Manage mandatory subscription channels and configure Auto-Expiry timers.\n\n" +
   "📊 *Overview:*\n" +
   "• Active Channels: *" + activeCount + "*\n" +
   "• Expired Channels: *" + expiredCount + "*\n" +
@@ -38,10 +38,13 @@ var msg = "🔧 *Force Channels Management*\n`———————————�
 var keyb = [
   [
     { text: "➕ Add Channel", callback_data: "/fcAdd" },
-    { text: "📄 List Channels", callback_data: "/fcList" }
+    { text: "⏱️ Set Expiry Timer", callback_data: "/fcTimerMenu" }
   ],
   [
-    { text: "❌ Remove Channel", callback_data: "/fcRemoveMenu" },
+    { text: "📄 List Channels", callback_data: "/fcList" },
+    { text: "❌ Remove Channel", callback_data: "/fcRemoveMenu" }
+  ],
+  [
     { text: "⬅️ Back to Admin Panel", callback_data: "/admin" }
   ]
 ];

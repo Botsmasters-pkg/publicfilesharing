@@ -41,30 +41,33 @@ for (var i = 0; i < forceChannels.length; i++) {
   }
 
   var statusTxt = isExpired ? "🔴 EXPIRED" : "🟢 ACTIVE";
-  var remainingTxt = "Unlimited";
+  var remainingTxt = "Permanent (No timer)";
 
   if (ch.expiryTime > 0) {
     if (isExpired) {
-      remainingTxt = "0 Mins (Expired)";
+      remainingTxt = "Expired";
     } else {
       var remMs = ch.expiryTime - now;
       var remHours = Math.floor(remMs / (1000 * 60 * 60));
       var remMins = Math.floor((remMs % (1000 * 60 * 60)) / (1000 * 60));
-      remainingTxt = remHours > 0 ? (remHours + "h " + remMins + "m") : (remMins + " mins");
+      remainingTxt = remHours > 0 ? (remHours + "h " + remMins + "m left") : (remMins + " mins left");
     }
   }
 
   var expiryDateTxt = ch.expiryTime > 0 ? new Date(ch.expiryTime).toISOString().slice(0, 16).replace("T", " ") + " UTC" : "Permanent";
 
-  txt += "*" + (i + 1) + ". " + ch.name + "* (" + statusTxt + ")\n";
-  txt += "• ID: `" + ch.id + "` | Type: `" + ch.type.toUpperCase() + "`\n";
-  txt += "• Configured Time: *" + (ch.configuredMinutes > 0 ? (ch.configuredMinutes + "m") : "Permanent") + "*\n";
-  txt += "• Remaining Time: *" + remainingTxt + "*\n";
-  txt += "• Expiry Date: _" + expiryDateTxt + "_\n\n";
+  txt += "*" + (i + 1) + ". " + ch.id + "* (" + statusTxt + ")\n";
+  txt += "• Type: `" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "`\n";
+  txt += "• Timer: *" + remainingTxt + "*\n";
+  txt += "• Expiry: _" + expiryDateTxt + "_\n";
+  if (ch.link) {
+    txt += "• Link: " + ch.link + "\n";
+  }
+  txt += "\n";
 
   // Actions for this channel
   inlkey.push([
-    { text: "🔄 Reactivate " + (i + 1), callback_data: "/fcReactivate " + i },
+    { text: "⏱️ Timer " + (i + 1), callback_data: "/fcSelectTimer " + i },
     { text: "❌ Remove " + (i + 1), callback_data: "/fcRemovePrompt " + i }
   ]);
 }
@@ -73,8 +76,11 @@ for (var i = 0; i < forceChannels.length; i++) {
 Bot.setProperty("forceChannels", forceChannels, "json");
 
 inlkey.push([
-  { text: "➕ Add New Channel", callback_data: "/fcAdd" },
-  { text: "⬅️ Back", callback_data: "/adminForceChannel" }
+  { text: "➕ Add Channel", callback_data: "/fcAdd" },
+  { text: "⏱️ Set Expiry Timer", callback_data: "/fcTimerMenu" }
+]);
+inlkey.push([
+  { text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel" }
 ]);
 
 if (request.data) {
@@ -91,4 +97,3 @@ if (request.data) {
     reply_markup: { inline_keyboard: inlkey }
   });
 }
-

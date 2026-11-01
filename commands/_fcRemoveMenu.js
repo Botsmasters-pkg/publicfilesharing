@@ -22,13 +22,14 @@ if (!forceChannels || forceChannels.length === 0) {
 
 var keyb = [];
 for (var i = 0; i < forceChannels.length; i++) {
+  var label = (i + 1) + ". " + (forceChannels[i].id || forceChannels[i].name || ("Channel " + (i + 1)));
   keyb.push([
-    { text: "🗑️ " + (i + 1) + ". " + forceChannels[i].name, callback_data: "/fcRemovePrompt " + i }
+    { text: "🗑️ " + label, callback_data: "/fcRemovePrompt " + i }
   ]);
 }
 keyb.push([{ text: "⬅️ Back", callback_data: "/adminForceChannel" }]);
 
-var msg = "🗑️ *Select a Force Channel to Remove:*\n`———————————————————————`\nClick on any channel below:";
+var msg = "🗑️ *Select a Force Channel to Remove:*\n`———————————————————————`\nClick on any channel below to remove it:";
 
 if (request.data) {
   Api.editMessageText({
@@ -44,4 +45,3 @@ if (request.data) {
     reply_markup: { inline_keyboard: keyb }
   });
 }
-

@@ -17,9 +17,27 @@ if (params && params.trim() !== "" && params.trim() !== "none") {
 
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 
-var keyboard = "📝 Upload Files,🗂 My Files\n🆘 Support";
+// Primary Keyboard with style: "primary"
+var primaryKeyboard = [
+  [
+    { text: "📝 Upload Files", style: "primary" },
+    { text: "🗂 My Files", style: "primary" }
+  ],
+  [
+    { text: "📊 Traffic", style: "primary" },
+    { text: "🆘 Support", style: "primary" }
+  ]
+];
 if (isAdmin) {
-  keyboard += "\n🛠 Admin Panel";
+  primaryKeyboard.push([
+    { text: "🛠 Admin Panel", style: "primary" }
+  ]);
+}
+
+// Bots.Business native keyboard string
+var bbKeyboard = "📝 Upload Files,🗂 My Files\n📊 Traffic,🆘 Support";
+if (isAdmin) {
+  bbKeyboard += "\n🛠 Admin Panel";
 }
 
 // Full Name & Username Auto-Detection
@@ -51,17 +69,18 @@ var wm = Bot.getProperty("welcomeMessage", {
 
 var defaultText = "👋 Hi " + uMention + (uHandle ? " (" + uHandle + ")" : "") + "!\n\nI am File Store Bot. You can securely upload, store and share your files.\n\nChoose an option below to get started:";
 
-// Send Keyboard
-Bot.sendKeyboard(keyboard, "👇 Use the menu below to navigate:");
+// Send Primary Keyboard
+Bot.sendKeyboard(bbKeyboard, "👇 Use the menu below to navigate:");
 
-// Send Welcome Message
+// Send Welcome Message with reply_markup keyboard
 if (wm.type === "photo" && wm.media) {
   var photoCap = wm.caption ? formatPlaceholders(wm.caption) : defaultText;
   Api.sendPhoto({
     chat_id: user.telegramid,
     photo: wm.media,
     caption: photoCap,
-    parse_mode: "Markdown"
+    parse_mode: "Markdown",
+    reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
   });
 } else if (wm.type === "video" && wm.media) {
   var videoCap = wm.caption ? formatPlaceholders(wm.caption) : defaultText;
@@ -69,14 +88,15 @@ if (wm.type === "photo" && wm.media) {
     chat_id: user.telegramid,
     video: wm.media,
     caption: videoCap,
-    parse_mode: "Markdown"
+    parse_mode: "Markdown",
+    reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
   });
 } else {
-  var welcomeText = wm.text ? formatPlaceholders(wm.text) : defaultText;
+  var textMsg = wm.text ? formatPlaceholders(wm.text) : defaultText;
   Api.sendMessage({
     chat_id: user.telegramid,
-    text: welcomeText,
+    text: textMsg,
     parse_mode: "Markdown",
-    disable_web_page_preview: true
+    reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
   });
 }

@@ -32,6 +32,23 @@ for (var i = 0; i < forceChannels.length; i++) {
   }
 }
 
+// Primary Keyboard with style: "primary"
+var fcPrimaryKeyboard = [
+  [
+    { text: "➕ Add Channel", style: "primary" },
+    { text: "⏱️ Set Expiry Timer", style: "primary" }
+  ],
+  [
+    { text: "📄 List Channels", style: "primary" },
+    { text: "❌ Remove Channel", style: "primary" }
+  ],
+  [
+    { text: "⬅️ Back to Admin Panel", style: "primary" }
+  ]
+];
+
+var bbFcKeyboard = "➕ Add Channel,⏱️ Set Expiry Timer\n📄 List Channels,❌ Remove Channel\n⬅️ Back to Admin Panel";
+
 var msg = "🔧 *Force Channels Management*\n`———————————————————————`\n\n" +
   "Manage mandatory subscription channels (Public, Private, Join Request).\n\n" +
   "📊 *Overview:*\n" +
@@ -55,6 +72,8 @@ var keyb = [
   ]
 ];
 
+Bot.sendKeyboard(bbFcKeyboard, "🔧 Force Channel Menu:");
+
 if (request.data) {
   Api.editMessageText({
     message_id: request.message.message_id,
@@ -66,6 +85,10 @@ if (request.data) {
   Api.sendMessage({
     text: msg,
     parse_mode: "Markdown",
+    reply_markup: { keyboard: fcPrimaryKeyboard, resize_keyboard: true }
+  });
+  Api.sendMessage({
+    text: "👇 Quick Actions:",
     reply_markup: { inline_keyboard: keyb }
   });
 }

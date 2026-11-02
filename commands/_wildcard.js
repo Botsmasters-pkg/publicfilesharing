@@ -13,6 +13,7 @@ CMD*/
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 var adminState = Bot.getProperty("admin_state_" + user.telegramid, "");
 
+// Check active admin text states first
 if (isAdmin && adminState) {
   if (adminState === "waiting_fc_channel") {
     Bot.runCommand("/fcSaveChannel");
@@ -50,12 +51,96 @@ if (request.document || (request.photo && request.photo.length > 0) || request.v
   return;
 }
 
-// Text fallback
+// Primary Keyboard Button Handling
 if (message) {
-  var clean = message.trim().toLowerCase();
-  if (clean === "start" || clean === "menu" || clean === "help") {
+  var t = message.trim();
+  var low = t.toLowerCase();
+
+  // User Primary Keyboard
+  if (t === "📝 Upload Files" || low === "upload files") {
+    Bot.runCommand("📝 Upload Files");
+    return;
+  }
+  if (t === "🗂 My Files" || low === "my files") {
+    Bot.runCommand("🗂 My Files");
+    return;
+  }
+  if (t === "📊 Traffic" || low === "traffic") {
+    Bot.runCommand("/traffic");
+    return;
+  }
+  if (t === "🆘 Support" || low === "support") {
+    Bot.runCommand("🆘 Support");
+    return;
+  }
+  if (t === "🛠 Admin Panel" || low === "admin panel" || low === "/admin") {
+    Bot.runCommand("/admin");
+    return;
+  }
+
+  // Admin Panel Primary Keyboard
+  if (isAdmin) {
+    if (t === "📊 Statistics Dashboard" || low.indexOf("statistics") !== -1) {
+      Bot.runCommand("/adminStats");
+      return;
+    }
+    if (t === "🔧 Force Channels" || low.indexOf("force channel") !== -1) {
+      Bot.runCommand("/adminForceChannel");
+      return;
+    }
+    if (t === "🏷️ Storage Channel" || low.indexOf("storage channel") !== -1) {
+      Bot.runCommand("/adminStorage");
+      return;
+    }
+    if (t === "👋 Welcome Message" || low.indexOf("welcome message") !== -1) {
+      Bot.runCommand("/adminWelcome");
+      return;
+    }
+    if (t === "📣 Broadcast" || low === "broadcast") {
+      Bot.runCommand("/adminBroadcast");
+      return;
+    }
+    if (t === "💾 CSV Export" || low.indexOf("export") !== -1) {
+      Bot.runCommand("/adminExport");
+      return;
+    }
+    if (t === "🆘 Support Management" || low.indexOf("support management") !== -1) {
+      Bot.runCommand("/adminSupport");
+      return;
+    }
+    if (t === "🤖 Refresh Bot Info" || low.indexOf("refresh") !== -1) {
+      Bot.runCommand("/refreshBotInfo");
+      return;
+    }
+    if (t === "➕ Add Channel" || low.indexOf("add channel") !== -1) {
+      Bot.runCommand("/fcAdd");
+      return;
+    }
+    if (t === "⏱️ Set Expiry Timer" || low.indexOf("expiry timer") !== -1) {
+      Bot.runCommand("/fcTimerMenu");
+      return;
+    }
+    if (t === "📄 List Channels" || low.indexOf("list channel") !== -1) {
+      Bot.runCommand("/fcList");
+      return;
+    }
+    if (t === "❌ Remove Channel" || low.indexOf("remove channel") !== -1) {
+      Bot.runCommand("/fcRemoveMenu");
+      return;
+    }
+    if (t === "⬅️ Back to Admin Panel" || low.indexOf("back to admin") !== -1) {
+      Bot.runCommand("/admin");
+      return;
+    }
+    if (t === "⬅️ Back to Main Menu" || low.indexOf("back to main") !== -1) {
+      Bot.runCommand("/showMenu");
+      return;
+    }
+  }
+
+  // General text fallback
+  if (low === "start" || low === "menu" || low === "help") {
     Bot.runCommand("/showMenu");
     return;
   }
 }
-

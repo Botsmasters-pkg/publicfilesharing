@@ -22,6 +22,31 @@ if (!isAdmin) {
 
 var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
 
+// Primary Keyboard with style: "primary"
+var adminPrimaryKeyboard = [
+  [
+    { text: "📊 Statistics Dashboard", style: "primary" },
+    { text: "🔧 Force Channels", style: "primary" }
+  ],
+  [
+    { text: "🏷️ Storage Channel", style: "primary" },
+    { text: "👋 Welcome Message", style: "primary" }
+  ],
+  [
+    { text: "📣 Broadcast", style: "primary" },
+    { text: "💾 CSV Export", style: "primary" }
+  ],
+  [
+    { text: "🆘 Support Management", style: "primary" },
+    { text: "🤖 Refresh Bot Info", style: "primary" }
+  ],
+  [
+    { text: "⬅️ Back to Main Menu", style: "primary" }
+  ]
+];
+
+var bbAdminKeyboard = "📊 Statistics Dashboard,🔧 Force Channels\n🏷️ Storage Channel,👋 Welcome Message\n📣 Broadcast,💾 CSV Export\n🆘 Support Management,🤖 Refresh Bot Info\n⬅️ Back to Main Menu";
+
 var keyb = [
   [
     { text: "📊 Statistics Dashboard", callback_data: "/adminStats" },
@@ -44,7 +69,9 @@ var keyb = [
 var msg = "🛠 *Super Admin Control Panel*\n`———————————————————————`\n" +
   "• *Admin:* `" + user.telegramid + "`\n" +
   "• *Bot Username:* @" + botUsername + "\n\n" +
-  "Select a management section below:";
+  "Select a management section below (using the buttons below or inline):";
+
+Bot.sendKeyboard(bbAdminKeyboard, "🛠 Admin Panel loaded:");
 
 if (request.data) {
   Api.editMessageText({
@@ -57,6 +84,10 @@ if (request.data) {
   Api.sendMessage({
     text: msg,
     parse_mode: "Markdown",
+    reply_markup: { keyboard: adminPrimaryKeyboard, resize_keyboard: true }
+  });
+  Api.sendMessage({
+    text: "👇 Quick Actions:",
     reply_markup: { inline_keyboard: keyb }
   });
 }

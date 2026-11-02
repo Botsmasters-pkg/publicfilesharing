@@ -10,6 +10,8 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
@@ -32,4 +34,3 @@ if (ch.enabled === false) {
 Bot.setProperty("forceChannels", forceChannels, "json");
 
 Bot.runCommand("/fcList");
-

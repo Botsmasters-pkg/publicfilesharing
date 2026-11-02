@@ -10,27 +10,41 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-var forceChannels = Bot.getProperty("forceChannels", []);
+var rawChannels = Bot.getProperty("forceChannels", []);
 var now = Date.now();
 
+// Clean up any corrupted legacy entries
+var forceChannels = [];
+for (var k = 0; k < rawChannels.length; k++) {
+  var c = rawChannels[k];
+  if (c && c.id && c.id.indexOf("/fc") === -1 && c.name !== "/fcStepName" && c.id !== "/fcStepId") {
+    forceChannels.push(c);
+  }
+}
+if (forceChannels.length !== rawChannels.length) {
+  Bot.setProperty("forceChannels", forceChannels, "json");
+}
+
 if (!forceChannels || forceChannels.length === 0) {
-  var emptyMsg = "📄 *Force Channels List*\n`———————————————————————`\n\n_No force channels configured yet._";
+  var emptyMsg = "📄 <b>Force Channels List</b>\n<code>———————————————————————</code>\n\n<i>No active force channels configured yet.</i>";
   var emptyKey = [
     [{ text: "➕ Add Channel", callback_data: "/fcAdd" }],
     [{ text: "⬅️ Back", callback_data: "/adminForceChannel" }]
   ];
   if (request.data) {
-    Api.editMessageText({ message_id: request.message.message_id, text: emptyMsg, parse_mode: "Markdown", reply_markup: { inline_keyboard: emptyKey } });
+    Api.editMessageText({ message_id: request.message.message_id, text: emptyMsg, parse_mode: "HTML", reply_markup: { inline_keyboard: emptyKey } });
   } else {
-    Api.sendMessage({ text: emptyMsg, parse_mode: "Markdown", reply_markup: { inline_keyboard: emptyKey } });
+    Api.sendMessage({ text: emptyMsg, parse_mode: "HTML", reply_markup: { inline_keyboard: emptyKey } });
   }
   return;
 }
 
-var txt = "📄 *Configured Force Channels (" + forceChannels.length + ")*\n`———————————————————————`\n\n";
+var txt = "📄 <b>Configured Force Channels (" + forceChannels.length + ")</b>\n<code>———————————————————————</code>\n\n";
 var inlkey = [];
 
 for (var i = 0; i < forceChannels.length; i++) {
@@ -58,11 +72,11 @@ for (var i = 0; i < forceChannels.length; i++) {
 
   var expiryDateTxt = ch.expiryTime > 0 ? new Date(ch.expiryTime).toISOString().slice(0, 16).replace("T", " ") + " UTC" : "Permanent";
 
-  txt += "*" + (i + 1) + ". " + (ch.name || ch.id) + "*\n";
-  txt += "• ID: `" + ch.id + "`\n";
-  txt += "• Type: `" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "`\n";
+  txt += "<b>" + (i + 1) + ". " + (ch.name || ch.id) + "</b>\n";
+  txt += "• ID: <code>" + ch.id + "</code>\n";
+  txt += "• Type: <code>" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "</code>\n";
   txt += "• Status: " + enableTxt + " | " + statusTxt + "\n";
-  txt += "• Timer: *" + remainingTxt + "*\n";
+  txt += "• Timer: <b>" + remainingTxt + "</b>\n";
   if (ch.link) {
     txt += "• Link: " + ch.link + "\n";
   }
@@ -86,6 +100,7 @@ inlkey.push([
   { text: "⏱️ Set Expiry Timer", callback_data: "/fcTimerMenu" }
 ]);
 inlkey.push([
+  { text: "🗑️ Clear All Channels", callback_data: "/clearForce" },
   { text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel" }
 ]);
 
@@ -93,13 +108,13 @@ if (request.data) {
   Api.editMessageText({
     message_id: request.message.message_id,
     text: txt,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: inlkey }
   });
 } else {
   Api.sendMessage({
     text: txt,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: inlkey }
   });
 }

@@ -110,16 +110,5 @@ if (nextIndex < queue.length) {
       parse_mode: "HTML",
       reply_markup: { inline_keyboard: grid }
     });
-
-    Api.sendMessage({
-      text: "👇 <b>Or tap the button below to verify membership:</b>",
-      parse_mode: "HTML",
-      reply_markup: {
-        keyboard: [
-          [{ text: "🔄 Check Membership", style: "primary" }]
-        ],
-        resize_keyboard: true
-      }
-    });
   }
 }

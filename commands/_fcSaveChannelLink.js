@@ -94,12 +94,14 @@ var newChannel = {
 cleaned.push(newChannel);
 Bot.setProperty("forceChannels", cleaned, "json");
 
-var successMsg = "✅ *Force Channel Added Successfully!*\n`———————————————————————`\n\n" +
-  "• *Channel Target:* `" + id + "`\n" +
-  "• *Channel Type:* `" + type.toUpperCase() + "`\n" +
-  "• *Channel Link:* " + link + "\n" +
-  "• *Status:* 🟢 *ENABLED & Active*\n\n" +
-  "_ℹ️ Note: Auto-expiry timer is OFF by default. You can set a timer anytime from Admin Panel._";
+// Use HTML to prevent errors with underscores in URLs (e.g. +eC3I_WcwKBgwYjVl)
+var successMsg = "✅ <b>Force Channel Added Successfully!</b>\n" +
+  "<code>———————————————————————</code>\n\n" +
+  "• <b>Channel Target:</b> <code>" + id + "</code>\n" +
+  "• <b>Channel Type:</b> <code>" + type.toUpperCase() + "</code>\n" +
+  "• <b>Channel Link:</b> " + link + "\n" +
+  "• <b>Status:</b> 🟢 <b>ENABLED &amp; Active</b>\n\n" +
+  "<i>ℹ️ Note: Auto-expiry timer is OFF by default. You can set a timer anytime from Admin Panel.</i>";
 
 var successKeyboard = [
   [
@@ -114,6 +116,6 @@ var successKeyboard = [
 
 Api.sendMessage({
   text: successMsg,
-  parse_mode: "Markdown",
+  parse_mode: "HTML",
   reply_markup: { keyboard: successKeyboard, resize_keyboard: true }
 });

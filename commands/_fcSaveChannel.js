@@ -113,10 +113,10 @@ if (type === "private" || type === "request") {
     Bot.setProperty("temp_fc_name_" + user.telegramid, name || id, "string");
     Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 
-    var askLinkMsg = "✅ *Channel ID Detected:* `" + id + "`" + (name && name !== id ? ("\n• Title: *" + name + "*") : "") + "\n`———————————————————————`\n\n" +
-      "👉 *Now send the " + (type === "request" ? "Join Request" : "Private") + " Invite Link (Step 2/2):*\n" +
-      "• Example: `https://t.me/+AbCdEfGhIjK`\n\n" +
-      "*(Make sure Join Request is turned ON in the link if this is a Request channel)*";
+    var askLinkMsg = "✅ <b>Channel ID Detected:</b> <code>" + id + "</code>" + (name && name !== id ? ("\n• <b>Title:</b> " + name) : "") + "\n<code>———————————————————————</code>\n\n" +
+      "👉 <b>Now send the " + (type === "request" ? "Join Request" : "Private") + " Invite Link (Step 2/2):</b>\n" +
+      "• Example: <code>https://t.me/+AbCdEfGhIjK</code>\n\n" +
+      "<i>(Make sure Join Request is turned ON in the link if this is a Request channel)</i>";
 
     var cancelPrimaryKeyboard = [
       [{ text: "❌ Cancel", style: "primary" }]
@@ -124,7 +124,7 @@ if (type === "private" || type === "request") {
 
     Api.sendMessage({
       text: askLinkMsg,
-      parse_mode: "Markdown",
+      parse_mode: "HTML",
       reply_markup: { keyboard: cancelPrimaryKeyboard, resize_keyboard: true }
     });
     return;
@@ -163,12 +163,12 @@ var newChannel = {
 cleanedChannels.push(newChannel);
 Bot.setProperty("forceChannels", cleanedChannels, "json");
 
-var successMsg = "✅ *Force Channel Added Successfully!*\n`———————————————————————`\n\n" +
-  "• *Channel Target:* `" + id + "`\n" +
-  "• *Channel Type:* `" + type.toUpperCase() + "`\n" +
-  "• *Channel Link:* " + finalLink + "\n" +
-  "• *Status:* 🟢 *ENABLED & Active*\n\n" +
-  "_ℹ️ Note: Auto-expiry timer is OFF by default. You can set a timer anytime from Admin Panel._";
+var successMsg = "✅ <b>Force Channel Added Successfully!</b>\n<code>———————————————————————</code>\n\n" +
+  "• <b>Channel Target:</b> <code>" + id + "</code>\n" +
+  "• <b>Channel Type:</b> <code>" + type.toUpperCase() + "</code>\n" +
+  "• <b>Channel Link:</b> " + finalLink + "\n" +
+  "• <b>Status:</b> 🟢 <b>ENABLED &amp; Active</b>\n\n" +
+  "<i>ℹ️ Note: Auto-expiry timer is OFF by default. You can set a timer anytime from Admin Panel.</i>";
 
 var successKeyboard = [
   [
@@ -183,6 +183,6 @@ var successKeyboard = [
 
 Api.sendMessage({
   text: successMsg,
-  parse_mode: "Markdown",
+  parse_mode: "HTML",
   reply_markup: { keyboard: successKeyboard, resize_keyboard: true }
 });

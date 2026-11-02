@@ -15,40 +15,13 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-function escapeHtml(str) {
-  if (!str) return "";
-  return str.toString()
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-var text = "";
-if (params && params.trim() !== "") {
-  text = params.trim();
-} else if (request && request.message && request.message.text) {
+var text = (params || "").trim();
+if (!text && request && request.message && request.message.text) {
   text = request.message.text.trim();
+}
+
+if (text) {
+  Bot.runCommand("/fcSaveChannel " + text);
 } else {
-  text = Bot.getProperty("temp_last_text_" + user.telegramid, "");
+  Bot.runCommand("/fcAdd");
 }
-
-text = text.replace(/^\/onSetForce\s*/i, "").trim();
-if (!text) return;
-
-if (text === "❌ Cancel" || text === "/cancel") {
-  Bot.sendMessage("Action cancelled.");
-  Bot.runCommand("/admin");
-  return;
-}
-
-Bot.setProperty("forceChannel", text, "string");
-
-var keyb = [
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
-];
-
-Api.sendMessage({
-  text: "✅ <b>Force Subscribe Channel successfully set to:</b> <code>" + escapeHtml(text) + "</code>\n\nUsers will now be asked to join this channel before downloading files.",
-  parse_mode: "HTML",
-  reply_markup: { inline_keyboard: keyb }
-});

@@ -96,6 +96,9 @@ var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxi
 
 // Storage Channel Config (Default: -1004304151228)
 var storageChannelId = Bot.getProperty("storageChannel", "-1004304151228");
+if (!storageChannelId || storageChannelId === "@https:" || storageChannelId.indexOf("https:") !== -1) {
+  storageChannelId = "-1004304151228";
+}
 
 var uploads = Bot.getProperty("uploads", []);
 var newId = uploads.length > 0 ? (uploads[uploads.length - 1].id + 1) : 1;

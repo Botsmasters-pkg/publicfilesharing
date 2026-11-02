@@ -28,6 +28,14 @@ Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 
 var currentStorage = Bot.getProperty("storageChannel", "-1004304151228");
+
+// Self-healing: if corrupted or invalid (e.g. '@https:'), heal to default
+if (!currentStorage || currentStorage === "@https:" || currentStorage === "@" || currentStorage === "undefined" || currentStorage.indexOf("https:") !== -1) {
+  currentStorage = "-1004304151228";
+  Bot.setProperty("storageChannel", "-1004304151228", "string");
+  Bot.setProperty("storageChannelTitle", "Primary System Storage", "string");
+}
+
 var storageTitle = Bot.getProperty("storageChannelTitle", "");
 var isDefault = (currentStorage === "-1004304151228");
 
@@ -38,17 +46,17 @@ var msg = "📦 <b>Storage Channel Management</b>\n" +
   "• <b>Channel Status:</b> 🟢 <b>Active &amp; Operational</b>\n" +
   "• <b>Configuration Mode:</b> " + (isDefault ? "<i>Default System Storage</i>" : "<b>Custom Storage Channel</b>") + "\n" +
   "• <b>Primary System Default:</b> <code>-1004304151228</code>\n\n" +
-  "To connect a new storage channel with automatic permission verification, tap the button below:";
+  "To connect a new storage channel with automatic permission verification, tap <b>⚙️ Set New Storage Channel</b> below:";
 
 var keyb = [
   [{ text: "⚙️ Set New Storage Channel", callback_data: "/setNewStorage", style: "primary" }],
-  [{ text: "⚙️ Restore System Storage", callback_data: "/resetStorageDefault", style: "primary" }],
+  [{ text: "🔄 Restore Default Storage", callback_data: "/resetStorageDefault", style: "primary" }],
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
 var storagePrimaryKeyboard = [
   [{ text: "⚙️ Set New Storage Channel", style: "primary" }],
-  [{ text: "⚙️ Restore System Storage", style: "primary" }],
+  [{ text: "🔄 Restore Default Storage", style: "primary" }],
   [{ text: "⬅️ Back to Admin Panel", style: "primary" }]
 ];
 

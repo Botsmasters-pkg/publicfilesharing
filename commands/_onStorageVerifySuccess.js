@@ -97,7 +97,7 @@ var successMsg = "🎉 <b>Storage Channel Successfully Connected & Verified!</b>
 
 var primaryKeyboard = [
   [{ text: "⚙️ Set New Storage Channel", style: "primary" }],
-  [{ text: "⚙️ Restore System Storage", style: "primary" }],
+  [{ text: "🏷️ Storage Channel", style: "primary" }],
   [{ text: "⬅️ Back to Admin Panel", style: "primary" }]
 ];
 

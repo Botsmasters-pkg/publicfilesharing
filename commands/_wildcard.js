@@ -81,6 +81,17 @@ if (isAdmin && adminState) {
   }
 }
 
+// Smart Admin Shortcut: If admin sends a channel ID or forwards a channel post directly
+if (isAdmin && !adminState) {
+  var isChannelForward = (request && request.message && request.message.forward_from_chat && request.message.forward_from_chat.id);
+  var isChannelIdText = incomingText && (incomingText.match(/^-100\d{8,}$/) || incomingText.match(/^100\d{8,}$/));
+  if (isChannelForward || isChannelIdText) {
+    var directChannelInput = isChannelForward ? request.message.forward_from_chat.id.toString() : incomingText;
+    Bot.runCommand("/onSetStorage " + directChannelInput);
+    return;
+  }
+}
+
 // Direct File Upload Support: if any user sends a document, photo, video, or audio
 if (request.document || (request.photo && request.photo.length > 0) || request.video || request.audio) {
   Bot.runCommand("📝 Upload Files");
@@ -130,16 +141,17 @@ if (incomingText) {
       Bot.runCommand("/adminForceChannel");
       return;
     }
-    if (t === "🏷️ Storage Channel" || low.indexOf("storage channel") !== -1) {
-      Bot.runCommand("/adminStorage");
-      return;
-    }
-    if (t === "⚙️ Set New Storage Channel" || low.indexOf("set new storage") !== -1) {
+    // Storage Channel Management Controls
+    if (t === "⚙️ Set New Storage Channel" || low.indexOf("set new storage") !== -1 || low === "/setnewstorage") {
       Bot.runCommand("/setNewStorage");
       return;
     }
-    if (t === "⚙️ Restore System Storage" || t === "🔄 Reset to Default Storage" || low.indexOf("restore system storage") !== -1 || low.indexOf("reset to default storage") !== -1) {
+    if (t === "🔄 Restore Default Storage" || t === "⚙️ Restore System Storage" || t === "🔄 Reset to Default Storage" || low.indexOf("restore system storage") !== -1 || low.indexOf("restore default") !== -1 || low.indexOf("reset to default") !== -1 || low === "/resetstoragedefault") {
       Bot.runCommand("/resetStorageDefault");
+      return;
+    }
+    if (t === "🏷️ Storage Channel" || t === "📦 Storage Channel" || low === "storage channel" || low === "🏷️ storage channel" || low === "📦 storage channel" || low === "/storage" || low === "/adminstorage") {
+      Bot.runCommand("/adminStorage");
       return;
     }
     if (t === "👋 Welcome Message" || low.indexOf("welcome message") !== -1) {

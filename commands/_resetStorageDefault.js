@@ -18,6 +18,8 @@ if (!isAdmin) return;
 Bot.setProperty("storageChannel", "-1004304151228", "string");
 Bot.setProperty("storageChannelTitle", "Primary System Storage", "string");
 Bot.setProperty("storageChannelUsername", "", "string");
+Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 
 var keyb = [
   [{ text: "⚙️ Set New Storage Channel", callback_data: "/setNewStorage", style: "primary" }],

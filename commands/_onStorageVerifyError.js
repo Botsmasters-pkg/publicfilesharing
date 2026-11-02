@@ -53,7 +53,7 @@ var failMsg = "❌ <b>Storage Channel Verification Failed!</b>\n" +
 
 var failKeyboard = [
   [{ text: "⚙️ Set New Storage Channel", style: "primary" }],
-  [{ text: "⚙️ Restore System Storage", style: "primary" }],
+  [{ text: "🏷️ Storage Channel", style: "primary" }],
   [{ text: "⬅️ Back to Admin Panel", style: "primary" }]
 ];
 

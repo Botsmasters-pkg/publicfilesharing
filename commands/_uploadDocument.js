@@ -73,6 +73,9 @@ Bot.setProperty("totalFilesCount", totalCount, "integer");
 
 // Forward to Storage Channel if configured
 var storageChannel = Bot.getProperty("storageChannel", "-1004304151228");
+if (!storageChannel || storageChannel === "@https:" || storageChannel.indexOf("https:") !== -1) {
+  storageChannel = "-1004304151228";
+}
 if (storageChannel) {
   try {
     var caption = "📦 <b>Storage Backup</b>\n" +

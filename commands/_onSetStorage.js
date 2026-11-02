@@ -51,12 +51,12 @@ if (text === "❌ Cancel" || text === "/cancel" || text.toLowerCase() === "cance
 }
 
 // Quick Reset check
-if (text === "⚙️ Restore System Storage" || text === "🔄 Reset to Default Storage" || text === "/resetStorageDefault") {
+if (text === "🔄 Restore Default Storage" || text === "⚙️ Restore System Storage" || text === "🔄 Reset to Default Storage" || text === "/resetStorageDefault") {
   Bot.runCommand("/resetStorageDefault");
   return;
 }
 
-// Strict Format Validation: Only accept valid Telegram Channel ID, @username, or t.me link
+// Strict Format Validation & Normalization
 var candidateId = "";
 
 if (text.indexOf("https://t.me/") === 0 || text.indexOf("http://t.me/") === 0 || text.indexOf("t.me/") === 0) {
@@ -84,7 +84,7 @@ if (!candidateId) {
     "You provided: <code>" + escapeHtml(text) + "</code>\n\n" +
     "❌ Random links, websites, group IDs, or arbitrary text are not accepted.\n\n" +
     "👉 <b>Acceptable Formats:</b>\n" +
-    "• Numeric Channel ID: <code>-1001234567890</code>\n" +
+    "• Numeric Channel ID: <code>-1003946288718</code>\n" +
     "• Public Username: <code>@MyChannel</code>\n" +
     "• Or simply <b>Forward any post</b> from your storage channel here!\n\n" +
     "<i>Please send a valid channel ID or tap ❌ Cancel below.</i>";

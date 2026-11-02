@@ -16,17 +16,23 @@ var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658")
 if (!isAdmin) return;
 
 Bot.setProperty("storageChannel", "-1004304151228", "string");
+Bot.setProperty("storageChannelTitle", "Primary System Storage", "string");
+Bot.setProperty("storageChannelUsername", "", "string");
 
 var keyb = [
-  [{ text: "⬅️ Back to Storage Settings", callback_data: "/adminStorage", style: "primary" }]
+  [{ text: "⚙️ Set New Storage Channel", callback_data: "/setNewStorage", style: "primary" }],
+  [{ text: "⬅️ Back to Storage Settings", callback_data: "/adminStorage", style: "primary" }],
+  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
 var msg = "✅ <b>Storage Channel Restored to System Default!</b>\n" +
   "<code>———————————————————————</code>\n\n" +
-  "• <b>Active Storage Channel:</b> <code>-1004304151228</code>\n\n" +
+  "• <b>Active Storage Channel:</b> <code>-1004304151228</code>\n" +
+  "• <b>Status:</b> 🟢 <b>Default Operational</b>\n\n" +
   "<i>All upcoming uploads will automatically backup to the primary system storage channel.</i>";
 
 var storagePrimaryKeyboard = [
+  [{ text: "⚙️ Set New Storage Channel", style: "primary" }],
   [{ text: "🏷️ Storage Channel", style: "primary" }],
   [{ text: "⬅️ Back to Admin Panel", style: "primary" }]
 ];

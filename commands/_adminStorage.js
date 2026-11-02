@@ -23,26 +23,31 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-Bot.setProperty("admin_state_" + user.telegramid, "waiting_storage", "string");
+// Clear any dangling waiting state so input is not asked automatically upon opening
+Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 
 var currentStorage = Bot.getProperty("storageChannel", "-1004304151228");
+var storageTitle = Bot.getProperty("storageChannelTitle", "");
+var isDefault = (currentStorage === "-1004304151228");
 
 var msg = "📦 <b>Storage Channel Management</b>\n" +
   "<code>———————————————————————</code>\n\n" +
   "• <b>Active Storage Channel:</b> <code>" + escapeHtml(currentStorage) + "</code>\n" +
+  (storageTitle && !isDefault ? ("• <b>Channel Name:</b> <b>" + escapeHtml(storageTitle) + "</b>\n") : "") +
+  "• <b>Channel Status:</b> 🟢 <b>Active &amp; Operational</b>\n" +
+  "• <b>Configuration Mode:</b> " + (isDefault ? "<i>Default System Storage</i>" : "<b>Custom Storage Channel</b>") + "\n" +
   "• <b>Primary System Default:</b> <code>-1004304151228</code>\n\n" +
-  "👉 <b>How to configure Storage Channel:</b>\n" +
-  "• Send the <b>Numeric Chat ID</b> (e.g. <code>-1004304151228</code>)\n" +
-  "• Or send <b>@Username</b> (e.g. <code>@MyStorageBackup</code>)\n" +
-  "• Or simply <b>forward any post</b> from your storage channel here!\n\n" +
-  "<i>⚠️ Note: The bot MUST be an Administrator in your storage channel with 'Post Messages' permission.</i>";
+  "To connect a new storage channel with automatic permission verification, tap the button below:";
 
 var keyb = [
+  [{ text: "⚙️ Set New Storage Channel", callback_data: "/setNewStorage", style: "primary" }],
   [{ text: "⚙️ Restore System Storage", callback_data: "/resetStorageDefault", style: "primary" }],
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
 var storagePrimaryKeyboard = [
+  [{ text: "⚙️ Set New Storage Channel", style: "primary" }],
   [{ text: "⚙️ Restore System Storage", style: "primary" }],
   [{ text: "⬅️ Back to Admin Panel", style: "primary" }]
 ];

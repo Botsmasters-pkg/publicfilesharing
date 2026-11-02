@@ -38,50 +38,85 @@ text = text.replace(/^\/onSetStorage\s*/i, "").trim();
 
 if (!text) return;
 
-if (text === "❌ Cancel" || text === "/cancel" || text.toLowerCase() === "cancel") {
+// Cancel check
+if (text === "❌ Cancel" || text === "/cancel" || text.toLowerCase() === "cancel" || text === "⬅️ Cancel") {
   Bot.setProperty("admin_state_" + user.telegramid, "", "string");
   Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
-  Bot.sendMessage("Action cancelled.");
-  Bot.runCommand("/admin");
+  Api.sendMessage({
+    text: "❌ <b>Channel configuration cancelled.</b>\nActive storage channel remains unchanged.",
+    parse_mode: "HTML"
+  });
+  Bot.runCommand("/adminStorage");
   return;
 }
 
+// Quick Reset check
 if (text === "⚙️ Restore System Storage" || text === "🔄 Reset to Default Storage" || text === "/resetStorageDefault") {
   Bot.runCommand("/resetStorageDefault");
   return;
 }
 
-// Format channel identifier cleanly
-var cleanStorage = text;
-if (cleanStorage.indexOf("http") === 0 || cleanStorage.indexOf("t.me/") !== -1) {
-  var cleanUser = cleanStorage.replace(/https?:\/\/t\.me\//i, "").replace("@", "").replace(/\/.*/, "").trim();
-  cleanStorage = "@" + cleanUser;
-} else if (cleanStorage.match(/^-?\d+$/)) {
-  // If numeric ID
-  if (!cleanStorage.startsWith("-")) {
-    cleanStorage = "-100" + cleanStorage.replace(/^100/, "");
-  } else if (!cleanStorage.startsWith("-100") && cleanStorage.length > 7) {
-    cleanStorage = "-100" + cleanStorage.replace(/^-/, "");
+// Strict Format Validation: Only accept valid Telegram Channel ID, @username, or t.me link
+var candidateId = "";
+
+if (text.indexOf("https://t.me/") === 0 || text.indexOf("http://t.me/") === 0 || text.indexOf("t.me/") === 0) {
+  var cleanUser = text.replace(/https?:\/\/t\.me\//i, "").replace("@", "").replace(/\/.*/, "").trim();
+  if (cleanUser && cleanUser.match(/^[a-zA-Z0-9_]{4,32}$/) && !cleanUser.startsWith("+")) {
+    candidateId = "@" + cleanUser;
   }
-} else if (!cleanStorage.startsWith("@") && !cleanStorage.startsWith("-")) {
-  cleanStorage = "@" + cleanStorage;
+} else if (text.startsWith("@")) {
+  var userHandle = text.replace("@", "").trim();
+  if (userHandle.match(/^[a-zA-Z0-9_]{4,32}$/)) {
+    candidateId = "@" + userHandle;
+  }
+} else if (text.match(/^-?100\d{8,}$/)) {
+  candidateId = text.startsWith("-") ? text : ("-" + text);
+} else if (text.match(/^\d{8,}$/)) {
+  candidateId = "-100" + text;
+} else if (text.match(/^-\d{8,}$/)) {
+  candidateId = "-100" + text.replace(/^-/, "");
 }
 
-Bot.setProperty("admin_state_" + user.telegramid, "", "string");
-Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
-Bot.setProperty("storageChannel", cleanStorage, "string");
-
-var storagePrimaryKeyboard = [
-  [{ text: "🏷️ Storage Channel", style: "primary" }],
-  [{ text: "⬅️ Back to Admin Panel", style: "primary" }]
-];
-
-Api.sendMessage({
-  text: "✅ <b>Storage Channel Successfully Set!</b>\n" +
+// If format is invalid (random text, website link, etc.), reject immediately!
+if (!candidateId) {
+  var rejectMsg = "⚠️ <b>Invalid Channel Format!</b>\n" +
     "<code>———————————————————————</code>\n\n" +
-    "• <b>Active Storage Channel:</b> <code>" + escapeHtml(cleanStorage) + "</code>\n\n" +
-    "All uploaded files, photos, videos, and documents will automatically be backed up to this channel.\n\n" +
-    "<i>(Ensure the bot is an Administrator in that channel with 'Post Messages' permission)</i>",
-  parse_mode: "HTML",
-  reply_markup: { keyboard: storagePrimaryKeyboard, resize_keyboard: true }
+    "You provided: <code>" + escapeHtml(text) + "</code>\n\n" +
+    "❌ Random links, websites, group IDs, or arbitrary text are not accepted.\n\n" +
+    "👉 <b>Acceptable Formats:</b>\n" +
+    "• Numeric Channel ID: <code>-1001234567890</code>\n" +
+    "• Public Username: <code>@MyChannel</code>\n" +
+    "• Or simply <b>Forward any post</b> from your storage channel here!\n\n" +
+    "<i>Please send a valid channel ID or tap ❌ Cancel below.</i>";
+
+  Api.sendMessage({
+    text: rejectMsg,
+    parse_mode: "HTML",
+    reply_markup: {
+      keyboard: [[{ text: "❌ Cancel", style: "primary" }]],
+      resize_keyboard: true
+    }
+  });
+  return;
+}
+
+// Notify admin that live verification is starting
+Api.sendMessage({
+  text: "🔍 <b>Verifying Channel Destination...</b>\n\n" +
+    "• Testing target: <code>" + escapeHtml(candidateId) + "</code>\n" +
+    "• Verifying bot administrator access &amp; posting permissions...",
+  parse_mode: "HTML"
 });
+
+// Perform live permission verification via Telegram API test post
+try {
+  Api.sendMessage({
+    chat_id: candidateId,
+    text: "🤖 <b>Storage Channel Verification Ping</b>\n<i>Verifying bot post permissions...</i>",
+    parse_mode: "HTML",
+    on_result: "/onStorageVerifySuccess " + candidateId,
+    on_error: "/onStorageVerifyError " + candidateId
+  });
+} catch (e) {
+  Bot.runCommand("/onStorageVerifyError " + candidateId);
+}

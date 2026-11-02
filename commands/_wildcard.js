@@ -134,6 +134,10 @@ if (incomingText) {
       Bot.runCommand("/adminStorage");
       return;
     }
+    if (t === "⚙️ Set New Storage Channel" || low.indexOf("set new storage") !== -1) {
+      Bot.runCommand("/setNewStorage");
+      return;
+    }
     if (t === "⚙️ Restore System Storage" || t === "🔄 Reset to Default Storage" || low.indexOf("restore system storage") !== -1 || low.indexOf("reset to default storage") !== -1) {
       Bot.runCommand("/resetStorageDefault");
       return;

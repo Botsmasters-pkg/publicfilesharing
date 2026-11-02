@@ -89,11 +89,11 @@ for (var i = 0; i < forceChannels.length; i++) {
 
   // Actions for this channel
   inlkey.push([
-    { text: isEnabled ? "🟢 Turn Off (Disable)" : "⚪ Turn On (Enable)", callback_data: "/fcToggle " + i },
-    { text: "⏱️ Timer", callback_data: "/fcSelectTimer " + i }
+    { text: isEnabled ? "🟢 Turn Off (Disable)" : "⚪ Turn On (Enable)", callback_data: "/fcToggle " + i, style: "primary" },
+    { text: "⏱️ Timer", callback_data: "/fcSelectTimer " + i, style: "primary" }
   ]);
   inlkey.push([
-    { text: "❌ Remove Channel " + (i + 1), callback_data: "/fcRemovePrompt " + i }
+    { text: "❌ Remove Channel " + (i + 1), callback_data: "/fcRemovePrompt " + i, style: "primary" }
   ]);
 }
 
@@ -101,12 +101,12 @@ for (var i = 0; i < forceChannels.length; i++) {
 Bot.setProperty("forceChannels", forceChannels, "json");
 
 inlkey.push([
-  { text: "➕ Add Channel", callback_data: "/fcAdd" },
-  { text: "⏱️ Set Expiry Timer", callback_data: "/fcTimerMenu" }
+  { text: "➕ Add Channel", callback_data: "/fcAdd", style: "primary" },
+  { text: "⏱️ Set Expiry Timer", callback_data: "/fcTimerMenu", style: "primary" }
 ]);
 inlkey.push([
-  { text: "🗑️ Clear All Channels", callback_data: "/clearForce" },
-  { text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel" }
+  { text: "🗑️ Clear All Channels", callback_data: "/clearForce", style: "primary" },
+  { text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel", style: "primary" }
 ]);
 
 var fcListPrimaryKeyboard = [

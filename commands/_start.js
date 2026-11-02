@@ -82,7 +82,8 @@ if (activeChannels.length > 0 && !isAdmin) {
     }
     currentRow.push({
       text: "JOIN",
-      url: link
+      url: link,
+      style: "primary"
     });
 
     if (currentRow.length === 2) {
@@ -96,7 +97,7 @@ if (activeChannels.length > 0 && !isAdmin) {
 
   // Add the Check Membership button below the 2x2 grid
   grid.push([
-    { text: "🔄 Check Membership", callback_data: "/checkJoin " + checkParam }
+    { text: "🔄 Check Membership", callback_data: "/checkJoin " + checkParam, style: "primary" }
   ]);
 
   var alertMsg = "📢 <b>Join Required Channel" + (activeChannels.length > 1 ? "s" : "") + "</b>\n<code>———————————————————————</code>\n\n" +

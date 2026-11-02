@@ -37,15 +37,20 @@ var ch = forceChannels[idx];
 var msg = "⚠️ <b>Confirm Channel Removal</b>\n" +
   "<code>———————————————————————</code>\n\n" +
   "Are you sure you want to remove this channel?\n" +
-  "• <b>Channel:</b> <code>" + escapeHtml(ch.id || ch.name) + "</code>\n" +
+  "• <b>Channel #" + (idx + 1) + ":</b> <code>" + escapeHtml(ch.id || ch.name) + "</code>\n" +
   "• <b>Type:</b> <code>" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "</code>\n\n" +
   "<i>This will immediately remove its JOIN button from the user panel.</i>";
 
 var keyb = [
   [
-    { text: "🗑️ Yes, Remove Channel", callback_data: "/fcRemoveConfirm " + idx },
-    { text: "❌ Cancel", callback_data: "/fcList" }
+    { text: "🗑️ Yes, Remove Channel", callback_data: "/fcRemoveConfirm " + idx, style: "primary" },
+    { text: "❌ Cancel", callback_data: "/fcList", style: "primary" }
   ]
+];
+
+var removePromptPrimaryKeyboard = [
+  [{ text: "🗑️ Yes, Remove Channel " + (idx + 1), style: "primary" }],
+  [{ text: "⬅️ Back to Force Channels", style: "primary" }]
 ];
 
 if (request.data) {
@@ -59,6 +64,6 @@ if (request.data) {
   Api.sendMessage({
     text: msg,
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: keyb }
+    reply_markup: { keyboard: removePromptPrimaryKeyboard, resize_keyboard: true }
   });
 }

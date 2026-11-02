@@ -89,7 +89,8 @@ if (nextIndex < queue.length) {
 
       row.push({
         text: "JOIN",
-        url: uLink
+        url: uLink,
+        style: "primary"
       });
 
       if (row.length === 2) {
@@ -102,7 +103,7 @@ if (nextIndex < queue.length) {
     }
 
     grid.push([
-      { text: "🔄 Check Membership", callback_data: "/checkJoin " + checkParam }
+      { text: "🔄 Check Membership", callback_data: "/checkJoin " + checkParam, style: "primary" }
     ]);
 
     Api.sendMessage({

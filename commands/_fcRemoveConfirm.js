@@ -35,13 +35,27 @@ if (forceChannels[idx]) {
   Bot.setProperty("forceChannels", forceChannels, "json");
 }
 
-var msg = "🗑️ <b>Channel Removed!</b>\n" +
-  "<code>———————————————————————</code>\n" +
-  "Channel <code>" + escapeHtml(removedName) + "</code> has been successfully deleted from Force Channels.";
+var msg = "🗑️ <b>Channel Removed Successfully!</b>\n" +
+  "<code>———————————————————————</code>\n\n" +
+  "Channel <code>" + escapeHtml(removedName) + "</code> has been deleted from Force Channels.";
 
 var keyb = [
-  [{ text: "📄 View Remaining Channels", callback_data: "/fcList" }],
-  [{ text: "⬅️ Back", callback_data: "/adminForceChannel" }]
+  [{ text: "📄 View Remaining Channels", callback_data: "/fcList", style: "primary" }],
+  [{ text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel", style: "primary" }]
+];
+
+var fcPrimaryKeyboard = [
+  [
+    { text: "➕ Add Channel", style: "primary" },
+    { text: "⏱️ Set Expiry Timer", style: "primary" }
+  ],
+  [
+    { text: "📄 List Channels", style: "primary" },
+    { text: "❌ Remove Channel", style: "primary" }
+  ],
+  [
+    { text: "⬅️ Back to Force Channels", style: "primary" }
+  ]
 ];
 
 if (request.data) {
@@ -55,6 +69,6 @@ if (request.data) {
   Api.sendMessage({
     text: msg,
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: keyb }
+    reply_markup: { keyboard: fcPrimaryKeyboard, resize_keyboard: true }
   });
 }

@@ -10,6 +10,8 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 
 if (!isAdmin) {
@@ -20,7 +22,11 @@ if (!isAdmin) {
   return;
 }
 
-var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
+// Clear any dangling admin text state
+Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
+
+var botUsername = (Bot.getProperty("bot_username") || bot.name || "toxicfighterobot").replace("@", "");
 
 // Primary Keyboard with style: "primary"
 var adminPrimaryKeyboard = [
@@ -45,8 +51,6 @@ var adminPrimaryKeyboard = [
   ]
 ];
 
-var bbAdminKeyboard = "📊 Statistics Dashboard,🔧 Force Channels\n🏷️ Storage Channel,👋 Welcome Message\n📣 Broadcast,💾 CSV Export\n🆘 Support Management,🤖 Refresh Bot Info\n⬅️ Back to Main Menu";
-
 var keyb = [
   [
     { text: "📊 Statistics Dashboard", callback_data: "/adminStats" },
@@ -69,9 +73,7 @@ var keyb = [
 var msg = "🛠 *Super Admin Control Panel*\n`———————————————————————`\n" +
   "• *Admin:* `" + user.telegramid + "`\n" +
   "• *Bot Username:* @" + botUsername + "\n\n" +
-  "Select a management section below (using the buttons below or inline):";
-
-Bot.sendKeyboard(bbAdminKeyboard, "🛠 Admin Panel loaded:");
+  "Select a management section below using the keyboard buttons:";
 
 if (request.data) {
   Api.editMessageText({
@@ -85,9 +87,5 @@ if (request.data) {
     text: msg,
     parse_mode: "Markdown",
     reply_markup: { keyboard: adminPrimaryKeyboard, resize_keyboard: true }
-  });
-  Api.sendMessage({
-    text: "👇 Quick Actions:",
-    reply_markup: { inline_keyboard: keyb }
   });
 }

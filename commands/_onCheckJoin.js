@@ -25,13 +25,12 @@ if (ch) {
     // Channel is joined!
   } else if (ch.type === "request") {
     var hasReq = Bot.getProperty("join_req_" + ch.id + "_" + user.telegramid);
-    if (!hasReq) {
-      try {
-        Api.approveChatJoinRequest({
-          chat_id: ch.id,
-          user_id: user.telegramid
-        });
-      } catch (e) {}
+    if (hasReq) {
+      // Join request received: verified immediately!
+    } else {
+      var unjoined = Bot.getProperty("verify_unjoined_" + user.telegramid, []);
+      unjoined.push(ch);
+      Bot.setProperty("verify_unjoined_" + user.telegramid, unjoined, "json");
     }
   } else {
     // Channel not joined: add to unjoined list

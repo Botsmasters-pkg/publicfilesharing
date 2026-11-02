@@ -57,7 +57,7 @@ function formatPlaceholders(text) {
 
 // Welcome Message (Admin Customizable: Text, Photo, or Video with dynamic placeholders)
 var wm = Bot.getProperty("welcomeMessage");
-if (!wm || !wm.type || (wm.text && (wm.text.indexOf("/") === 0 || wm.text === "/onSetWelcome"))) {
+if (!wm || !wm.type || (wm.text && (wm.text.indexOf("/") === 0 || wm.text === "/onSetWelcome")) || (wm.caption && (wm.caption.indexOf("/") === 0 || wm.caption === "/onSetWelcome"))) {
   wm = { type: "text", text: "" };
   Bot.setProperty("welcomeMessage", null);
 }
@@ -68,7 +68,7 @@ var defaultText = "👋 Hi " + uMention + (uHandle ? " (" + uHandle + ")" : "") 
 
 // Send single clean message with Primary Keyboard
 if (wm.type === "photo" && wm.media) {
-  var photoCap = wm.caption ? formatPlaceholders(wm.caption) : defaultText;
+  var photoCap = (wm.caption && wm.caption.indexOf("/") !== 0) ? formatPlaceholders(wm.caption) : defaultText;
   Api.sendPhoto({
     chat_id: user.telegramid,
     photo: wm.media,
@@ -77,7 +77,7 @@ if (wm.type === "photo" && wm.media) {
     reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
   });
 } else if (wm.type === "video" && wm.media) {
-  var videoCap = wm.caption ? formatPlaceholders(wm.caption) : defaultText;
+  var videoCap = (wm.caption && wm.caption.indexOf("/") !== 0) ? formatPlaceholders(wm.caption) : defaultText;
   Api.sendVideo({
     chat_id: user.telegramid,
     video: wm.media,

@@ -10,14 +10,29 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-if (!message) return;
-var text = message.trim();
+// Extract actual user input cleanly
+var text = "";
+if (params && params.trim() !== "") {
+  text = params.trim();
+} else if (request && request.message && request.message.text) {
+  text = request.message.text.trim();
+} else {
+  text = Bot.getProperty("temp_last_text_" + user.telegramid, "");
+}
+
+// Strip command invocation if leaked
+text = text.replace(/^\/fcSaveChannelLink\s*/i, "").trim();
+
+if (!text) return;
 
 if (text === "/cancel" || text === "❌ Cancel" || text.toLowerCase() === "cancel") {
   Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+  Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
   Bot.sendMessage("❌ Channel addition cancelled.");
   Bot.runCommand("/adminForceChannel");
   return;
@@ -29,9 +44,16 @@ var type = Bot.getProperty("temp_fc_type_" + user.telegramid, "private");
 var forceChannels = Bot.getProperty("forceChannels", []);
 
 var link = text;
+if (link.indexOf("http") !== 0) {
+  link = "https://" + link.replace(/^\/+/, "");
+}
 
-// Clear admin waiting state
+// Clear admin waiting states and temps
 Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+Bot.setProperty("temp_fc_id_" + user.telegramid, "", "string");
+Bot.setProperty("temp_fc_name_" + user.telegramid, "", "string");
+Bot.setProperty("temp_fc_type_" + user.telegramid, "", "string");
+Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 
 var newChannel = {
   id: id,

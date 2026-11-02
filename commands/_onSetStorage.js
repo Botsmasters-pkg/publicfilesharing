@@ -10,20 +10,36 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+if (!user) return;
+
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-if (!message) return;
+// Extract actual user input cleanly
+var text = "";
+if (params && params.trim() !== "") {
+  text = params.trim();
+} else if (request && request.message && request.message.text) {
+  text = request.message.text.trim();
+} else {
+  text = Bot.getProperty("temp_last_text_" + user.telegramid, "");
+}
 
-var text = message.trim();
-if (text === "❌ Cancel" || text === "/cancel") {
+// Strip command invocation if leaked
+text = text.replace(/^\/onSetStorage\s*/i, "").trim();
+
+if (!text) return;
+
+if (text === "❌ Cancel" || text === "/cancel" || text.toLowerCase() === "cancel") {
   Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+  Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
   Bot.sendMessage("Action cancelled.");
   Bot.runCommand("/admin");
   return;
 }
 
 Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 Bot.setProperty("storageChannel", text, "string");
 
 var keyb = [

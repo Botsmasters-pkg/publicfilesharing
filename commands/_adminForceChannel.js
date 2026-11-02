@@ -10,10 +10,14 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
+// Clear any dangling admin text state
 Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 
 var forceChannels = Bot.getProperty("forceChannels", []);
 var activeCount = 0;
@@ -47,8 +51,6 @@ var fcPrimaryKeyboard = [
   ]
 ];
 
-var bbFcKeyboard = "➕ Add Channel,⏱️ Set Expiry Timer\n📄 List Channels,❌ Remove Channel\n⬅️ Back to Admin Panel";
-
 var msg = "🔧 *Force Channels Management*\n`———————————————————————`\n\n" +
   "Manage mandatory subscription channels (Public, Private, Join Request).\n\n" +
   "📊 *Overview:*\n" +
@@ -72,8 +74,6 @@ var keyb = [
   ]
 ];
 
-Bot.sendKeyboard(bbFcKeyboard, "🔧 Force Channel Menu:");
-
 if (request.data) {
   Api.editMessageText({
     message_id: request.message.message_id,
@@ -86,9 +86,5 @@ if (request.data) {
     text: msg,
     parse_mode: "Markdown",
     reply_markup: { keyboard: fcPrimaryKeyboard, resize_keyboard: true }
-  });
-  Api.sendMessage({
-    text: "👇 Quick Actions:",
-    reply_markup: { inline_keyboard: keyb }
   });
 }

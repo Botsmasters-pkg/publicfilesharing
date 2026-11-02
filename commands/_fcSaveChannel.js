@@ -10,15 +10,32 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-var hasForward = request.message && request.message.forward_from_chat;
-if (!message && !hasForward) return;
+var hasForward = request && request.message && request.message.forward_from_chat;
 
-var text = (message || "").trim();
+// Extract actual user input cleanly
+var text = "";
+if (params && params.trim() !== "") {
+  text = params.trim();
+} else if (request && request.message && request.message.text) {
+  text = request.message.text.trim();
+} else {
+  text = Bot.getProperty("temp_last_text_" + user.telegramid, "");
+}
+
+// Strip command invocation if leaked
+text = text.replace(/^\/fcSaveChannel\s*/i, "").trim();
+
+if (!text && !hasForward) return;
+
 if (text === "/cancel" || text === "❌ Cancel" || text.toLowerCase() === "cancel") {
   Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+  Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
+  Bot.setProperty("temp_fc_link_" + user.telegramid, "", "string");
   Bot.sendMessage("❌ Channel addition cancelled.");
   Bot.runCommand("/adminForceChannel");
   return;
@@ -28,10 +45,9 @@ var type = Bot.getProperty("temp_fc_type_" + user.telegramid, "public");
 var forceChannels = Bot.getProperty("forceChannels", []);
 
 var id = "";
-var link = "";
+var link = Bot.getProperty("temp_fc_link_" + user.telegramid, "");
 var name = "";
 
-// Check if message was forwarded from a channel
 if (hasForward) {
   var fwChat = request.message.forward_from_chat;
   id = fwChat.id.toString();
@@ -49,10 +65,6 @@ if (hasForward) {
       var cleanUser = text.replace(/https?:\/\/t\.me\//i, "").replace("/", "").trim();
       id = "@" + cleanUser;
       name = "@" + cleanUser;
-    } else if (text.indexOf("@") === 0) {
-      id = text;
-      name = text;
-      link = "https://t.me/" + text.replace("@", "");
     } else {
       id = "@" + text.replace("@", "");
       name = id;
@@ -61,32 +73,44 @@ if (hasForward) {
   } else {
     // Private or Request channel
     if (parts.length >= 2) {
-      id = parts[0];
-      link = parts[1];
+      // User passed both ID and Link on a single line
+      var p0 = parts[0];
+      var p1 = parts[1];
+      if (p0.indexOf("http") === 0) {
+        link = p0;
+        id = p1;
+      } else {
+        id = p0;
+        link = p1;
+      }
       name = id;
     } else {
-      id = parts[0];
-      if (id.indexOf("http") === 0) {
-        link = id;
-        id = "Channel_" + (forceChannels.length + 1);
-        name = "Channel " + (forceChannels.length + 1);
+      // Single token sent: could be Chat ID or Invite Link
+      if (text.indexOf("http") === 0 || text.indexOf("t.me") === 0) {
+        link = text.indexOf("http") === 0 ? text : ("https://" + text);
+        id = "";
       } else {
-        name = id;
+        id = text;
+        name = text;
       }
     }
   }
 }
 
-if (!id) {
-  Bot.sendMessage("⚠️ Could not detect channel. Please send username (e.g. `@MyChannel`) or channel link.");
-  return;
+// Ensure id and name are never command strings
+if (id && id.indexOf("/fc") === 0) {
+  id = "";
+}
+if (name && name.indexOf("/fc") === 0) {
+  name = "";
 }
 
-// If link is still empty and channel is private or request, ask for invite link!
-if (!link && (type === "private" || type === "request")) {
+// Case 1: ID detected, but Link is needed for private/request
+if (id && !link && (type === "private" || type === "request")) {
   Bot.setProperty("admin_state_" + user.telegramid, "waiting_fc_link", "string");
   Bot.setProperty("temp_fc_id_" + user.telegramid, id, "string");
   Bot.setProperty("temp_fc_name_" + user.telegramid, name || id, "string");
+  Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 
   var askLinkMsg = "✅ *Channel ID Detected:* `" + id + "`" + (name ? ("\n• Title: *" + name + "*") : "") + "\n`———————————————————————`\n\n" +
     "👉 *Now send the " + (type === "request" ? "Join Request" : "Private") + " Invite Link:*\n" +
@@ -104,15 +128,47 @@ if (!link && (type === "private" || type === "request")) {
   return;
 }
 
-// Clear admin waiting state
+// Case 2: Link provided first, but numeric Chat ID is missing
+if (!id && link && (type === "private" || type === "request")) {
+  Bot.setProperty("admin_state_" + user.telegramid, "waiting_fc_id", "string");
+  Bot.setProperty("temp_fc_link_" + user.telegramid, link, "string");
+  Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
+
+  var askIdMsg = "✅ *Invite Link Detected:* " + link + "\n`———————————————————————`\n\n" +
+    "👉 *Now send the Numeric Chat ID of this channel:*\n" +
+    "_(Example: `-1001234567890`)_\n" +
+    "_Tip: You can forward any post from that channel to get its ID._";
+
+  var cancelKey2 = [
+    [{ text: "⬅️ Cancel", callback_data: "/adminForceChannel" }]
+  ];
+
+  Api.sendMessage({
+    text: askIdMsg,
+    parse_mode: "Markdown",
+    reply_markup: { inline_keyboard: cancelKey2 }
+  });
+  return;
+}
+
+if (!id) {
+  Bot.sendMessage("⚠️ Could not detect channel. Please send username (e.g. `@MyChannel`) or channel link.");
+  return;
+}
+
+// Clear admin waiting states
 Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
+Bot.setProperty("temp_fc_link_" + user.telegramid, "", "string");
+
+var finalLink = link || ("https://t.me/" + id.replace("@", ""));
 
 // Complete the addition
 var newChannel = {
   id: id,
   name: name || id,
   type: type,
-  link: link || ("https://t.me/" + id.replace("@", "")),
+  link: finalLink,
   addedAt: Date.now(),
   expiryTime: 0,
   configuredMinutes: 0,
@@ -126,7 +182,7 @@ Bot.setProperty("forceChannels", forceChannels, "json");
 var successMsg = "✅ *Force Channel Added Successfully!*\n`———————————————————————`\n\n" +
   "• *Channel Target:* `" + id + "`\n" +
   "• *Channel Type:* `" + type.toUpperCase() + "`\n" +
-  "• *Channel Link:* " + (link || "Auto-detected") + "\n" +
+  "• *Channel Link:* " + finalLink + "\n" +
   "• *Status:* 🟢 *ENABLED & Active*\n\n" +
   "_ℹ️ Note: Auto-expiry timer is OFF by default. You can set a timer anytime from Admin Panel._";
 

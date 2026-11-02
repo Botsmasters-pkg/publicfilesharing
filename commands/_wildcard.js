@@ -15,34 +15,44 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 var adminState = Bot.getProperty("admin_state_" + user.telegramid, "");
 
+var incomingText = "";
+if (request && request.message && request.message.text) {
+  incomingText = request.message.text.trim();
+} else if (message) {
+  incomingText = message.trim();
+}
+
 // Check active admin text states first
 if (isAdmin && adminState) {
-  if (adminState === "waiting_fc_channel") {
-    Bot.runCommand("/fcSaveChannel");
+  // Save raw input to prevent command string overwrite
+  Bot.setProperty("temp_last_text_" + user.telegramid, incomingText, "string");
+
+  if (adminState === "waiting_fc_channel" || adminState === "waiting_fc_id") {
+    Bot.runCommand("/fcSaveChannel " + incomingText);
     return;
   }
   if (adminState === "waiting_fc_link") {
-    Bot.runCommand("/fcSaveChannelLink");
+    Bot.runCommand("/fcSaveChannelLink " + incomingText);
     return;
   }
   if (adminState === "waiting_custom_timer") {
-    Bot.runCommand("/onFcCustomTimer");
+    Bot.runCommand("/onFcCustomTimer " + incomingText);
     return;
   }
   if (adminState === "waiting_storage") {
-    Bot.runCommand("/onSetStorage");
+    Bot.runCommand("/onSetStorage " + incomingText);
     return;
   }
   if (adminState === "waiting_welcome") {
-    Bot.runCommand("/onSetWelcome");
+    Bot.runCommand("/onSetWelcome " + incomingText);
     return;
   }
   if (adminState === "waiting_broadcast") {
-    Bot.runCommand("/onBroadcast");
+    Bot.runCommand("/onBroadcast " + incomingText);
     return;
   }
   if (adminState === "waiting_support") {
-    Bot.runCommand("/onSetSupport");
+    Bot.runCommand("/onSetSupport " + incomingText);
     return;
   }
 }
@@ -54,8 +64,8 @@ if (request.document || (request.photo && request.photo.length > 0) || request.v
 }
 
 // Primary Keyboard Button Handling
-if (message) {
-  var t = message.trim();
+if (incomingText) {
+  var t = incomingText;
   var low = t.toLowerCase();
 
   // User Primary Keyboard
@@ -141,8 +151,8 @@ if (message) {
   }
 
   // General text fallback
-  if (low === "start" || low === "menu" || low === "help") {
-    Bot.runCommand("/showMenu");
+  if (t === "/start") {
+    Bot.runCommand("/start");
     return;
   }
 }

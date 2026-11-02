@@ -104,17 +104,23 @@ inlkey.push([
   { text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel" }
 ]);
 
+var fcListPrimaryKeyboard = [
+  [
+    { text: "➕ Add Channel", style: "primary" },
+    { text: "⏱️ Set Expiry Timer", style: "primary" }
+  ],
+  [
+    { text: "❌ Remove Channel", style: "primary" },
+    { text: "⬅️ Back to Force Channels", style: "primary" }
+  ]
+];
+
 if (request.data) {
-  Api.editMessageText({
-    message_id: request.message.message_id,
-    text: txt,
-    parse_mode: "HTML",
-    reply_markup: { inline_keyboard: inlkey }
-  });
-} else {
-  Api.sendMessage({
-    text: txt,
-    parse_mode: "HTML",
-    reply_markup: { inline_keyboard: inlkey }
-  });
+  try { Api.deleteMessage({ message_id: request.message.message_id }); } catch (e) {}
 }
+
+Api.sendMessage({
+  text: txt,
+  parse_mode: "HTML",
+  reply_markup: { keyboard: fcListPrimaryKeyboard, resize_keyboard: true }
+});

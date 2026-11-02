@@ -10,6 +10,8 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
@@ -40,21 +42,18 @@ if (type === "public") {
     "*(Make sure the bot is added as Administrator in the channel)*";
 }
 
-var keyb = [
-  [{ text: "⬅️ Cancel", callback_data: "/adminForceChannel" }]
+var cancelPrimaryKeyboard = [
+  [{ text: "❌ Cancel", style: "primary" }]
 ];
 
 if (request.data) {
-  Api.editMessageText({
-    message_id: request.message.message_id,
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
-} else {
-  Api.sendMessage({
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
+  try {
+    Api.deleteMessage({ message_id: request.message.message_id });
+  } catch (e) {}
 }
+
+Api.sendMessage({
+  text: msg,
+  parse_mode: "Markdown",
+  reply_markup: { keyboard: cancelPrimaryKeyboard, resize_keyboard: true }
+});

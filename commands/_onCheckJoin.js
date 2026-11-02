@@ -108,5 +108,16 @@ if (nextIndex < queue.length) {
       parse_mode: "Markdown",
       reply_markup: { inline_keyboard: grid }
     });
+
+    Api.sendMessage({
+      text: "👇 *Or tap the button below to verify membership:*",
+      parse_mode: "Markdown",
+      reply_markup: {
+        keyboard: [
+          [{ text: "🔄 Check Membership", style: "primary" }]
+        ],
+        resize_keyboard: true
+      }
+    });
   }
 }

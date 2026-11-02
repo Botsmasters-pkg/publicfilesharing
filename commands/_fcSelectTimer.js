@@ -17,6 +17,7 @@ if (!isAdmin) return;
 
 if (!params) return;
 var idx = parseInt(params.trim());
+Bot.setProperty("temp_fc_custom_idx_" + user.telegramid, idx, "integer");
 
 var forceChannels = Bot.getProperty("forceChannels", []);
 if (!forceChannels[idx]) {
@@ -44,49 +45,38 @@ var msg = "⏱️ *Set Timer for Channel #" + (idx + 1) + "*\n`—————�
   "• *Target:* `" + ch.id + "`\n" +
   "• *Type:* `" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "`\n" +
   "• *Current Setting:* *" + currentTimerTxt + "*\n\n" +
-  "👉 *Select Auto-Expiry Duration:*\n" +
+  "👉 *Select Auto-Expiry Duration below:*\n" +
   "_(The channel will automatically disappear from the user panel after this timer)_";
 
-var keyb = [
+var primaryTimerKeyboard = [
   [
-    { text: "⏱️ 5 Minutes", callback_data: "/fcApplyTimer " + idx + " 5" },
-    { text: "⏱️ 10 Minutes", callback_data: "/fcApplyTimer " + idx + " 10" }
+    { text: "⏱️ 5 Minutes", style: "primary" },
+    { text: "⏱️ 10 Minutes", style: "primary" }
   ],
   [
-    { text: "⏱️ 15 Minutes", callback_data: "/fcApplyTimer " + idx + " 15" },
-    { text: "⏱️ 30 Minutes", callback_data: "/fcApplyTimer " + idx + " 30" }
+    { text: "⏱️ 30 Minutes", style: "primary" },
+    { text: "⏱️ 1 Hour", style: "primary" }
   ],
   [
-    { text: "⏱️ 1 Hour", callback_data: "/fcApplyTimer " + idx + " 60" },
-    { text: "⏱️ 2 Hours", callback_data: "/fcApplyTimer " + idx + " 120" }
+    { text: "⏱️ 1 Day", style: "primary" },
+    { text: "✏️ Custom Timer", style: "primary" }
   ],
   [
-    { text: "⏱️ 6 Hours", callback_data: "/fcApplyTimer " + idx + " 360" },
-    { text: "⏱️ 12 Hours", callback_data: "/fcApplyTimer " + idx + " 720" }
+    { text: "♾️ Permanent (Turn Off)", style: "primary" }
   ],
   [
-    { text: "⏱️ 24 Hours", callback_data: "/fcApplyTimer " + idx + " 1440" },
-    { text: "⏳ Custom Time", callback_data: "/fcCustomTimer " + idx }
-  ],
-  [
-    { text: "♾️ Permanent (Remove Timer)", callback_data: "/fcApplyTimer " + idx + " 0" }
-  ],
-  [
-    { text: "⬅️ Back to Channels", callback_data: "/fcTimerMenu" }
+    { text: "⬅️ Back to Force Channels", style: "primary" }
   ]
 ];
 
 if (request.data) {
-  Api.editMessageText({
-    message_id: request.message.message_id,
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
-} else {
-  Api.sendMessage({
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
+  try {
+    Api.deleteMessage({ message_id: request.message.message_id });
+  } catch (e) {}
 }
+
+Api.sendMessage({
+  text: msg,
+  parse_mode: "Markdown",
+  reply_markup: { keyboard: primaryTimerKeyboard, resize_keyboard: true }
+});

@@ -22,28 +22,31 @@ if (!forceChannels || forceChannels.length === 0) {
   return;
 }
 
-var keyb = [];
+var removePrimaryKeyboard = [];
+var rRow = [];
 for (var i = 0; i < forceChannels.length; i++) {
-  var label = (i + 1) + ". " + (forceChannels[i].id || forceChannels[i].name || ("Channel " + (i + 1)));
-  keyb.push([
-    { text: "🗑️ " + label, callback_data: "/fcRemovePrompt " + i }
-  ]);
+  rRow.push({ text: "❌ Remove Channel " + (i + 1), style: "primary" });
+  if (rRow.length === 2) {
+    removePrimaryKeyboard.push(rRow);
+    rRow = [];
+  }
 }
-keyb.push([{ text: "⬅️ Back", callback_data: "/adminForceChannel" }]);
+if (rRow.length > 0) {
+  removePrimaryKeyboard.push(rRow);
+}
+removePrimaryKeyboard.push([{ text: "🗑️ Clear All Channels", style: "primary" }]);
+removePrimaryKeyboard.push([{ text: "⬅️ Back to Force Channels", style: "primary" }]);
 
-var msg = "🗑️ *Select a Force Channel to Remove:*\n`———————————————————————`\nClick on any channel below to remove it:";
+var msg = "🗑️ *Select a Force Channel to Remove:*\n`———————————————————————`\nClick on any channel button below to remove it:";
 
 if (request.data) {
-  Api.editMessageText({
-    message_id: request.message.message_id,
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
-} else {
-  Api.sendMessage({
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
+  try {
+    Api.deleteMessage({ message_id: request.message.message_id });
+  } catch (e) {}
 }
+
+Api.sendMessage({
+  text: msg,
+  parse_mode: "Markdown",
+  reply_markup: { keyboard: removePrimaryKeyboard, resize_keyboard: true }
+});

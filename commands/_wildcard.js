@@ -22,6 +22,19 @@ if (request && request.message && request.message.text) {
   incomingText = message.trim();
 }
 
+// Global Cancel check for admin states
+if (incomingText === "❌ Cancel" || incomingText === "⬅️ Cancel" || incomingText.toLowerCase() === "cancel" || incomingText === "/cancel") {
+  if (isAdmin && adminState) {
+    Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+    Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
+    Bot.setProperty("temp_fc_id_" + user.telegramid, "", "string");
+    Bot.setProperty("temp_fc_link_" + user.telegramid, "", "string");
+    Bot.sendMessage("❌ Operation cancelled.");
+    Bot.runCommand("/adminForceChannel");
+    return;
+  }
+}
+
 // Check active admin text states first
 if (isAdmin && adminState) {
   // Save raw input to prevent command string overwrite
@@ -67,6 +80,12 @@ if (request.document || (request.photo && request.photo.length > 0) || request.v
 if (incomingText) {
   var t = incomingText;
   var low = t.toLowerCase();
+
+  // User Verification Button
+  if (t === "🔄 Check Membership" || low.indexOf("check membership") !== -1) {
+    Bot.runCommand("/checkJoin");
+    return;
+  }
 
   // User Primary Keyboard
   if (t === "📝 Upload Files" || low === "upload files") {
@@ -146,6 +165,78 @@ if (incomingText) {
     }
     if (t === "⬅️ Back to Main Menu" || low.indexOf("back to main") !== -1) {
       Bot.runCommand("/showMenu");
+      return;
+    }
+
+    // Force Channel Type Selection (Primary Keyboard)
+    if (t === "📢 Public Channel" || low.indexOf("public channel") !== -1) {
+      Bot.runCommand("/fcStepType public");
+      return;
+    }
+    if (t === "🔒 Private Channel" || low.indexOf("private channel") !== -1) {
+      Bot.runCommand("/fcStepType private");
+      return;
+    }
+    if (t === "📩 Private Request Channel" || low.indexOf("request channel") !== -1) {
+      Bot.runCommand("/fcStepType request");
+      return;
+    }
+    if (t === "⬅️ Cancel & Back" || low.indexOf("cancel & back") !== -1) {
+      Bot.runCommand("/adminForceChannel");
+      return;
+    }
+    if (t === "⬅️ Back to Force Channels" || low.indexOf("back to force") !== -1) {
+      Bot.runCommand("/adminForceChannel");
+      return;
+    }
+    if (t === "🗑️ Clear All Channels" || low.indexOf("clear all") !== -1) {
+      Bot.runCommand("/clearForce");
+      return;
+    }
+
+    // Force Channel Timer Selection (Primary Keyboard)
+    var chTimerMatch = t.match(/^⏱️\s*Channel\s*(\d+)/i);
+    if (chTimerMatch) {
+      var cIdx = parseInt(chTimerMatch[1]) - 1;
+      Bot.runCommand("/fcSelectTimer " + cIdx);
+      return;
+    }
+
+    var currentTimerIdx = Bot.getProperty("temp_fc_custom_idx_" + user.telegramid, 0);
+    if (t === "⏱️ 5 Minutes" || low === "5 minutes") {
+      Bot.runCommand("/fcApplyTimer " + currentTimerIdx + " 5");
+      return;
+    }
+    if (t === "⏱️ 10 Minutes" || low === "10 minutes") {
+      Bot.runCommand("/fcApplyTimer " + currentTimerIdx + " 10");
+      return;
+    }
+    if (t === "⏱️ 30 Minutes" || low === "30 minutes") {
+      Bot.runCommand("/fcApplyTimer " + currentTimerIdx + " 30");
+      return;
+    }
+    if (t === "⏱️ 1 Hour" || low === "1 hour") {
+      Bot.runCommand("/fcApplyTimer " + currentTimerIdx + " 60");
+      return;
+    }
+    if (t === "⏱️ 1 Day" || low === "1 day") {
+      Bot.runCommand("/fcApplyTimer " + currentTimerIdx + " 1440");
+      return;
+    }
+    if (t === "✏️ Custom Timer" || low.indexOf("custom timer") !== -1) {
+      Bot.runCommand("/fcCustomTimer " + currentTimerIdx);
+      return;
+    }
+    if (t === "♾️ Permanent (Turn Off)" || low.indexOf("permanent") !== -1) {
+      Bot.runCommand("/fcApplyTimer " + currentTimerIdx + " 0");
+      return;
+    }
+
+    // Force Channel Remove (Primary Keyboard)
+    var chRemoveMatch = t.match(/^❌\s*Remove\s*Channel\s*(\d+)/i);
+    if (chRemoveMatch) {
+      var rIdx = parseInt(chRemoveMatch[1]) - 1;
+      Bot.runCommand("/fcRemovePrompt " + rIdx);
       return;
     }
   }

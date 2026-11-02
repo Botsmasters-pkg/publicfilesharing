@@ -116,14 +116,14 @@ if (id && !link && (type === "private" || type === "request")) {
     "👉 *Now send the " + (type === "request" ? "Join Request" : "Private") + " Invite Link:*\n" +
     "_(Example: `https://t.me/+AbCdEfGhIjK`)_";
 
-  var cancelKey = [
-    [{ text: "⬅️ Cancel", callback_data: "/adminForceChannel" }]
+  var cancelPrimaryKeyboard = [
+    [{ text: "❌ Cancel", style: "primary" }]
   ];
 
   Api.sendMessage({
     text: askLinkMsg,
     parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: cancelKey }
+    reply_markup: { keyboard: cancelPrimaryKeyboard, resize_keyboard: true }
   });
   return;
 }
@@ -139,14 +139,14 @@ if (!id && link && (type === "private" || type === "request")) {
     "_(Example: `-1001234567890`)_\n" +
     "_Tip: You can forward any post from that channel to get its ID._";
 
-  var cancelKey2 = [
-    [{ text: "⬅️ Cancel", callback_data: "/adminForceChannel" }]
+  var cancelPrimaryKeyboard2 = [
+    [{ text: "❌ Cancel", style: "primary" }]
   ];
 
   Api.sendMessage({
     text: askIdMsg,
     parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: cancelKey2 }
+    reply_markup: { keyboard: cancelPrimaryKeyboard2, resize_keyboard: true }
   });
   return;
 }

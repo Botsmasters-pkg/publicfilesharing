@@ -22,21 +22,20 @@ if (!forceChannels || forceChannels.length === 0) {
   var emptyMsg = "⏱️ *Force Channel Auto-Expiry Timer*\n`———————————————————————`\n\n" +
     "⚠️ _No force channels found! Please add a channel first._";
   var emptyKey = [
-    [{ text: "➕ Add Channel", callback_data: "/fcAdd" }],
-    [{ text: "⬅️ Back", callback_data: "/adminForceChannel" }]
+    [{ text: "➕ Add Channel", style: "primary" }],
+    [{ text: "⬅️ Back to Force Channels", style: "primary" }]
   ];
   if (request.data) {
-    Api.editMessageText({ message_id: request.message.message_id, text: emptyMsg, parse_mode: "Markdown", reply_markup: { inline_keyboard: emptyKey } });
-  } else {
-    Api.sendMessage({ text: emptyMsg, parse_mode: "Markdown", reply_markup: { inline_keyboard: emptyKey } });
+    try { Api.deleteMessage({ message_id: request.message.message_id }); } catch (e) {}
   }
+  Api.sendMessage({ text: emptyMsg, parse_mode: "Markdown", reply_markup: { keyboard: emptyKey, resize_keyboard: true } });
   return;
 }
 
 var msg = "⏱️ *Set Channel Auto-Expiry Timer*\n`———————————————————————`\n\n" +
   "Select a channel number below to configure or change its auto-expiry timer:\n\n";
 
-var numberButtons = [];
+var primaryKeyb = [];
 var row = [];
 
 for (var i = 0; i < forceChannels.length; i++) {
@@ -59,35 +58,32 @@ for (var i = 0; i < forceChannels.length; i++) {
     "• Status: " + timerStatus + "\n\n";
 
   row.push({
-    text: "Channel " + (i + 1),
-    callback_data: "/fcSelectTimer " + i
+    text: "⏱️ Channel " + (i + 1),
+    style: "primary"
   });
 
   if (row.length === 2) {
-    numberButtons.push(row);
+    primaryKeyb.push(row);
     row = [];
   }
 }
 
 if (row.length > 0) {
-  numberButtons.push(row);
+  primaryKeyb.push(row);
 }
 
-numberButtons.push([
-  { text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel" }
+primaryKeyb.push([
+  { text: "⬅️ Back to Force Channels", style: "primary" }
 ]);
 
 if (request.data) {
-  Api.editMessageText({
-    message_id: request.message.message_id,
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: numberButtons }
-  });
-} else {
-  Api.sendMessage({
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: numberButtons }
-  });
+  try {
+    Api.deleteMessage({ message_id: request.message.message_id });
+  } catch (e) {}
 }
+
+Api.sendMessage({
+  text: msg,
+  parse_mode: "Markdown",
+  reply_markup: { keyboard: primaryKeyb, resize_keyboard: true }
+});

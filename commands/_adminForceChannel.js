@@ -58,33 +58,16 @@ var msg = "🔧 *Force Channels Management*\n`———————————�
   "• Disabled Channels: *" + disabledCount + "*\n" +
   "• Expired Channels: *" + expiredCount + "*\n" +
   "• Total Channels: *" + forceChannels.length + "*\n\n" +
-  "Select an action below:";
-
-var keyb = [
-  [
-    { text: "➕ Add Channel", callback_data: "/fcAdd" },
-    { text: "⏱️ Set Expiry Timer", callback_data: "/fcTimerMenu" }
-  ],
-  [
-    { text: "📄 List Channels", callback_data: "/fcList" },
-    { text: "❌ Remove Channel", callback_data: "/fcRemoveMenu" }
-  ],
-  [
-    { text: "⬅️ Back to Admin Panel", callback_data: "/admin" }
-  ]
-];
+  "Select an action using the primary buttons below:";
 
 if (request.data) {
-  Api.editMessageText({
-    message_id: request.message.message_id,
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
-} else {
-  Api.sendMessage({
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { keyboard: fcPrimaryKeyboard, resize_keyboard: true }
-  });
+  try {
+    Api.deleteMessage({ message_id: request.message.message_id });
+  } catch (e) {}
 }
+
+Api.sendMessage({
+  text: msg,
+  parse_mode: "Markdown",
+  reply_markup: { keyboard: fcPrimaryKeyboard, resize_keyboard: true }
+});

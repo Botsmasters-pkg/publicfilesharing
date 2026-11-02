@@ -24,29 +24,16 @@ var activeChannels = [];
 
 for (var i = 0; i < forceChannels.length; i++) {
   var ch = forceChannels[i];
-  // Requirement #5: Skip disabled channels completely
   if (ch.enabled === false) continue;
-
-  // Skip expired channels
-  if (ch.expired) continue;
-  if (ch.expiryTime > 0 && now >= ch.expiryTime) {
-    ch.expired = true;
-    continue;
+  if (!ch.expired) {
+    if (ch.expiryTime > 0 && now >= ch.expiryTime) {
+      ch.expired = true;
+    } else {
+      activeChannels.push(ch);
+    }
   }
-  activeChannels.push(ch);
 }
 Bot.setProperty("forceChannels", forceChannels, "json");
-
-// Legacy fallback
-var legacyForce = Bot.getProperty("forceChannel");
-if (legacyForce && activeChannels.length === 0) {
-  activeChannels.push({
-    id: legacyForce,
-    name: "Channel",
-    type: "public",
-    link: legacyForce.indexOf("http") === 0 ? legacyForce : ("https://t.me/" + legacyForce.replace("@", ""))
-  });
-}
 
 if (activeChannels.length === 0) {
   if (checkParam !== "none") {
@@ -57,8 +44,15 @@ if (activeChannels.length === 0) {
   return;
 }
 
-// Requirement #4: Sequential verification of ALL enabled channels
+// Store queue and unjoined list
 Bot.setProperty("verify_queue_" + user.telegramid, activeChannels, "json");
 Bot.setProperty("verify_unjoined_" + user.telegramid, [], "json");
 
-Bot.runCommand("/verifyStep 0 " + checkParam);
+// Check first channel directly via Api.getChatMember
+var firstChannel = activeChannels[0];
+Api.getChatMember({
+  chat_id: firstChannel.id,
+  user_id: user.telegramid,
+  on_result: "/onCheckJoin 0 " + checkParam,
+  on_error: "/onCheckJoin 0 " + checkParam
+});

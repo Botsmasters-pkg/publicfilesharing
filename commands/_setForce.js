@@ -10,14 +10,29 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
 if (!isAdmin) return;
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 if (!params) {
-  Bot.sendMessage("⚠️ Please provide channel ID or @username.\n_Example:_ `/setForce @mychannel`", { parse_mode: "Markdown" });
+  Api.sendMessage({
+    text: "⚠️ <b>Please provide channel ID or @username.</b>\n<i>Example:</i> <code>/setForce @mychannel</code>",
+    parse_mode: "HTML"
+  });
   return;
 }
 
 Bot.setProperty("forceChannel", params.trim(), "string");
-Bot.sendMessage("✅ *Force Subscribe Channel has been set to:* `" + params.trim() + "`\nUsers will now be asked to join before downloading files.", { parse_mode: "Markdown" });
-
+Api.sendMessage({
+  text: "✅ <b>Force Subscribe Channel has been set to:</b> <code>" + escapeHtml(params.trim()) + "</code>\nUsers will now be asked to join before downloading files.",
+  parse_mode: "HTML"
+});

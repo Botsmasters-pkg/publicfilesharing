@@ -18,6 +18,14 @@ if (!isAdmin) return;
 if (!params) return;
 var idx = parseInt(params);
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 var forceChannels = Bot.getProperty("forceChannels", []);
 var removedName = "Channel";
 
@@ -27,8 +35,9 @@ if (forceChannels[idx]) {
   Bot.setProperty("forceChannels", forceChannels, "json");
 }
 
-var msg = "🗑️ *Channel Removed!*\n`———————————————————————`\n" +
-  "Channel `" + removedName + "` has been successfully deleted from Force Channels.";
+var msg = "🗑️ <b>Channel Removed!</b>\n" +
+  "<code>———————————————————————</code>\n" +
+  "Channel <code>" + escapeHtml(removedName) + "</code> has been successfully deleted from Force Channels.";
 
 var keyb = [
   [{ text: "📄 View Remaining Channels", callback_data: "/fcList" }],
@@ -39,13 +48,13 @@ if (request.data) {
   Api.editMessageText({
     message_id: request.message.message_id,
     text: msg,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: keyb }
   });
 } else {
   Api.sendMessage({
     text: msg,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: keyb }
   });
 }

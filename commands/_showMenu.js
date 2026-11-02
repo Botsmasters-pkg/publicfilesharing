@@ -36,21 +36,29 @@ if (isAdmin) {
   ]);
 }
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 // Full Name & Username Auto-Detection
 var uFirst = user.first_name || "";
 var uLast = user.last_name || "";
 var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
 var uHandle = user.username ? ("@" + user.username) : "";
-var uMention = "[" + uFull + "](tg://user?id=" + user.telegramid + ")";
+var uMention = '<a href="tg://user?id=' + user.telegramid + '">' + escapeHtml(uFull) + '</a>';
 
 function formatPlaceholders(text) {
   if (!text) return "";
   return text
-    .replace(/\{name\}/gi, uFull)
-    .replace(/\{fullname\}/gi, uFull)
-    .replace(/\{first_name\}/gi, uFirst || uFull)
-    .replace(/\{last_name\}/gi, uLast)
-    .replace(/\{username\}/gi, uHandle || uFull)
+    .replace(/\{name\}/gi, escapeHtml(uFull))
+    .replace(/\{fullname\}/gi, escapeHtml(uFull))
+    .replace(/\{first_name\}/gi, escapeHtml(uFirst || uFull))
+    .replace(/\{last_name\}/gi, escapeHtml(uLast))
+    .replace(/\{username\}/gi, escapeHtml(uHandle || uFull))
     .replace(/\{mention\}/gi, uMention)
     .replace(/\{id\}/gi, user.telegramid);
 }
@@ -60,40 +68,40 @@ var wm = Bot.getProperty("welcomeMessage");
 if (typeof wm === "string") {
   wm = { type: "text", text: wm };
 }
-if (!wm || !wm.type || (wm.text && (wm.text.indexOf("/") === 0 || wm.text === "/onSetWelcome")) || (wm.caption && (wm.caption.indexOf("/") === 0 || wm.caption === "/onSetWelcome"))) {
+if (!wm || !wm.type || (wm.text && (wm.text.indexOf("/") === 0 || wm.text.indexOf("/onSetWelcome") !== -1)) || (wm.caption && (wm.caption.indexOf("/") === 0 || wm.caption.indexOf("/onSetWelcome") !== -1))) {
   wm = { type: "text", text: "" };
   Bot.setProperty("welcomeMessage", null);
 }
 
-var defaultText = "👋 Hi " + uMention + (uHandle ? " (" + uHandle + ")" : "") + "!\n\n" +
-  "I am *File Store Bot*. You can securely upload, store and share your files.\n\n" +
+var defaultText = "👋 Hi " + uMention + (uHandle ? " (" + escapeHtml(uHandle) + ")" : "") + "!\n\n" +
+  "I am <b>File Store Bot</b>. You can securely upload, store and share your files.\n\n" +
   "Choose an option below to get started:";
 
-// Send single clean message with Primary Keyboard
+// Send single clean message with Primary Keyboard in HTML mode
 if (wm.type === "photo" && wm.media) {
-  var photoCap = (wm.caption && wm.caption.indexOf("/") !== 0) ? formatPlaceholders(wm.caption) : defaultText;
+  var photoCap = (wm.caption && wm.caption.indexOf("/") !== 0 && wm.caption.indexOf("/onSetWelcome") === -1) ? formatPlaceholders(wm.caption) : defaultText;
   Api.sendPhoto({
     chat_id: user.telegramid,
     photo: wm.media,
     caption: photoCap,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
   });
 } else if (wm.type === "video" && wm.media) {
-  var videoCap = (wm.caption && wm.caption.indexOf("/") !== 0) ? formatPlaceholders(wm.caption) : defaultText;
+  var videoCap = (wm.caption && wm.caption.indexOf("/") !== 0 && wm.caption.indexOf("/onSetWelcome") === -1) ? formatPlaceholders(wm.caption) : defaultText;
   Api.sendVideo({
     chat_id: user.telegramid,
     video: wm.media,
     caption: videoCap,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
   });
 } else {
-  var textMsg = (wm && wm.text && wm.text.indexOf("/") !== 0) ? formatPlaceholders(wm.text) : defaultText;
+  var textMsg = (wm && wm.text && wm.text.indexOf("/") !== 0 && wm.text.indexOf("/onSetWelcome") === -1) ? formatPlaceholders(wm.text) : defaultText;
   Api.sendMessage({
     chat_id: user.telegramid,
     text: textMsg,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
   });
 }

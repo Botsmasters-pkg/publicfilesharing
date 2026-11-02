@@ -25,6 +25,14 @@ if (!forceChannels[idx]) {
   return;
 }
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 var ch = forceChannels[idx];
 var now = Date.now();
 var isExpired = ch.expired || (ch.expiryTime > 0 && now >= ch.expiryTime);
@@ -41,12 +49,13 @@ if (ch.expiryTime > 0) {
   }
 }
 
-var msg = "⏱️ *Set Timer for Channel #" + (idx + 1) + "*\n`———————————————————————`\n\n" +
-  "• *Target:* `" + ch.id + "`\n" +
-  "• *Type:* `" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "`\n" +
-  "• *Current Setting:* *" + currentTimerTxt + "*\n\n" +
-  "👉 *Select Auto-Expiry Duration below:*\n" +
-  "_(The channel will automatically disappear from the user panel after this timer)_";
+var msg = "⏱️ <b>Set Timer for Channel #" + (idx + 1) + "</b>\n" +
+  "<code>———————————————————————</code>\n\n" +
+  "• <b>Target:</b> <code>" + escapeHtml(ch.id) + "</code>\n" +
+  "• <b>Type:</b> <code>" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "</code>\n" +
+  "• <b>Current Setting:</b> <b>" + currentTimerTxt + "</b>\n\n" +
+  "👉 <b>Select Auto-Expiry Duration below:</b>\n" +
+  "<i>(The channel will automatically disappear from the user panel after this timer)</i>";
 
 var primaryTimerKeyboard = [
   [
@@ -77,6 +86,6 @@ if (request.data) {
 
 Api.sendMessage({
   text: msg,
-  parse_mode: "Markdown",
+  parse_mode: "HTML",
   reply_markup: { keyboard: primaryTimerKeyboard, resize_keyboard: true }
 });

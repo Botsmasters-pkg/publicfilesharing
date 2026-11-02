@@ -10,8 +10,18 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 Bot.setProperty("admin_state_" + user.telegramid, "waiting_welcome", "string");
 
@@ -22,13 +32,14 @@ var wm = Bot.getProperty("welcomeMessage", {
   caption: ""
 });
 
-var msg = "👋 *Custom Welcome Message Settings*\n`———————————————————————`\n\n" +
-  "• *Type:* `" + (wm.type || "text").toUpperCase() + "`\n" +
-  "• *Content:* " + (wm.text || wm.caption || "Default") + "\n\n" +
-  "👉 *How to customize:*\n" +
-  "• Send *Text* in chat to set as Welcome Text.\n" +
-  "• Send a *Photo* (with optional caption) to set as Welcome Photo.\n" +
-  "• Send a *Video* (with optional caption) to set as Welcome Video.";
+var msg = "👋 <b>Custom Welcome Message Settings</b>\n" +
+  "<code>———————————————————————</code>\n\n" +
+  "• <b>Type:</b> <code>" + escapeHtml((wm.type || "text").toUpperCase()) + "</code>\n" +
+  "• <b>Content:</b> " + escapeHtml(wm.text || wm.caption || "Default") + "\n\n" +
+  "👉 <b>How to customize:</b>\n" +
+  "• Send <b>Text</b> in chat to set as Welcome Text.\n" +
+  "• Send a <b>Photo</b> (with optional caption) to set as Welcome Photo.\n" +
+  "• Send a <b>Video</b> (with optional caption) to set as Welcome Video.";
 
 var keyb = [
   [{ text: "🔄 Reset to Default Welcome", callback_data: "/clearWelcome" }],
@@ -39,13 +50,13 @@ if (request.data) {
   Api.editMessageText({
     message_id: request.message.message_id,
     text: msg,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: keyb }
   });
 } else {
   Api.sendMessage({
     text: msg,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: keyb }
   });
 }

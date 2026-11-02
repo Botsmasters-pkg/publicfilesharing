@@ -15,11 +15,12 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-var msg = "➕ *Add Force Channel*\n`———————————————————————`\n\n" +
-  "👉 *Select Channel Type below:*\n\n" +
-  "• *Public Channel:* Has public @username or t.me link.\n" +
-  "• *Private Channel:* Uses chat ID (-100...) & invite link.\n" +
-  "• *Private Request Channel:* Uses join request approval link.";
+var msg = "➕ <b>Add Force Channel</b>\n" +
+  "<code>———————————————————————</code>\n\n" +
+  "👉 <b>Select Channel Type below:</b>\n\n" +
+  "• <b>Public Channel:</b> Has public @username or t.me link.\n" +
+  "• <b>Private Channel:</b> Uses chat ID (-100...) &amp; invite link.\n" +
+  "• <b>Private Request Channel:</b> Uses join request approval link.";
 
 var fcAddPrimaryKeyboard = [
   [
@@ -42,6 +43,6 @@ if (request.data) {
 
 Api.sendMessage({
   text: msg,
-  parse_mode: "Markdown",
+  parse_mode: "HTML",
   reply_markup: { keyboard: fcAddPrimaryKeyboard, resize_keyboard: true }
 });

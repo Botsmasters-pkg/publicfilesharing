@@ -15,6 +15,14 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 var rawChannels = Bot.getProperty("forceChannels", []);
 var now = Date.now();
 
@@ -33,14 +41,13 @@ if (forceChannels.length !== rawChannels.length) {
 if (!forceChannels || forceChannels.length === 0) {
   var emptyMsg = "📄 <b>Force Channels List</b>\n<code>———————————————————————</code>\n\n<i>No active force channels configured yet.</i>";
   var emptyKey = [
-    [{ text: "➕ Add Channel", callback_data: "/fcAdd" }],
-    [{ text: "⬅️ Back", callback_data: "/adminForceChannel" }]
+    [{ text: "➕ Add Channel", style: "primary" }],
+    [{ text: "⬅️ Back to Force Channels", style: "primary" }]
   ];
   if (request.data) {
-    Api.editMessageText({ message_id: request.message.message_id, text: emptyMsg, parse_mode: "HTML", reply_markup: { inline_keyboard: emptyKey } });
-  } else {
-    Api.sendMessage({ text: emptyMsg, parse_mode: "HTML", reply_markup: { inline_keyboard: emptyKey } });
+    try { Api.deleteMessage({ message_id: request.message.message_id }); } catch (e) {}
   }
+  Api.sendMessage({ text: emptyMsg, parse_mode: "HTML", reply_markup: { keyboard: emptyKey, resize_keyboard: true } });
   return;
 }
 
@@ -70,15 +77,13 @@ for (var i = 0; i < forceChannels.length; i++) {
     }
   }
 
-  var expiryDateTxt = ch.expiryTime > 0 ? new Date(ch.expiryTime).toISOString().slice(0, 16).replace("T", " ") + " UTC" : "Permanent";
-
-  txt += "<b>" + (i + 1) + ". " + (ch.name || ch.id) + "</b>\n";
-  txt += "• ID: <code>" + ch.id + "</code>\n";
+  txt += "<b>" + (i + 1) + ". " + escapeHtml(ch.name || ch.id) + "</b>\n";
+  txt += "• ID: <code>" + escapeHtml(ch.id) + "</code>\n";
   txt += "• Type: <code>" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "</code>\n";
   txt += "• Status: " + enableTxt + " | " + statusTxt + "\n";
   txt += "• Timer: <b>" + remainingTxt + "</b>\n";
   if (ch.link) {
-    txt += "• Link: " + ch.link + "\n";
+    txt += "• Link: " + escapeHtml(ch.link) + "\n";
   }
   txt += "\n";
 

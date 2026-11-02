@@ -29,15 +29,24 @@ if (!forceChannels[idx]) {
 var ch = forceChannels[idx];
 var msg = "";
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 if (minutes === 0) {
   ch.expiryTime = 0;
   ch.configuredMinutes = 0;
   ch.expired = false;
 
-  msg = "✅ *Auto-Expiry Timer Removed!*\n`———————————————————————`\n\n" +
-    "• *Channel:* #" + (idx + 1) + " (`" + ch.id + "`)\n" +
-    "• *Status:* 🟢 *Permanent (Active indefinitely)*\n\n" +
-    "_This channel will never expire unless removed manually._";
+  msg = "✅ <b>Auto-Expiry Timer Removed!</b>\n" +
+    "<code>———————————————————————</code>\n\n" +
+    "• <b>Channel:</b> #" + (idx + 1) + " (<code>" + escapeHtml(ch.id) + "</code>)\n" +
+    "• <b>Status:</b> 🟢 <b>Permanent (Active indefinitely)</b>\n\n" +
+    "<i>This channel will never expire unless removed manually.</i>";
 } else {
   var durationMs = minutes * 60 * 1000;
   ch.expiryTime = Date.now() + durationMs;
@@ -55,36 +64,32 @@ if (minutes === 0) {
 
   var expiryDateStr = new Date(ch.expiryTime).toISOString().slice(0, 16).replace("T", " ") + " UTC";
 
-  msg = "✅ *Auto-Expiry Timer Set Successfully!*\n`———————————————————————`\n\n" +
-    "• *Channel:* #" + (idx + 1) + " (`" + ch.id + "`)\n" +
-    "• *Duration:* *" + durTxt + "*\n" +
-    "• *Expires At:* `" + expiryDateStr + "`\n\n" +
-    "⚡ _The channel is now active. When the timer expires, it will automatically disappear from the user panel!_";
+  msg = "✅ <b>Auto-Expiry Timer Set Successfully!</b>\n" +
+    "<code>———————————————————————</code>\n\n" +
+    "• <b>Channel:</b> #" + (idx + 1) + " (<code>" + escapeHtml(ch.id) + "</code>)\n" +
+    "• <b>Duration:</b> <b>" + durTxt + "</b>\n" +
+    "• <b>Expires At:</b> <code>" + expiryDateStr + "</code>\n\n" +
+    "⚡ <i>The channel is now active. When the timer expires, it will automatically disappear from the user panel!</i>";
 }
 
 Bot.setProperty("forceChannels", forceChannels, "json");
 
-var keyb = [
+var primaryKeyb = [
   [
-    { text: "⏱️ Set Another Channel", callback_data: "/fcTimerMenu" },
-    { text: "📄 View Channels", callback_data: "/fcList" }
+    { text: "⏱️ Set Expiry Timer", style: "primary" },
+    { text: "📄 List Channels", style: "primary" }
   ],
   [
-    { text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel" }
+    { text: "⬅️ Back to Force Channels", style: "primary" }
   ]
 ];
 
 if (request.data) {
-  Api.editMessageText({
-    message_id: request.message.message_id,
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
-} else {
-  Api.sendMessage({
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
+  try { Api.deleteMessage({ message_id: request.message.message_id }); } catch (e) {}
 }
+
+Api.sendMessage({
+  text: msg,
+  parse_mode: "HTML",
+  reply_markup: { keyboard: primaryKeyb, resize_keyboard: true }
+});

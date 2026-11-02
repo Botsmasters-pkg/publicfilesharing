@@ -16,8 +16,8 @@ var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658")
 
 if (!isAdmin) {
   Api.sendMessage({
-    text: "🚫 *Access Denied: Admins Only.*",
-    parse_mode: "Markdown"
+    text: "🚫 <b>Access Denied: Admins Only.</b>",
+    parse_mode: "HTML"
   });
   return;
 }
@@ -27,6 +27,14 @@ Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 
 var botUsername = (Bot.getProperty("bot_username") || bot.name || "toxicfighterobot").replace("@", "");
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 // Primary Keyboard with style: "primary"
 var adminPrimaryKeyboard = [
@@ -70,22 +78,23 @@ var keyb = [
   ]
 ];
 
-var msg = "🛠 *Super Admin Control Panel*\n`———————————————————————`\n" +
-  "• *Admin:* `" + user.telegramid + "`\n" +
-  "• *Bot Username:* @" + botUsername + "\n\n" +
+var msg = "🛠 <b>Super Admin Control Panel</b>\n" +
+  "<code>———————————————————————</code>\n" +
+  "• <b>Admin:</b> <code>" + escapeHtml(user.telegramid) + "</code>\n" +
+  "• <b>Bot Username:</b> @" + escapeHtml(botUsername) + "\n\n" +
   "Select a management section below using the keyboard buttons:";
 
 if (request.data) {
   Api.editMessageText({
     message_id: request.message.message_id,
     text: msg,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: keyb }
   });
 } else {
   Api.sendMessage({
     text: msg,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { keyboard: adminPrimaryKeyboard, resize_keyboard: true }
   });
 }

@@ -15,6 +15,14 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 var text = "";
 if (params && params.trim() !== "") {
   text = params.trim();
@@ -40,7 +48,7 @@ var keyb = [
 ];
 
 Api.sendMessage({
-  text: "✅ *Force Subscribe Channel successfully set to:* `" + text + "`\n\nUsers will now be asked to join this channel before downloading files.",
-  parse_mode: "Markdown",
+  text: "✅ <b>Force Subscribe Channel successfully set to:</b> <code>" + escapeHtml(text) + "</code>\n\nUsers will now be asked to join this channel before downloading files.",
+  parse_mode: "HTML",
   reply_markup: { inline_keyboard: keyb }
 });

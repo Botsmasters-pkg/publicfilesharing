@@ -15,6 +15,14 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 var rawChannels = Bot.getProperty("forceChannels", []);
 var forceChannels = [];
 for (var k = 0; k < rawChannels.length; k++) {
@@ -30,8 +38,9 @@ if (forceChannels.length !== rawChannels.length) {
 var now = Date.now();
 
 if (!forceChannels || forceChannels.length === 0) {
-  var emptyMsg = "⏱️ *Force Channel Auto-Expiry Timer*\n`———————————————————————`\n\n" +
-    "⚠️ _No force channels found! Please add a channel first._";
+  var emptyMsg = "⏱️ <b>Force Channel Auto-Expiry Timer</b>\n" +
+    "<code>———————————————————————</code>\n\n" +
+    "⚠️ <i>No force channels found! Please add a channel first.</i>";
   var emptyKey = [
     [{ text: "➕ Add Channel", style: "primary" }],
     [{ text: "⬅️ Back to Force Channels", style: "primary" }]
@@ -39,12 +48,13 @@ if (!forceChannels || forceChannels.length === 0) {
   if (request.data) {
     try { Api.deleteMessage({ message_id: request.message.message_id }); } catch (e) {}
   }
-  Api.sendMessage({ text: emptyMsg, parse_mode: "Markdown", reply_markup: { keyboard: emptyKey, resize_keyboard: true } });
+  Api.sendMessage({ text: emptyMsg, parse_mode: "HTML", reply_markup: { keyboard: emptyKey, resize_keyboard: true } });
   return;
 }
 
-var msg = "⏱️ *Set Channel Auto-Expiry Timer*\n`———————————————————————`\n\n" +
-  "Select a channel number below to configure or change its auto-expiry timer:\n\n";
+var msg = "⏱️ <b>Set Channel Auto-Expiry Timer</b>\n" +
+  "<code>———————————————————————</code>\n\n" +
+  "Select a channel button below to configure or change its auto-expiry timer:\n\n";
 
 var primaryKeyb = [];
 var row = [];
@@ -64,8 +74,8 @@ for (var i = 0; i < forceChannels.length; i++) {
     }
   }
 
-  msg += "*" + (i + 1) + ".* `" + ch.id + "`\n" +
-    "• Type: `" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "`\n" +
+  msg += "<b>" + (i + 1) + ".</b> <code>" + escapeHtml(ch.id) + "</code>\n" +
+    "• Type: <code>" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "</code>\n" +
     "• Status: " + timerStatus + "\n\n";
 
   row.push({
@@ -95,6 +105,6 @@ if (request.data) {
 
 Api.sendMessage({
   text: msg,
-  parse_mode: "Markdown",
+  parse_mode: "HTML",
   reply_markup: { keyboard: primaryKeyb, resize_keyboard: true }
 });

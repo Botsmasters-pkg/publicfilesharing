@@ -62,13 +62,14 @@ var fcPrimaryKeyboard = [
   ]
 ];
 
-var msg = "🔧 *Force Channels Management*\n`———————————————————————`\n\n" +
+var msg = "🔧 <b>Force Channels Management</b>\n" +
+  "<code>———————————————————————</code>\n\n" +
   "Manage mandatory subscription channels (Public, Private, Join Request).\n\n" +
-  "📊 *Overview:*\n" +
-  "• Active & Enabled: *" + activeCount + "*\n" +
-  "• Disabled Channels: *" + disabledCount + "*\n" +
-  "• Expired Channels: *" + expiredCount + "*\n" +
-  "• Total Channels: *" + forceChannels.length + "*\n\n" +
+  "📊 <b>Overview:</b>\n" +
+  "• Active &amp; Enabled: <b>" + activeCount + "</b>\n" +
+  "• Disabled Channels: <b>" + disabledCount + "</b>\n" +
+  "• Expired Channels: <b>" + expiredCount + "</b>\n" +
+  "• Total Channels: <b>" + forceChannels.length + "</b>\n\n" +
   "Select an action using the primary buttons below:";
 
 if (request.data) {
@@ -79,6 +80,6 @@ if (request.data) {
 
 Api.sendMessage({
   text: msg,
-  parse_mode: "Markdown",
+  parse_mode: "HTML",
   reply_markup: { keyboard: fcPrimaryKeyboard, resize_keyboard: true }
 });

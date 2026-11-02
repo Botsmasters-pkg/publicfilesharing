@@ -15,6 +15,14 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 // Extract actual user input cleanly
 var bText = "";
 if (params && params.trim() !== "") {
@@ -59,8 +67,8 @@ if (request.photo && request.photo.length > 0) {
       Api.sendPhoto({
         chat_id: allUsers[i],
         photo: photoId,
-        caption: "📢 *Admin Announcement*\n`———————————————————————`\n\n" + cap,
-        parse_mode: "Markdown"
+        caption: "📢 <b>Admin Announcement</b>\n<code>———————————————————————</code>\n\n" + escapeHtml(cap),
+        parse_mode: "HTML"
       });
       successCount++;
     } catch (e) {
@@ -75,8 +83,8 @@ if (request.photo && request.photo.length > 0) {
       Api.sendVideo({
         chat_id: allUsers[k],
         video: videoId,
-        caption: "📢 *Admin Announcement*\n`———————————————————————`\n\n" + vCap,
-        parse_mode: "Markdown"
+        caption: "📢 <b>Admin Announcement</b>\n<code>———————————————————————</code>\n\n" + escapeHtml(vCap),
+        parse_mode: "HTML"
       });
       successCount++;
     } catch (e) {
@@ -88,8 +96,8 @@ if (request.photo && request.photo.length > 0) {
     try {
       Api.sendMessage({
         chat_id: allUsers[j],
-        text: "📢 *Admin Announcement*\n`———————————————————————`\n\n" + bText,
-        parse_mode: "Markdown"
+        text: "📢 <b>Admin Announcement</b>\n<code>———————————————————————</code>\n\n" + escapeHtml(bText),
+        parse_mode: "HTML"
       });
       successCount++;
     } catch (e) {
@@ -106,10 +114,10 @@ var keyb = [
 ];
 
 Api.sendMessage({
-  text: "✅ *Broadcast Completed!*\n`———————————————————————`\n\n" +
-    "• Delivered successfully: *" + successCount + "*\n" +
-    "• Failed deliveries: *" + failedCount + "*\n" +
-    "• Total Target Users: *" + allUsers.length + "*",
-  parse_mode: "Markdown",
+  text: "✅ <b>Broadcast Completed!</b>\n<code>———————————————————————</code>\n\n" +
+    "• Delivered successfully: <b>" + successCount + "</b>\n" +
+    "• Failed deliveries: <b>" + failedCount + "</b>\n" +
+    "• Total Target Users: <b>" + allUsers.length + "</b>",
+  parse_mode: "HTML",
   reply_markup: { inline_keyboard: keyb }
 });

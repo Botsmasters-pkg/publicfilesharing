@@ -99,19 +99,19 @@ if (activeChannels.length > 0 && !isAdmin) {
     { text: "🔄 Check Membership", callback_data: "/checkJoin " + checkParam }
   ]);
 
-  var alertMsg = "📢 *Join Required Channel" + (activeChannels.length > 1 ? "s" : "") + "*\n`———————————————————————`\n\n" +
+  var alertMsg = "📢 <b>Join Required Channel" + (activeChannels.length > 1 ? "s" : "") + "</b>\n<code>———————————————————————</code>\n\n" +
     "You must join our mandatory channel" + (activeChannels.length > 1 ? "s" : "") + " before you can access this bot.\n\n" +
-    "👉 Click *JOIN* below, join the channel(s), and then click *Check Membership*:";
+    "👉 Click <b>JOIN</b> below, join the channel(s), and then click <b>Check Membership</b>:";
 
   Api.sendMessage({
     text: alertMsg,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: grid }
   });
 
   Api.sendMessage({
-    text: "👇 *Or tap the button below to verify membership:*",
-    parse_mode: "Markdown",
+    text: "👇 <b>Or tap the button below to verify membership:</b>",
+    parse_mode: "HTML",
     reply_markup: {
       keyboard: [
         [{ text: "🔄 Check Membership", style: "primary" }]

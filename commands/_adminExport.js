@@ -10,8 +10,18 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
+
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 var allUsers = Bot.getProperty("allBotUsers", []);
 var uploads = Bot.getProperty("uploads", []);
@@ -56,23 +66,24 @@ var keyb = [
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
 ];
 
-var preview = "📑 *Complete Database CSV Export*\n`———————————————————————`\n" +
-  "• Users Exported: *" + allUsers.length + "*\n" +
-  "• Upload Records: *" + uploads.length + "*\n" +
-  "• Download Logs: *" + logs.length + "*\n\n" +
-  "```csv\n" + csvContent.slice(0, 3600) + "\n```";
+var preview = "📑 <b>Complete Database CSV Export</b>\n" +
+  "<code>———————————————————————</code>\n" +
+  "• Users Exported: <b>" + allUsers.length + "</b>\n" +
+  "• Upload Records: <b>" + uploads.length + "</b>\n" +
+  "• Download Logs: <b>" + logs.length + "</b>\n\n" +
+  "<pre>" + escapeHtml(csvContent.slice(0, 3500)) + "</pre>";
 
 if (request.data) {
   Api.editMessageText({
     message_id: request.message.message_id,
     text: preview,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: keyb }
   });
 } else {
   Api.sendMessage({
     text: preview,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: keyb }
   });
 }

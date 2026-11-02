@@ -24,13 +24,22 @@ if (!forceChannels[idx]) {
   return;
 }
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 var ch = forceChannels[idx];
 
-var msg = "⚠️ *Confirm Channel Removal*\n`———————————————————————`\n\n" +
+var msg = "⚠️ <b>Confirm Channel Removal</b>\n" +
+  "<code>———————————————————————</code>\n\n" +
   "Are you sure you want to remove this channel?\n" +
-  "• Channel: `" + (ch.id || ch.name) + "`\n" +
-  "• Type: `" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "`\n\n" +
-  "_This will immediately remove its JOIN button from the user panel._";
+  "• <b>Channel:</b> <code>" + escapeHtml(ch.id || ch.name) + "</code>\n" +
+  "• <b>Type:</b> <code>" + (ch.type ? ch.type.toUpperCase() : "PUBLIC") + "</code>\n\n" +
+  "<i>This will immediately remove its JOIN button from the user panel.</i>";
 
 var keyb = [
   [
@@ -43,13 +52,13 @@ if (request.data) {
   Api.editMessageText({
     message_id: request.message.message_id,
     text: msg,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: keyb }
   });
 } else {
   Api.sendMessage({
     text: msg,
-    parse_mode: "Markdown",
+    parse_mode: "HTML",
     reply_markup: { inline_keyboard: keyb }
   });
 }

@@ -15,6 +15,14 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 // Extract actual user input cleanly
 var text = "";
 if (params && params.trim() !== "") {
@@ -47,7 +55,7 @@ var keyb = [
 ];
 
 Api.sendMessage({
-  text: "✅ *Storage Channel successfully set to:* `" + text + "`\n\nAll new uploads will automatically be backed up to this channel.",
-  parse_mode: "Markdown",
+  text: "✅ <b>Storage Channel successfully set to:</b> <code>" + escapeHtml(text) + "</code>\n\nAll new uploads will automatically be backed up to this channel.",
+  parse_mode: "HTML",
   reply_markup: { inline_keyboard: keyb }
 });

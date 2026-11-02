@@ -23,7 +23,7 @@ var clearForcePrimary = [
   [{ text: "⬅️ Back to Force Channels", style: "primary" }]
 ];
 
-var msg = "🗑️ *All Force Channels have been cleared!*";
+var msg = "🗑️ <b>All Force Channels have been cleared!</b>";
 
 if (request.data) {
   try { Api.deleteMessage({ message_id: request.message.message_id }); } catch (e) {}
@@ -31,6 +31,6 @@ if (request.data) {
 
 Api.sendMessage({
   text: msg,
-  parse_mode: "Markdown",
+  parse_mode: "HTML",
   reply_markup: { keyboard: clearForcePrimary, resize_keyboard: true }
 });

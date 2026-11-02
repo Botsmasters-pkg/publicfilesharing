@@ -47,7 +47,9 @@ if (rRow.length > 0) {
 removePrimaryKeyboard.push([{ text: "🗑️ Clear All Channels", style: "primary" }]);
 removePrimaryKeyboard.push([{ text: "⬅️ Back to Force Channels", style: "primary" }]);
 
-var msg = "🗑️ *Select a Force Channel to Remove:*\n`———————————————————————`\nClick on any channel button below to remove it:";
+var msg = "🗑️ <b>Select a Force Channel to Remove:</b>\n" +
+  "<code>———————————————————————</code>\n" +
+  "Click on any channel button below to remove it:";
 
 if (request.data) {
   try {
@@ -57,6 +59,6 @@ if (request.data) {
 
 Api.sendMessage({
   text: msg,
-  parse_mode: "Markdown",
+  parse_mode: "HTML",
   reply_markup: { keyboard: removePrimaryKeyboard, resize_keyboard: true }
 });

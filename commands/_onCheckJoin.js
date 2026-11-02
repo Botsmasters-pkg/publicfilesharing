@@ -57,12 +57,13 @@ if (nextIndex < queue.length) {
 
   if (finalUnjoined.length === 0) {
     // 🟢 All Channels Verified Successfully!
-    var successMsg = "🟢 *All Channels Verified Successfully!*\n`———————————————————————`\n\n" +
+    var successMsg = "🟢 <b>All Channels Verified Successfully!</b>\n" +
+      "<code>———————————————————————</code>\n\n" +
       "Thank you! You now have full access to use the bot.";
 
     Api.sendMessage({
       text: successMsg,
-      parse_mode: "Markdown"
+      parse_mode: "HTML"
     });
 
     if (checkParam !== "none") {
@@ -72,7 +73,8 @@ if (nextIndex < queue.length) {
     }
   } else {
     // Show remaining unjoined channels only!
-    var msg = "📢 *Join Required Channel" + (finalUnjoined.length > 1 ? "s" : "") + "*\n`———————————————————————`\n\n" +
+    var msg = "📢 <b>Join Required Channel" + (finalUnjoined.length > 1 ? "s" : "") + "</b>\n" +
+      "<code>———————————————————————</code>\n\n" +
       "You must join the following required channel" + (finalUnjoined.length > 1 ? "s" : "") + " before you can access the bot:\n\n";
 
     var grid = [];
@@ -105,13 +107,13 @@ if (nextIndex < queue.length) {
 
     Api.sendMessage({
       text: msg,
-      parse_mode: "Markdown",
+      parse_mode: "HTML",
       reply_markup: { inline_keyboard: grid }
     });
 
     Api.sendMessage({
-      text: "👇 *Or tap the button below to verify membership:*",
-      parse_mode: "Markdown",
+      text: "👇 <b>Or tap the button below to verify membership:</b>",
+      parse_mode: "HTML",
       reply_markup: {
         keyboard: [
           [{ text: "🔄 Check Membership", style: "primary" }]

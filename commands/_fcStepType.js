@@ -28,26 +28,29 @@ Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 var msg = "";
 if (type === "public") {
   Bot.setProperty("admin_state_" + user.telegramid, "waiting_fc_public", "string");
-  msg = "📢 *Add Public Channel*\n`———————————————————————`\n\n" +
-    "👉 *Send the Channel Username or Public Link:*\n" +
-    "• Username: `@MyChannel`\n" +
-    "• Public Link: `https://t.me/MyChannel`\n" +
+  msg = "📢 <b>Add Public Channel</b>\n" +
+    "<code>———————————————————————</code>\n\n" +
+    "👉 <b>Send the Channel Username or Public Link:</b>\n" +
+    "• Username: <code>@MyChannel</code>\n" +
+    "• Public Link: <code>https://t.me/MyChannel</code>\n" +
     "• Or simply forward any post from that channel here!\n\n" +
-    "*(Make sure the bot is added as Administrator in the channel)*";
+    "<i>(Make sure the bot is added as Administrator in the channel)</i>";
 } else if (type === "request") {
   Bot.setProperty("admin_state_" + user.telegramid, "waiting_fc_chatid", "string");
-  msg = "📩 *Add Private Join Request Channel (Step 1/2)*\n`———————————————————————`\n\n" +
-    "👉 *Send the Numeric Chat ID of this Channel:*\n" +
-    "• Example: `-1004307092136`\n" +
+  msg = "📩 <b>Add Private Join Request Channel (Step 1/2)</b>\n" +
+    "<code>———————————————————————</code>\n\n" +
+    "👉 <b>Send the Numeric Chat ID of this Channel:</b>\n" +
+    "• Example: <code>-1004307092136</code>\n" +
     "• Or simply forward any post from that channel here to auto-detect ID!\n\n" +
-    "*(After sending Chat ID, the bot will ask for the Join Request Invite Link in Step 2)*";
+    "<i>(After sending Chat ID, the bot will ask for the Join Request Invite Link in Step 2)</i>";
 } else {
   Bot.setProperty("admin_state_" + user.telegramid, "waiting_fc_chatid", "string");
-  msg = "🔒 *Add Private Channel (Step 1/2)*\n`———————————————————————`\n\n" +
-    "👉 *Send the Numeric Chat ID of this Channel:*\n" +
-    "• Example: `-1004307092136`\n" +
+  msg = "🔒 <b>Add Private Channel (Step 1/2)</b>\n" +
+    "<code>———————————————————————</code>\n\n" +
+    "👉 <b>Send the Numeric Chat ID of this Channel:</b>\n" +
+    "• Example: <code>-1004307092136</code>\n" +
     "• Or simply forward any post from that channel here to auto-detect ID!\n\n" +
-    "*(After sending Chat ID, the bot will ask for the Private Invite Link in Step 2)*";
+    "<i>(After sending Chat ID, the bot will ask for the Private Invite Link in Step 2)</i>";
 }
 
 var cancelPrimaryKeyboard = [
@@ -62,6 +65,6 @@ if (request.data) {
 
 Api.sendMessage({
   text: msg,
-  parse_mode: "Markdown",
+  parse_mode: "HTML",
   reply_markup: { keyboard: cancelPrimaryKeyboard, resize_keyboard: true }
 });

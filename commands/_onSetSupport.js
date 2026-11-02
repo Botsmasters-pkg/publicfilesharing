@@ -15,6 +15,14 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 // Extract actual user input cleanly
 var txt = "";
 if (params && params.trim() !== "") {
@@ -56,7 +64,7 @@ var keyb = [
 ];
 
 Api.sendMessage({
-  text: "✅ *Support Contact Updated Successfully!*\n\n• Username: @" + cleanUsername + "\n• Link: " + link,
-  parse_mode: "Markdown",
+  text: "✅ <b>Support Contact Updated Successfully!</b>\n\n• <b>Username:</b> @" + escapeHtml(cleanUsername) + "\n• <b>Link:</b> " + escapeHtml(link),
+  parse_mode: "HTML",
   reply_markup: { inline_keyboard: keyb }
 });

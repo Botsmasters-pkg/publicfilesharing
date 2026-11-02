@@ -22,7 +22,7 @@ var now = Date.now();
 var forceChannels = [];
 for (var k = 0; k < rawChannels.length; k++) {
   var c = rawChannels[k];
-  if (c && c.id && c.id.indexOf("/fc") === -1 && c.name !== "/fcStepName" && c.id !== "/fcStepId") {
+  if (c && c.id && c.id.indexOf("/fc") === -1 && c.name !== "/fcStepName" && c.id !== "/fcStepId" && (!c.link || c.link.indexOf("/fc") === -1)) {
     forceChannels.push(c);
   }
 }

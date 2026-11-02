@@ -33,8 +33,15 @@ if (!text) return;
 if (text === "/cancel" || text === "❌ Cancel" || text.toLowerCase() === "cancel") {
   Bot.setProperty("admin_state_" + user.telegramid, "", "string");
   Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
+  Bot.setProperty("temp_fc_id_" + user.telegramid, "", "string");
+  Bot.setProperty("temp_fc_link_" + user.telegramid, "", "string");
   Bot.sendMessage("❌ Channel addition cancelled.");
   Bot.runCommand("/adminForceChannel");
+  return;
+}
+
+if (text.indexOf("/fc") === 0 || text.indexOf("/") === 0) {
+  Bot.sendMessage("⚠️ Invalid link! Please send the invite link starting with `https://t.me/` (or send `❌ Cancel`).");
   return;
 }
 
@@ -42,6 +49,13 @@ var id = Bot.getProperty("temp_fc_id_" + user.telegramid);
 var name = Bot.getProperty("temp_fc_name_" + user.telegramid, id);
 var type = Bot.getProperty("temp_fc_type_" + user.telegramid, "private");
 var forceChannels = Bot.getProperty("forceChannels", []);
+
+if (!id || id.indexOf("/fc") === 0) {
+  Bot.setProperty("admin_state_" + user.telegramid, "", "string");
+  Bot.sendMessage("⚠️ Channel ID was missing. Please add the channel again.");
+  Bot.runCommand("/adminForceChannel");
+  return;
+}
 
 var link = text;
 if (link.indexOf("http") !== 0) {
@@ -53,7 +67,17 @@ Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 Bot.setProperty("temp_fc_id_" + user.telegramid, "", "string");
 Bot.setProperty("temp_fc_name_" + user.telegramid, "", "string");
 Bot.setProperty("temp_fc_type_" + user.telegramid, "", "string");
+Bot.setProperty("temp_fc_link_" + user.telegramid, "", "string");
 Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
+
+// Clean existing corrupted channels
+var cleaned = [];
+for (var k = 0; k < forceChannels.length; k++) {
+  var item = forceChannels[k];
+  if (item && item.id && item.id.indexOf("/fc") === -1 && (!item.link || item.link.indexOf("/fc") === -1)) {
+    cleaned.push(item);
+  }
+}
 
 var newChannel = {
   id: id,
@@ -67,8 +91,8 @@ var newChannel = {
   enabled: true
 };
 
-forceChannels.push(newChannel);
-Bot.setProperty("forceChannels", forceChannels, "json");
+cleaned.push(newChannel);
+Bot.setProperty("forceChannels", cleaned, "json");
 
 var successMsg = "✅ *Force Channel Added Successfully!*\n`———————————————————————`\n\n" +
   "• *Channel Target:* `" + id + "`\n" +
@@ -77,19 +101,19 @@ var successMsg = "✅ *Force Channel Added Successfully!*\n`——————�
   "• *Status:* 🟢 *ENABLED & Active*\n\n" +
   "_ℹ️ Note: Auto-expiry timer is OFF by default. You can set a timer anytime from Admin Panel._";
 
-var keyb = [
+var successKeyboard = [
   [
-    { text: "➕ Add Another Channel", callback_data: "/fcAdd" },
-    { text: "⏱️ Set Expiry Timer", callback_data: "/fcTimerMenu" }
+    { text: "➕ Add Channel", style: "primary" },
+    { text: "⏱️ Set Expiry Timer", style: "primary" }
   ],
   [
-    { text: "📄 View Channels", callback_data: "/fcList" },
-    { text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel" }
+    { text: "📄 List Channels", style: "primary" },
+    { text: "⬅️ Back to Force Channels", style: "primary" }
   ]
 ];
 
 Api.sendMessage({
   text: successMsg,
   parse_mode: "Markdown",
-  reply_markup: { inline_keyboard: keyb }
+  reply_markup: { keyboard: successKeyboard, resize_keyboard: true }
 });

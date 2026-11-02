@@ -40,7 +40,7 @@ if (isAdmin && adminState) {
   // Save raw input to prevent command string overwrite
   Bot.setProperty("temp_last_text_" + user.telegramid, incomingText, "string");
 
-  if (adminState === "waiting_fc_channel" || adminState === "waiting_fc_id") {
+  if (adminState === "waiting_fc_chatid" || adminState === "waiting_fc_public" || adminState === "waiting_fc_channel" || adminState === "waiting_fc_id") {
     Bot.runCommand("/fcSaveChannel " + incomingText);
     return;
   }

@@ -35,6 +35,7 @@ if (!text && !hasForward) return;
 if (text === "/cancel" || text === "❌ Cancel" || text.toLowerCase() === "cancel") {
   Bot.setProperty("admin_state_" + user.telegramid, "", "string");
   Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
+  Bot.setProperty("temp_fc_id_" + user.telegramid, "", "string");
   Bot.setProperty("temp_fc_link_" + user.telegramid, "", "string");
   Bot.sendMessage("❌ Channel addition cancelled.");
   Bot.runCommand("/adminForceChannel");
@@ -45,20 +46,18 @@ var type = Bot.getProperty("temp_fc_type_" + user.telegramid, "public");
 var forceChannels = Bot.getProperty("forceChannels", []);
 
 var id = "";
-var link = Bot.getProperty("temp_fc_link_" + user.telegramid, "");
+var link = "";
 var name = "";
 
 if (hasForward) {
   var fwChat = request.message.forward_from_chat;
   id = fwChat.id.toString();
-  name = fwChat.title || ("Channel " + (forceChannels.length + 1));
-  if (fwChat.username) {
+  name = fwChat.title || id;
+  if (type === "public" && fwChat.username) {
     id = "@" + fwChat.username;
     link = "https://t.me/" + fwChat.username;
   }
 } else if (text) {
-  var parts = text.split(/\s+/);
-
   if (type === "public") {
     if (text.indexOf("http") === 0) {
       link = text;
@@ -71,9 +70,10 @@ if (hasForward) {
       link = "https://t.me/" + text.replace("@", "");
     }
   } else {
-    // Private or Request channel
+    // Private or Join Request channel: STEP 1 IS CHAT ID
+    // If user sent both ID and link on same line: "-100123... https://t.me/+..."
+    var parts = text.split(/\s+/);
     if (parts.length >= 2) {
-      // User passed both ID and Link on a single line
       var p0 = parts[0];
       var p1 = parts[1];
       if (p0.indexOf("http") === 0) {
@@ -85,14 +85,9 @@ if (hasForward) {
       }
       name = id;
     } else {
-      // Single token sent: could be Chat ID or Invite Link
-      if (text.indexOf("http") === 0 || text.indexOf("t.me") === 0) {
-        link = text.indexOf("http") === 0 ? text : ("https://" + text);
-        id = "";
-      } else {
-        id = text;
-        name = text;
-      }
+      id = text.trim();
+      name = id;
+      link = "";
     }
   }
 }
@@ -105,65 +100,54 @@ if (name && name.indexOf("/fc") === 0) {
   name = "";
 }
 
-// Case 1: ID detected, but Link is needed for private/request
-if (id && !link && (type === "private" || type === "request")) {
-  Bot.setProperty("admin_state_" + user.telegramid, "waiting_fc_link", "string");
-  Bot.setProperty("temp_fc_id_" + user.telegramid, id, "string");
-  Bot.setProperty("temp_fc_name_" + user.telegramid, name || id, "string");
-  Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
-
-  var askLinkMsg = "✅ *Channel ID Detected:* `" + id + "`" + (name ? ("\n• Title: *" + name + "*") : "") + "\n`———————————————————————`\n\n" +
-    "👉 *Now send the " + (type === "request" ? "Join Request" : "Private") + " Invite Link:*\n" +
-    "_(Example: `https://t.me/+AbCdEfGhIjK`)_";
-
-  var cancelPrimaryKeyboard = [
-    [{ text: "❌ Cancel", style: "primary" }]
-  ];
-
-  Api.sendMessage({
-    text: askLinkMsg,
-    parse_mode: "Markdown",
-    reply_markup: { keyboard: cancelPrimaryKeyboard, resize_keyboard: true }
-  });
-  return;
-}
-
-// Case 2: Link provided first, but numeric Chat ID is missing
-if (!id && link && (type === "private" || type === "request")) {
-  Bot.setProperty("admin_state_" + user.telegramid, "waiting_fc_id", "string");
-  Bot.setProperty("temp_fc_link_" + user.telegramid, link, "string");
-  Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
-
-  var askIdMsg = "✅ *Invite Link Detected:* " + link + "\n`———————————————————————`\n\n" +
-    "👉 *Now send the Numeric Chat ID of this channel:*\n" +
-    "_(Example: `-1001234567890`)_\n" +
-    "_Tip: You can forward any post from that channel to get its ID._";
-
-  var cancelPrimaryKeyboard2 = [
-    [{ text: "❌ Cancel", style: "primary" }]
-  ];
-
-  Api.sendMessage({
-    text: askIdMsg,
-    parse_mode: "Markdown",
-    reply_markup: { keyboard: cancelPrimaryKeyboard2, resize_keyboard: true }
-  });
-  return;
-}
-
 if (!id) {
-  Bot.sendMessage("⚠️ Could not detect channel. Please send username (e.g. `@MyChannel`) or channel link.");
+  Bot.sendMessage("⚠️ Invalid input. Please send a valid Numeric Chat ID (e.g. `-1004307092136`) or forward a post from the channel.");
   return;
 }
 
-// Clear admin waiting states
+// For Private or Request Channel: ID received -> ALWAYS ASK FOR INVITE LINK NEXT!
+if (type === "private" || type === "request") {
+  if (!link) {
+    Bot.setProperty("admin_state_" + user.telegramid, "waiting_fc_link", "string");
+    Bot.setProperty("temp_fc_id_" + user.telegramid, id, "string");
+    Bot.setProperty("temp_fc_name_" + user.telegramid, name || id, "string");
+    Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
+
+    var askLinkMsg = "✅ *Channel ID Detected:* `" + id + "`" + (name && name !== id ? ("\n• Title: *" + name + "*") : "") + "\n`———————————————————————`\n\n" +
+      "👉 *Now send the " + (type === "request" ? "Join Request" : "Private") + " Invite Link (Step 2/2):*\n" +
+      "• Example: `https://t.me/+AbCdEfGhIjK`\n\n" +
+      "*(Make sure Join Request is turned ON in the link if this is a Request channel)*";
+
+    var cancelPrimaryKeyboard = [
+      [{ text: "❌ Cancel", style: "primary" }]
+    ];
+
+    Api.sendMessage({
+      text: askLinkMsg,
+      parse_mode: "Markdown",
+      reply_markup: { keyboard: cancelPrimaryKeyboard, resize_keyboard: true }
+    });
+    return;
+  }
+}
+
+// Complete the addition (for Public channel or single-line input)
 Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
+Bot.setProperty("temp_fc_id_" + user.telegramid, "", "string");
 Bot.setProperty("temp_fc_link_" + user.telegramid, "", "string");
 
 var finalLink = link || ("https://t.me/" + id.replace("@", ""));
 
-// Complete the addition
+// Clean up any corrupt entries first
+var cleanedChannels = [];
+for (var c = 0; c < forceChannels.length; c++) {
+  var fc = forceChannels[c];
+  if (fc && fc.id && fc.id.indexOf("/fc") === -1 && (!fc.link || fc.link.indexOf("/fc") === -1)) {
+    cleanedChannels.push(fc);
+  }
+}
+
 var newChannel = {
   id: id,
   name: name || id,
@@ -176,8 +160,8 @@ var newChannel = {
   enabled: true
 };
 
-forceChannels.push(newChannel);
-Bot.setProperty("forceChannels", forceChannels, "json");
+cleanedChannels.push(newChannel);
+Bot.setProperty("forceChannels", cleanedChannels, "json");
 
 var successMsg = "✅ *Force Channel Added Successfully!*\n`———————————————————————`\n\n" +
   "• *Channel Target:* `" + id + "`\n" +
@@ -186,19 +170,19 @@ var successMsg = "✅ *Force Channel Added Successfully!*\n`——————�
   "• *Status:* 🟢 *ENABLED & Active*\n\n" +
   "_ℹ️ Note: Auto-expiry timer is OFF by default. You can set a timer anytime from Admin Panel._";
 
-var keyb = [
+var successKeyboard = [
   [
-    { text: "➕ Add Another Channel", callback_data: "/fcAdd" },
-    { text: "⏱️ Set Expiry Timer", callback_data: "/fcTimerMenu" }
+    { text: "➕ Add Channel", style: "primary" },
+    { text: "⏱️ Set Expiry Timer", style: "primary" }
   ],
   [
-    { text: "📄 View Channels", callback_data: "/fcList" },
-    { text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel" }
+    { text: "📄 List Channels", style: "primary" },
+    { text: "⬅️ Back to Force Channels", style: "primary" }
   ]
 ];
 
 Api.sendMessage({
   text: successMsg,
   parse_mode: "Markdown",
-  reply_markup: { inline_keyboard: keyb }
+  reply_markup: { keyboard: successKeyboard, resize_keyboard: true }
 });

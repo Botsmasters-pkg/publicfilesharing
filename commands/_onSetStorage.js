@@ -46,7 +46,7 @@ if (text === "❌ Cancel" || text === "/cancel" || text.toLowerCase() === "cance
   return;
 }
 
-if (text === "🔄 Reset to Default Storage" || text === "/resetStorageDefault") {
+if (text === "⚙️ Restore System Storage" || text === "🔄 Reset to Default Storage" || text === "/resetStorageDefault") {
   Bot.runCommand("/resetStorageDefault");
   return;
 }
@@ -79,7 +79,7 @@ var storagePrimaryKeyboard = [
 Api.sendMessage({
   text: "✅ <b>Storage Channel Successfully Set!</b>\n" +
     "<code>———————————————————————</code>\n\n" +
-    "• <b>Storage Channel ID:</b> <code>" + escapeHtml(cleanStorage) + "</code>\n\n" +
+    "• <b>Active Storage Channel:</b> <code>" + escapeHtml(cleanStorage) + "</code>\n\n" +
     "All uploaded files, photos, videos, and documents will automatically be backed up to this channel.\n\n" +
     "<i>(Ensure the bot is an Administrator in that channel with 'Post Messages' permission)</i>",
   parse_mode: "HTML",

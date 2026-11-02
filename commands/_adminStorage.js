@@ -27,23 +27,23 @@ Bot.setProperty("admin_state_" + user.telegramid, "waiting_storage", "string");
 
 var currentStorage = Bot.getProperty("storageChannel", "-1004304151228");
 
-var msg = "📦 <b>Storage Channel Settings</b>\n" +
+var msg = "📦 <b>Storage Channel Management</b>\n" +
   "<code>———————————————————————</code>\n\n" +
-  "• <b>Current Storage Channel:</b> <code>" + escapeHtml(currentStorage) + "</code>\n" +
-  "• <b>Default Storage Channel:</b> <code>-1004304151228</code>\n\n" +
-  "👉 <b>How to set a Storage Channel:</b>\n" +
+  "• <b>Active Storage Channel:</b> <code>" + escapeHtml(currentStorage) + "</code>\n" +
+  "• <b>Primary System Default:</b> <code>-1004304151228</code>\n\n" +
+  "👉 <b>How to configure Storage Channel:</b>\n" +
   "• Send the <b>Numeric Chat ID</b> (e.g. <code>-1004304151228</code>)\n" +
   "• Or send <b>@Username</b> (e.g. <code>@MyStorageBackup</code>)\n" +
   "• Or simply <b>forward any post</b> from your storage channel here!\n\n" +
   "<i>⚠️ Note: The bot MUST be an Administrator in your storage channel with 'Post Messages' permission.</i>";
 
 var keyb = [
-  [{ text: "🔄 Reset to Default (-1004304151228)", callback_data: "/resetStorageDefault", style: "primary" }],
+  [{ text: "⚙️ Restore System Storage", callback_data: "/resetStorageDefault", style: "primary" }],
   [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
 var storagePrimaryKeyboard = [
-  [{ text: "🔄 Reset to Default Storage", style: "primary" }],
+  [{ text: "⚙️ Restore System Storage", style: "primary" }],
   [{ text: "⬅️ Back to Admin Panel", style: "primary" }]
 ];
 

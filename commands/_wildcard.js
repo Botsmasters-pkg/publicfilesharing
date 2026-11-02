@@ -134,7 +134,7 @@ if (incomingText) {
       Bot.runCommand("/adminStorage");
       return;
     }
-    if (t === "🔄 Reset to Default Storage" || low.indexOf("reset to default storage") !== -1) {
+    if (t === "⚙️ Restore System Storage" || t === "🔄 Reset to Default Storage" || low.indexOf("restore system storage") !== -1 || low.indexOf("reset to default storage") !== -1) {
       Bot.runCommand("/resetStorageDefault");
       return;
     }
@@ -278,3 +278,4 @@ if (incomingText) {
     return;
   }
 }
+

@@ -18,10 +18,13 @@ if (!isAdmin) return;
 Bot.setProperty("storageChannel", "-1004304151228", "string");
 
 var keyb = [
-  [{ text: "⬅️ Back to Storage Settings", callback_data: "/adminStorage" }]
+  [{ text: "⬅️ Back to Storage Settings", callback_data: "/adminStorage", style: "primary" }]
 ];
 
-var msg = "✅ <b>Storage Channel reset to Default:</b> <code>-1004304151228</code>";
+var msg = "✅ <b>Storage Channel Restored to System Default!</b>\n" +
+  "<code>———————————————————————</code>\n\n" +
+  "• <b>Active Storage Channel:</b> <code>-1004304151228</code>\n\n" +
+  "<i>All upcoming uploads will automatically backup to the primary system storage channel.</i>";
 
 var storagePrimaryKeyboard = [
   [{ text: "🏷️ Storage Channel", style: "primary" }],

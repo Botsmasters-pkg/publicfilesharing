@@ -60,7 +60,11 @@ if (isAdmin && adminState) {
     return;
   }
   if (adminState === "waiting_storage") {
-    Bot.runCommand("/onSetStorage " + incomingText);
+    var storageInput = incomingText;
+    if (request && request.message && request.message.forward_from_chat) {
+      storageInput = request.message.forward_from_chat.id.toString();
+    }
+    Bot.runCommand("/onSetStorage " + storageInput);
     return;
   }
   if (adminState === "waiting_welcome") {
@@ -128,6 +132,10 @@ if (incomingText) {
     }
     if (t === "🏷️ Storage Channel" || low.indexOf("storage channel") !== -1) {
       Bot.runCommand("/adminStorage");
+      return;
+    }
+    if (t === "🔄 Reset to Default Storage" || low.indexOf("reset to default storage") !== -1) {
+      Bot.runCommand("/resetStorageDefault");
       return;
     }
     if (t === "👋 Welcome Message" || low.indexOf("welcome message") !== -1) {

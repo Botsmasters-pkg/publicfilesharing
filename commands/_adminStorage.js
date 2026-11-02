@@ -27,17 +27,24 @@ Bot.setProperty("admin_state_" + user.telegramid, "waiting_storage", "string");
 
 var currentStorage = Bot.getProperty("storageChannel", "-1004304151228");
 
-var msg = "📦 <b>Custom Storage Channel Settings</b>\n" +
+var msg = "📦 <b>Storage Channel Settings</b>\n" +
   "<code>———————————————————————</code>\n\n" +
-  "• Current Storage Channel: <code>" + escapeHtml(currentStorage) + "</code>\n" +
-  "• Default Storage Channel: <code>-1004304151228</code>\n\n" +
-  "👉 <b>Send the new Channel ID or Username in chat:</b>\n" +
-  "<i>(Example: <code>-1001234567890</code> or <code>@MyStorageChannel</code>)</i>\n\n" +
-  "<i>(Make sure the bot is an Administrator in that channel!)</i>";
+  "• <b>Current Storage Channel:</b> <code>" + escapeHtml(currentStorage) + "</code>\n" +
+  "• <b>Default Storage Channel:</b> <code>-1004304151228</code>\n\n" +
+  "👉 <b>How to set a Storage Channel:</b>\n" +
+  "• Send the <b>Numeric Chat ID</b> (e.g. <code>-1004304151228</code>)\n" +
+  "• Or send <b>@Username</b> (e.g. <code>@MyStorageBackup</code>)\n" +
+  "• Or simply <b>forward any post</b> from your storage channel here!\n\n" +
+  "<i>⚠️ Note: The bot MUST be an Administrator in your storage channel with 'Post Messages' permission.</i>";
 
 var keyb = [
-  [{ text: "🔄 Reset to Default (-1004304151228)", callback_data: "/resetStorageDefault" }],
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
+  [{ text: "🔄 Reset to Default (-1004304151228)", callback_data: "/resetStorageDefault", style: "primary" }],
+  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin", style: "primary" }]
+];
+
+var storagePrimaryKeyboard = [
+  [{ text: "🔄 Reset to Default Storage", style: "primary" }],
+  [{ text: "⬅️ Back to Admin Panel", style: "primary" }]
 ];
 
 if (request.data) {
@@ -51,6 +58,6 @@ if (request.data) {
   Api.sendMessage({
     text: msg,
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: keyb }
+    reply_markup: { keyboard: storagePrimaryKeyboard, resize_keyboard: true }
   });
 }

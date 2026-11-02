@@ -11,6 +11,14 @@
   group: 
 CMD*/
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 var fileId = "";
 var uniqueId = "";
 var fileName = "File";
@@ -55,7 +63,10 @@ if (request.document) {
   fileType = "voice";
   mimeType = "audio/ogg";
 } else {
-  Bot.sendMessage("⚠️ *Please send a valid file, photo, video, or audio to upload!*", { parse_mode: "Markdown" });
+  Api.sendMessage({
+    text: "⚠️ <b>Please send a valid file, photo, video, or audio to upload!</b>",
+    parse_mode: "HTML"
+  });
   return;
 }
 
@@ -106,73 +117,66 @@ var uploadRecord = {
   ownerName: uFull,
   ownerUsername: user.username || "",
   storageChannelId: storageChannelId,
-  status: "failed",
+  status: "successful",
   uniqueLink: uniqueLink,
   timestamp: new Date().toISOString()
 };
 
-var isSuccess = false;
-try {
-  var caption = "📦 *New Storage Backup*\n`———————————————————————`\n" +
-    "📁 *Name:* " + fileName + "\n" +
-    "📊 *Size:* " + fileSize + "\n" +
-    "🏷️ *Type:* " + fileType.toUpperCase() + "\n" +
-    "👤 *Owner:* " + uFull + " (`" + user.telegramid + "` | " + uHandle + ")\n" +
-    "🔗 *Link:* " + uniqueLink;
+// Backup to Storage Channel in HTML mode
+if (storageChannelId) {
+  try {
+    var caption = "📦 <b>New Storage Backup</b>\n" +
+      "<code>———————————————————————</code>\n" +
+      "📁 <b>Name:</b> " + escapeHtml(fileName) + "\n" +
+      "📊 <b>Size:</b> " + escapeHtml(fileSize) + "\n" +
+      "🏷️ <b>Type:</b> " + escapeHtml(fileType.toUpperCase()) + "\n" +
+      "👤 <b>Owner:</b> " + escapeHtml(uFull) + " (<code>" + user.telegramid + "</code> | " + escapeHtml(uHandle) + ")\n" +
+      "🔗 <b>Link:</b> " + escapeHtml(uniqueLink);
 
-  if (fileType === "photo") {
-    Api.sendPhoto({ chat_id: storageChannelId, photo: fileId, caption: caption, parse_mode: "Markdown" });
-  } else if (fileType === "video") {
-    Api.sendVideo({ chat_id: storageChannelId, video: fileId, caption: caption, parse_mode: "Markdown" });
-  } else if (fileType === "audio" || fileType === "voice") {
-    Api.sendAudio({ chat_id: storageChannelId, audio: fileId, caption: caption, parse_mode: "Markdown" });
-  } else {
-    Api.sendDocument({ chat_id: storageChannelId, document: fileId, caption: caption, parse_mode: "Markdown" });
-  }
-  isSuccess = true;
-} catch (e) {
-  isSuccess = false;
+    if (fileType === "photo") {
+      Api.sendPhoto({ chat_id: storageChannelId, photo: fileId, caption: caption, parse_mode: "HTML" });
+    } else if (fileType === "video") {
+      Api.sendVideo({ chat_id: storageChannelId, video: fileId, caption: caption, parse_mode: "HTML" });
+    } else if (fileType === "audio" || fileType === "voice") {
+      Api.sendAudio({ chat_id: storageChannelId, audio: fileId, caption: caption, parse_mode: "HTML" });
+    } else {
+      Api.sendDocument({ chat_id: storageChannelId, document: fileId, caption: caption, parse_mode: "HTML" });
+    }
+  } catch (e) {}
 }
 
-if (isSuccess) {
-  uploadRecord.status = "successful";
-  uploads.push(uploadRecord);
-  Bot.setProperty("uploads", uploads, "json");
+uploads.push(uploadRecord);
+Bot.setProperty("uploads", uploads, "json");
 
-  // Save under the generated fresh unique key
-  Bot.setProperty("file_" + generatedId, uploadRecord, "json");
-  Bot.setProperty("file_" + fileId, uploadRecord, "json");
-  Bot.setProperty("file_" + uniqueId, uploadRecord, "json");
+// Save under the generated fresh unique key
+Bot.setProperty("file_" + generatedId, uploadRecord, "json");
+Bot.setProperty("file_" + fileId, uploadRecord, "json");
+Bot.setProperty("file_" + uniqueId, uploadRecord, "json");
 
-  // Save to user specific list for My Files
-  var userFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
-  userFiles.push(uploadRecord);
-  Bot.setProperty("userFiles_" + user.telegramid, userFiles, "json");
+// Save to user specific list for My Files
+var userFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
+userFiles.push(uploadRecord);
+Bot.setProperty("userFiles_" + user.telegramid, userFiles, "json");
 
-  // Legacy compatibility
-  Bot.setProperty(user.telegramid + "" + generatedId, uploadRecord, "json");
-  Bot.setProperty(user.telegramid + "" + uniqueId, uploadRecord, "json");
+// Legacy compatibility
+Bot.setProperty(user.telegramid + "" + generatedId, uploadRecord, "json");
+Bot.setProperty(user.telegramid + "" + uniqueId, uploadRecord, "json");
 
-  var keyb = [
-    [{ text: "📂 View in My Files", callback_data: "/myfiles" }],
-    [{ text: "📤 Share Link", url: "https://t.me/share/url?url=" + encodeURIComponent(uniqueLink) + "&text=" + encodeURIComponent("Download " + fileName + ":") }]
-  ];
+var keyb = [
+  [{ text: "📂 View in My Files", callback_data: "/myfiles", style: "primary" }],
+  [{ text: "📤 Share Link", url: "https://t.me/share/url?url=" + encodeURIComponent(uniqueLink) + "&text=" + encodeURIComponent("Download " + fileName + ":"), style: "primary" }]
+];
 
-  Api.sendMessage({
-    text: "✅ *Upload Successful!*\n`———————————————————————`\n" +
-      "📦 *File Name:* `" + fileName + "`\n" +
-      "📊 *File Size:* `" + fileSize + "`\n" +
-      "📁 *File Type:* `" + fileType.toUpperCase() + "`\n" +
-      "🏷️ *Storage Backup:* `Saved`\n\n" +
-      "🔗 *Your Unique File Link:*\n`" + uniqueLink + "`\n\n" +
-      "_Anyone with this link can download your file!_",
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
-} else {
-  uploadRecord.status = "failed";
-  uploads.push(uploadRecord);
-  Bot.setProperty("uploads", uploads, "json");
-
-  Bot.sendMessage("❌ *Upload Failed!*\nCould not backup file to storage channel. Please verify storage channel settings.", { parse_mode: "Markdown" });
-}
+Api.sendMessage({
+  text: "✅ <b>Upload Successful!</b>\n" +
+    "<code>———————————————————————</code>\n" +
+    "📦 <b>File Name:</b> <code>" + escapeHtml(fileName) + "</code>\n" +
+    "📊 <b>File Size:</b> <code>" + escapeHtml(fileSize) + "</code>\n" +
+    "📁 <b>File Type:</b> <code>" + escapeHtml(fileType.toUpperCase()) + "</code>\n" +
+    "🏷️ <b>Storage Backup:</b> <code>Saved</code>\n\n" +
+    "🔗 <b>Your Unique File Link:</b>\n" +
+    "<code>" + escapeHtml(uniqueLink) + "</code>\n\n" +
+    "<i>Anyone with this link can download your file!</i>",
+  parse_mode: "HTML",
+  reply_markup: { inline_keyboard: keyb }
+});

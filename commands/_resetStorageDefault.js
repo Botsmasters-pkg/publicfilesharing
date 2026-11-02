@@ -23,6 +23,11 @@ var keyb = [
 
 var msg = "✅ <b>Storage Channel reset to Default:</b> <code>-1004304151228</code>";
 
+var storagePrimaryKeyboard = [
+  [{ text: "🏷️ Storage Channel", style: "primary" }],
+  [{ text: "⬅️ Back to Admin Panel", style: "primary" }]
+];
+
 if (request.data) {
   Api.editMessageText({
     message_id: request.message.message_id,
@@ -34,6 +39,6 @@ if (request.data) {
   Api.sendMessage({
     text: msg,
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: keyb }
+    reply_markup: { keyboard: storagePrimaryKeyboard, resize_keyboard: true }
   });
 }

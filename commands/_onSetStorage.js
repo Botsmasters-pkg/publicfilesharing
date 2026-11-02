@@ -23,9 +23,10 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-// Extract actual user input cleanly
 var text = "";
-if (params && params.trim() !== "") {
+if (request && request.message && request.message.forward_from_chat) {
+  text = request.message.forward_from_chat.id.toString();
+} else if (params && params.trim() !== "") {
   text = params.trim();
 } else if (request && request.message && request.message.text) {
   text = request.message.text.trim();
@@ -33,7 +34,6 @@ if (params && params.trim() !== "") {
   text = Bot.getProperty("temp_last_text_" + user.telegramid, "");
 }
 
-// Strip command invocation if leaked
 text = text.replace(/^\/onSetStorage\s*/i, "").trim();
 
 if (!text) return;
@@ -46,16 +46,42 @@ if (text === "❌ Cancel" || text === "/cancel" || text.toLowerCase() === "cance
   return;
 }
 
+if (text === "🔄 Reset to Default Storage" || text === "/resetStorageDefault") {
+  Bot.runCommand("/resetStorageDefault");
+  return;
+}
+
+// Format channel identifier cleanly
+var cleanStorage = text;
+if (cleanStorage.indexOf("http") === 0 || cleanStorage.indexOf("t.me/") !== -1) {
+  var cleanUser = cleanStorage.replace(/https?:\/\/t\.me\//i, "").replace("@", "").replace(/\/.*/, "").trim();
+  cleanStorage = "@" + cleanUser;
+} else if (cleanStorage.match(/^-?\d+$/)) {
+  // If numeric ID
+  if (!cleanStorage.startsWith("-")) {
+    cleanStorage = "-100" + cleanStorage.replace(/^100/, "");
+  } else if (!cleanStorage.startsWith("-100") && cleanStorage.length > 7) {
+    cleanStorage = "-100" + cleanStorage.replace(/^-/, "");
+  }
+} else if (!cleanStorage.startsWith("@") && !cleanStorage.startsWith("-")) {
+  cleanStorage = "@" + cleanStorage;
+}
+
 Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
-Bot.setProperty("storageChannel", text, "string");
+Bot.setProperty("storageChannel", cleanStorage, "string");
 
-var keyb = [
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
+var storagePrimaryKeyboard = [
+  [{ text: "🏷️ Storage Channel", style: "primary" }],
+  [{ text: "⬅️ Back to Admin Panel", style: "primary" }]
 ];
 
 Api.sendMessage({
-  text: "✅ <b>Storage Channel successfully set to:</b> <code>" + escapeHtml(text) + "</code>\n\nAll new uploads will automatically be backed up to this channel.",
+  text: "✅ <b>Storage Channel Successfully Set!</b>\n" +
+    "<code>———————————————————————</code>\n\n" +
+    "• <b>Storage Channel ID:</b> <code>" + escapeHtml(cleanStorage) + "</code>\n\n" +
+    "All uploaded files, photos, videos, and documents will automatically be backed up to this channel.\n\n" +
+    "<i>(Ensure the bot is an Administrator in that channel with 'Post Messages' permission)</i>",
   parse_mode: "HTML",
-  reply_markup: { inline_keyboard: keyb }
+  reply_markup: { keyboard: storagePrimaryKeyboard, resize_keyboard: true }
 });

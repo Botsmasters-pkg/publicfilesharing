@@ -45,6 +45,7 @@ for (var c = 0; c < activeChannels.length; c++) {
   var channel = activeChannels[c];
   if (channel.type === "request") {
     Bot.setProperty("join_req_" + channel.id + "_" + user.telegramid, true, "boolean");
+    Bot.setProperty("user_joined_" + channel.id + "_" + user.telegramid, true, "boolean");
   } else {
     channelsToCheck.push(channel);
   }
@@ -52,6 +53,10 @@ for (var c = 0; c < activeChannels.length; c++) {
 
 // If all channels are satisfied, verify immediately!
 if (channelsToCheck.length === 0) {
+  for (var a = 0; a < activeChannels.length; a++) {
+    Bot.setProperty("user_joined_" + activeChannels[a].id + "_" + user.telegramid, true, "boolean");
+  }
+
   var successMsg = "🟢 <b>All Channels Verified Successfully!</b>\n" +
     "<code>———————————————————————</code>\n\n" +
     "Thank you! You now have full access to use the bot.";

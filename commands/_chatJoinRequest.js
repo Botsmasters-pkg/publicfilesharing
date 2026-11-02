@@ -14,6 +14,7 @@ if (request && request.chat_join_request) {
   var cId = request.chat_join_request.chat.id.toString();
   var uId = request.chat_join_request.from.id.toString();
   Bot.setProperty("join_req_" + cId + "_" + uId, true, "boolean");
+  Bot.setProperty("user_joined_" + cId + "_" + uId, true, "boolean");
 
   try {
     Api.approveChatJoinRequest({

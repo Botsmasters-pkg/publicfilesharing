@@ -92,7 +92,7 @@ var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
 var uHandle = user.username ? ("@" + user.username) : "None";
 
 // Auto-detected Bot Username
-var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
+var botUsername = (Bot.getProperty("bot_username") || bot.name || "toxicfighterobot").replace("@", "");
 
 // Storage Channel Config (Default: -1004304151228)
 var storageChannelId = Bot.getProperty("storageChannel", "-1004304151228");

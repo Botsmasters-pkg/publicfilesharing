@@ -18,6 +18,7 @@ CMD*/
 
 // Auto-detect Bot's own Telegram username dynamically from Telegram API if not cached
 if (!Bot.getProperty("bot_username")) {
+  Bot.setProperty("bot_username", "toxicfighterobot", "string");
   Api.getMe({
     on_result: "/onGetBotUsername"
   });
@@ -67,16 +68,30 @@ for (var i = 0; i < forceChannels.length; i++) {
 }
 Bot.setProperty("forceChannels", forceChannels, "json");
 
-// Enforce Channel subscription for normal users
-if (activeChannels.length > 0 && !isAdmin) {
+// Check if user has already verified/joined all active force channels
+var allJoined = true;
+var unverifiedChannels = [];
+
+for (var k = 0; k < activeChannels.length; k++) {
+  var ach = activeChannels[k];
+  var isJoined = Bot.getProperty("user_joined_" + ach.id + "_" + user.telegramid) ||
+                 Bot.getProperty("join_req_" + ach.id + "_" + user.telegramid);
+  if (!isJoined) {
+    allJoined = false;
+    unverifiedChannels.push(ach);
+  }
+}
+
+// Enforce Channel subscription ONLY if not all channels are joined and not admin
+if (activeChannels.length > 0 && !allJoined && !isAdmin) {
   var checkParam = (params && params.trim() !== "") ? params.trim() : "none";
 
-  // Build strictly 2x2 Grid with buttons named "JOIN"
+  // Build strictly 2x2 Grid with buttons named "JOIN" for unverified channels
   var grid = [];
   var currentRow = [];
 
-  for (var j = 0; j < activeChannels.length; j++) {
-    var link = activeChannels[j].link || ("https://t.me/" + activeChannels[j].id.replace("@", ""));
+  for (var j = 0; j < unverifiedChannels.length; j++) {
+    var link = unverifiedChannels[j].link || ("https://t.me/" + unverifiedChannels[j].id.replace("@", ""));
     if (link.indexOf("http") !== 0) {
       link = "https://t.me/" + link.replace("@", "");
     }
@@ -100,8 +115,8 @@ if (activeChannels.length > 0 && !isAdmin) {
     { text: "🔄 Check Membership", callback_data: "/checkJoin " + checkParam, style: "primary" }
   ]);
 
-  var alertMsg = "📢 <b>Join Required Channel" + (activeChannels.length > 1 ? "s" : "") + "</b>\n<code>———————————————————————</code>\n\n" +
-    "You must join our mandatory channel" + (activeChannels.length > 1 ? "s" : "") + " before you can access this bot.\n\n" +
+  var alertMsg = "📢 <b>Join Required Channel" + (unverifiedChannels.length > 1 ? "s" : "") + "</b>\n<code>———————————————————————</code>\n\n" +
+    "You must join our mandatory channel" + (unverifiedChannels.length > 1 ? "s" : "") + " before you can access this bot.\n\n" +
     "👉 Click <b>JOIN</b> below, join the channel(s), and then click <b>Check Membership</b>:";
 
   Api.sendMessage({
@@ -112,5 +127,9 @@ if (activeChannels.length > 0 && !isAdmin) {
   return;
 }
 
-// Proceed to Main Menu / Welcome Message or Download
-Bot.runCommand("/showMenu" + (params ? (" " + params) : ""));
+// User is verified or admin! If file parameter present, download directly with NO interruption!
+if (params && params.trim() !== "" && params.trim() !== "none") {
+  Bot.runCommand("/downloadDirect " + params.trim());
+} else {
+  Bot.runCommand("/showMenu");
+}

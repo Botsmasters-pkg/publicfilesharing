@@ -26,12 +26,11 @@ if (ch) {
   if (ch.type === "request") {
     // 📩 Private Join Request Channel:
     // Once user submits request, verification is SUCCESSFUL!
-    // Admin approval is NOT required. Even if request is pending on review in Telegram,
-    // it is considered verified and NEVER added to unjoined list!
-    // Mark verified immediately:
     Bot.setProperty("join_req_" + ch.id + "_" + user.telegramid, true, "boolean");
+    Bot.setProperty("user_joined_" + ch.id + "_" + user.telegramid, true, "boolean");
   } else if (isMember) {
     // Public or Regular Private channel: membership confirmed!
+    Bot.setProperty("user_joined_" + ch.id + "_" + user.telegramid, true, "boolean");
   } else {
     // Public or Regular Private channel not joined: add to unjoined list
     var unjoined = Bot.getProperty("verify_unjoined_" + user.telegramid, []);
@@ -56,7 +55,11 @@ if (nextIndex < queue.length) {
   var finalUnjoined = Bot.getProperty("verify_unjoined_" + user.telegramid, []);
 
   if (finalUnjoined.length === 0) {
-    // 🟢 All Channels Verified Successfully!
+    // 🟢 All Channels Verified Successfully! Mark all joined permanently
+    for (var q = 0; q < queue.length; q++) {
+      Bot.setProperty("user_joined_" + queue[q].id + "_" + user.telegramid, true, "boolean");
+    }
+
     var successMsg = "🟢 <b>All Channels Verified Successfully!</b>\n" +
       "<code>———————————————————————</code>\n\n" +
       "Thank you! You now have full access to use the bot.";

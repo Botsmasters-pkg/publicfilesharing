@@ -71,14 +71,14 @@ downloadLogs.push({
 });
 Bot.setProperty("downloadLogs", downloadLogs, "json");
 
-var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
+var botUsername = (Bot.getProperty("bot_username") || "toxicfighterobot").replace("@", "");
 
-// Send File according to media type with safe HTML parse mode
+// Send File according to media type with safe HTML parse mode and clickable bot username link
 var caption = "📥 <b>File Download Complete!</b>\n" +
   "<code>———————————————————————</code>\n" +
   "📦 <b>Name:</b> <code>" + escapeHtml(targetFileName) + "</code>\n" +
   (file && file.fileSize ? ("📊 <b>Size:</b> " + escapeHtml(file.fileSize) + "\n\n") : "\n") +
-  "<i>Downloaded via @" + escapeHtml(botUsername) + "</i>";
+  "🤖 <i>Downloaded via <a href=\"https://t.me/" + escapeHtml(botUsername) + "\">@" + escapeHtml(botUsername) + "</a></i>";
 
 if (targetFileType === "photo") {
   Api.sendPhoto({ chat_id: user.telegramid, photo: targetFileId, caption: caption, parse_mode: "HTML" });

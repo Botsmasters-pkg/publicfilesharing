@@ -18,24 +18,19 @@ if (!isAdmin) return;
 Bot.setProperty("forceChannels", [], "json");
 Bot.setProperty("forceChannel", null);
 
-var keyb = [
-  [{ text: "➕ Add Channel", callback_data: "/fcAdd" }],
-  [{ text: "⬅️ Back to Force Channels", callback_data: "/adminForceChannel" }]
+var clearForcePrimary = [
+  [{ text: "➕ Add Channel", style: "primary" }],
+  [{ text: "⬅️ Back to Force Channels", style: "primary" }]
 ];
 
 var msg = "🗑️ *All Force Channels have been cleared!*";
 
 if (request.data) {
-  Api.editMessageText({
-    message_id: request.message.message_id,
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
-} else {
-  Api.sendMessage({
-    text: msg,
-    parse_mode: "Markdown",
-    reply_markup: { inline_keyboard: keyb }
-  });
+  try { Api.deleteMessage({ message_id: request.message.message_id }); } catch (e) {}
 }
+
+Api.sendMessage({
+  text: msg,
+  parse_mode: "Markdown",
+  reply_markup: { keyboard: clearForcePrimary, resize_keyboard: true }
+});

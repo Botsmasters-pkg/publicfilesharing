@@ -25,6 +25,7 @@ var activeChannels = [];
 for (var i = 0; i < forceChannels.length; i++) {
   var ch = forceChannels[i];
   if (ch.enabled === false) continue;
+  if (!ch.id || ch.id.indexOf("/fc") !== -1 || (ch.link && ch.link.indexOf("/fc") !== -1)) continue;
   if (!ch.expired) {
     if (ch.expiryTime > 0 && now >= ch.expiryTime) {
       ch.expired = true;

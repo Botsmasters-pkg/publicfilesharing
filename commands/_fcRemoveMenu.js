@@ -15,7 +15,17 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-var forceChannels = Bot.getProperty("forceChannels", []);
+var rawChannels = Bot.getProperty("forceChannels", []);
+var forceChannels = [];
+for (var k = 0; k < rawChannels.length; k++) {
+  var c = rawChannels[k];
+  if (c && c.id && c.id.indexOf("/fc") === -1 && (!c.link || c.link.indexOf("/fc") === -1)) {
+    forceChannels.push(c);
+  }
+}
+if (forceChannels.length !== rawChannels.length) {
+  Bot.setProperty("forceChannels", forceChannels, "json");
+}
 
 if (!forceChannels || forceChannels.length === 0) {
   Bot.sendMessage("⚠️ No channels to remove.");

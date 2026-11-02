@@ -57,6 +57,9 @@ function formatPlaceholders(text) {
 
 // Welcome Message (Admin Customizable: Text, Photo, or Video with dynamic placeholders)
 var wm = Bot.getProperty("welcomeMessage");
+if (typeof wm === "string") {
+  wm = { type: "text", text: wm };
+}
 if (!wm || !wm.type || (wm.text && (wm.text.indexOf("/") === 0 || wm.text === "/onSetWelcome")) || (wm.caption && (wm.caption.indexOf("/") === 0 || wm.caption === "/onSetWelcome"))) {
   wm = { type: "text", text: "" };
   Bot.setProperty("welcomeMessage", null);

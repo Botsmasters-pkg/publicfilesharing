@@ -10,12 +10,23 @@
   group: 
 CMD*/
 
-var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
+if (!user) return;
+
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 if (!isAdmin) return;
 
-if (!message) return;
+var text = "";
+if (params && params.trim() !== "") {
+  text = params.trim();
+} else if (request && request.message && request.message.text) {
+  text = request.message.text.trim();
+} else {
+  text = Bot.getProperty("temp_last_text_" + user.telegramid, "");
+}
 
-var text = message.trim();
+text = text.replace(/^\/onSetForce\s*/i, "").trim();
+if (!text) return;
+
 if (text === "❌ Cancel" || text === "/cancel") {
   Bot.sendMessage("Action cancelled.");
   Bot.runCommand("/admin");
@@ -33,4 +44,3 @@ Api.sendMessage({
   parse_mode: "Markdown",
   reply_markup: { inline_keyboard: keyb }
 });
-

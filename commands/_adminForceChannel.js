@@ -19,7 +19,18 @@ if (!isAdmin) return;
 Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 
-var forceChannels = Bot.getProperty("forceChannels", []);
+var rawChannels = Bot.getProperty("forceChannels", []);
+var forceChannels = [];
+for (var k = 0; k < rawChannels.length; k++) {
+  var c = rawChannels[k];
+  if (c && c.id && c.id.indexOf("/fc") === -1 && (!c.link || c.link.indexOf("/fc") === -1)) {
+    forceChannels.push(c);
+  }
+}
+if (forceChannels.length !== rawChannels.length) {
+  Bot.setProperty("forceChannels", forceChannels, "json");
+}
+
 var activeCount = 0;
 var disabledCount = 0;
 var expiredCount = 0;

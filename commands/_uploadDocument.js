@@ -18,7 +18,7 @@ if (request.data) {
       chat_id: request.message.chat.id,
       message_id: request.message.message_id
     });
-  } catch (e) {}
+  } catch (e) { }
 }
 
 function escapeHtml(str) {
@@ -89,7 +89,7 @@ if (storageChannel) {
     } else {
       Api.sendDocument({ chat_id: storageChannel, document: result.file_id, caption: caption, parse_mode: "HTML" });
     }
-  } catch (err) {}
+  } catch (err) { }
 }
 
 var keyb = [

@@ -27,19 +27,22 @@ for (var k = 0; k < userFiles.length; k++) {
 }
 
 if (!myFiles || myFiles.length === 0) {
-  var emptyMsg = "📂 *My Files Dashboard*\n`———————————————————————`\n\n" +
+  var emptyMsg = "📂 <b>My Files Dashboard</b>\n<code>———————————————————————</code>\n\n" +
     "You haven't uploaded any files yet.\n\n" +
-    "👉 Click *📝 Upload Files* below to upload your first file (Photos, Videos, Documents, Audio)!\n\n" +
-    "_Every file you upload will appear here with its Unique Link and Personal Traffic Tracking._";
+    "👉 Click <b>📝 Upload Files</b> below to upload your first file (Photos, Videos, Documents, Audio)!\n\n" +
+    "<i>Every file you upload will appear here with its Unique Link and Personal Traffic Tracking.</i>";
 
   if (request.data) {
     Api.editMessageText({
       message_id: request.message.message_id,
       text: emptyMsg,
-      parse_mode: "Markdown"
+      parse_mode: "HTML"
     });
   } else {
-    Bot.sendMessage(emptyMsg, { parse_mode: "Markdown" });
+    Api.sendMessage({
+      text: emptyMsg,
+      parse_mode: "HTML"
+    });
   }
   return;
 }

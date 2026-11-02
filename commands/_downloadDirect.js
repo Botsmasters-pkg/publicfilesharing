@@ -12,6 +12,14 @@ CMD*/
 
 if (!params) return;
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 var targetId = params.trim();
 var file = Bot.getProperty("file_" + targetId);
 if (!file) {
@@ -65,18 +73,19 @@ Bot.setProperty("downloadLogs", downloadLogs, "json");
 
 var botUsername = (Bot.getProperty("bot_username") || bot.name || "FileStoreToxicBot").replace("@", "");
 
-// Send File according to media type
-var caption = "📥 *File Download Complete!*\n`———————————————————————`\n" +
-  "📦 *Name:* " + targetFileName + "\n" +
-  (file && file.fileSize ? ("📊 *Size:* " + file.fileSize + "\n\n") : "\n") +
-  "_Downloaded via @" + botUsername + "_";
+// Send File according to media type with safe HTML parse mode
+var caption = "📥 <b>File Download Complete!</b>\n" +
+  "<code>———————————————————————</code>\n" +
+  "📦 <b>Name:</b> <code>" + escapeHtml(targetFileName) + "</code>\n" +
+  (file && file.fileSize ? ("📊 <b>Size:</b> " + escapeHtml(file.fileSize) + "\n\n") : "\n") +
+  "<i>Downloaded via @" + escapeHtml(botUsername) + "</i>";
 
 if (targetFileType === "photo") {
-  Api.sendPhoto({ chat_id: user.telegramid, photo: targetFileId, caption: caption, parse_mode: "Markdown" });
+  Api.sendPhoto({ chat_id: user.telegramid, photo: targetFileId, caption: caption, parse_mode: "HTML" });
 } else if (targetFileType === "video") {
-  Api.sendVideo({ chat_id: user.telegramid, video: targetFileId, caption: caption, parse_mode: "Markdown" });
+  Api.sendVideo({ chat_id: user.telegramid, video: targetFileId, caption: caption, parse_mode: "HTML" });
 } else if (targetFileType === "audio" || targetFileType === "voice") {
-  Api.sendAudio({ chat_id: user.telegramid, audio: targetFileId, caption: caption, parse_mode: "Markdown" });
+  Api.sendAudio({ chat_id: user.telegramid, audio: targetFileId, caption: caption, parse_mode: "HTML" });
 } else {
-  Api.sendDocument({ chat_id: user.telegramid, document: targetFileId, caption: caption, parse_mode: "Markdown" });
+  Api.sendDocument({ chat_id: user.telegramid, document: targetFileId, caption: caption, parse_mode: "HTML" });
 }

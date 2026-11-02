@@ -10,6 +10,8 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 if (params && params.trim() !== "" && params.trim() !== "none") {
   Bot.runCommand("/downloadDirect " + params.trim());
   return;
@@ -34,12 +36,6 @@ if (isAdmin) {
   ]);
 }
 
-// Bots.Business native keyboard string
-var bbKeyboard = "📝 Upload Files,🗂 My Files\n📊 Traffic,🆘 Support";
-if (isAdmin) {
-  bbKeyboard += "\n🛠 Admin Panel";
-}
-
 // Full Name & Username Auto-Detection
 var uFirst = user.first_name || "";
 var uLast = user.last_name || "";
@@ -60,19 +56,17 @@ function formatPlaceholders(text) {
 }
 
 // Welcome Message (Admin Customizable: Text, Photo, or Video with dynamic placeholders)
-var wm = Bot.getProperty("welcomeMessage", {
-  type: "text",
-  text: "",
-  media: "",
-  caption: ""
-});
+var wm = Bot.getProperty("welcomeMessage");
+if (!wm || !wm.type || (wm.text && (wm.text.indexOf("/") === 0 || wm.text === "/onSetWelcome"))) {
+  wm = { type: "text", text: "" };
+  Bot.setProperty("welcomeMessage", null);
+}
 
-var defaultText = "👋 Hi " + uMention + (uHandle ? " (" + uHandle + ")" : "") + "!\n\nI am File Store Bot. You can securely upload, store and share your files.\n\nChoose an option below to get started:";
+var defaultText = "👋 Hi " + uMention + (uHandle ? " (" + uHandle + ")" : "") + "!\n\n" +
+  "I am *File Store Bot*. You can securely upload, store and share your files.\n\n" +
+  "Choose an option below to get started:";
 
-// Send Primary Keyboard
-Bot.sendKeyboard(bbKeyboard, "👇 Use the menu below to navigate:");
-
-// Send Welcome Message with reply_markup keyboard
+// Send single clean message with Primary Keyboard
 if (wm.type === "photo" && wm.media) {
   var photoCap = wm.caption ? formatPlaceholders(wm.caption) : defaultText;
   Api.sendPhoto({
@@ -92,7 +86,7 @@ if (wm.type === "photo" && wm.media) {
     reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
   });
 } else {
-  var textMsg = wm.text ? formatPlaceholders(wm.text) : defaultText;
+  var textMsg = (wm && wm.text && wm.text.indexOf("/") !== 0) ? formatPlaceholders(wm.text) : defaultText;
   Api.sendMessage({
     chat_id: user.telegramid,
     text: textMsg,

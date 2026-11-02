@@ -162,19 +162,19 @@ if (incomingText) {
       Bot.runCommand("/fcList");
       return;
     }
-    // Specific channel remove (e.g. "❌ Remove Channel 4")
-    var chRemoveMatch = t.match(/Remove Channel\s+(\d+)/i);
-    if (chRemoveMatch) {
-      var rIdx = parseInt(chRemoveMatch[1]) - 1;
-      Bot.runCommand("/fcRemovePrompt " + rIdx);
-      return;
-    }
-
     // Specific channel remove confirmation (e.g. "🗑️ Yes, Remove Channel 4")
-    var chConfirmMatch = t.match(/Yes,?\s*Remove Channel\s+(\d+)/i);
+    var chConfirmMatch = t.match(/Yes[,\s]+(?:Remove\s+Channel|Remove)\s+(\d+)/i);
     if (chConfirmMatch) {
       var cIdx = parseInt(chConfirmMatch[1]) - 1;
       Bot.runCommand("/fcRemoveConfirm " + cIdx);
+      return;
+    }
+
+    // Specific channel remove prompt (e.g. "❌ Remove Channel 4")
+    var chRemoveMatch = t.match(/^[❌\s]*Remove\s+Channel\s+(\d+)/i);
+    if (chRemoveMatch) {
+      var rIdx = parseInt(chRemoveMatch[1]) - 1;
+      Bot.runCommand("/fcRemovePrompt " + rIdx);
       return;
     }
 

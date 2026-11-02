@@ -11,14 +11,14 @@
 CMD*/
 
 if (request && request.chat_join_request) {
-  var cId = request.chat_join_request.chat.id;
-  var uId = request.chat_join_request.from.id;
+  var cId = request.chat_join_request.chat.id.toString();
+  var uId = request.chat_join_request.from.id.toString();
   Bot.setProperty("join_req_" + cId + "_" + uId, true, "boolean");
 
-  // Automatically approve join request on Telegram
-  Api.approveChatJoinRequest({
-    chat_id: cId,
-    user_id: uId
-  });
+  try {
+    Api.approveChatJoinRequest({
+      chat_id: cId,
+      user_id: uId
+    });
+  } catch (e) {}
 }
-

@@ -10,6 +10,8 @@
   group: 
 CMD*/
 
+if (!user) return;
+
 var parts = (params || "").split(" ");
 var index = parseInt(parts[0] || "0");
 var checkParam = parts.slice(1).join(" ") || "none";
@@ -21,19 +23,17 @@ if (ch) {
   var status = (options && options.result) ? options.result.status : "";
   var isMember = (status === "member" || status === "administrator" || status === "creator");
 
-  if (isMember) {
-    // Channel is joined!
-  } else if (ch.type === "request") {
-    var hasReq = Bot.getProperty("join_req_" + ch.id + "_" + user.telegramid);
-    if (hasReq) {
-      // Join request received: verified immediately!
-    } else {
-      var unjoined = Bot.getProperty("verify_unjoined_" + user.telegramid, []);
-      unjoined.push(ch);
-      Bot.setProperty("verify_unjoined_" + user.telegramid, unjoined, "json");
-    }
+  if (ch.type === "request") {
+    // 📩 Private Join Request Channel:
+    // Once user submits request, verification is SUCCESSFUL!
+    // Admin approval is NOT required. Even if request is pending on review in Telegram,
+    // it is considered verified and NEVER added to unjoined list!
+    // Mark verified immediately:
+    Bot.setProperty("join_req_" + ch.id + "_" + user.telegramid, true, "boolean");
+  } else if (isMember) {
+    // Public or Regular Private channel: membership confirmed!
   } else {
-    // Channel not joined: add to unjoined list
+    // Public or Regular Private channel not joined: add to unjoined list
     var unjoined = Bot.getProperty("verify_unjoined_" + user.telegramid, []);
     unjoined.push(ch);
     Bot.setProperty("verify_unjoined_" + user.telegramid, unjoined, "json");
@@ -43,7 +43,7 @@ if (ch) {
 var nextIndex = index + 1;
 
 if (nextIndex < queue.length) {
-  // Check next channel directly with Api.getChatMember without Bot.runCommand nesting!
+  // Check next channel directly with Api.getChatMember
   var nextChannel = queue[nextIndex];
   Api.getChatMember({
     chat_id: nextChannel.id,

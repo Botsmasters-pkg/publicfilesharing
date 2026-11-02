@@ -10,6 +10,13 @@
   group: 
 CMD*/
 
+if (request && request.chat_join_request) {
+  var cId = request.chat_join_request.chat.id.toString();
+  var uId = request.chat_join_request.from.id.toString();
+  Bot.setProperty("join_req_" + cId + "_" + uId, true, "boolean");
+  return;
+}
+
 if (!user) return;
 
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;

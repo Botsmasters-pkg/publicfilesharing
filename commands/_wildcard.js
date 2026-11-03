@@ -181,12 +181,20 @@ if (incomingText) {
       Bot.runCommand("/adminStorage");
       return;
     }
-    if (t === "👋 Welcome Message" || low.indexOf("welcome message") !== -1) {
+    if (t === "👋 Welcome Message" || low.indexOf("welcome message") !== -1 || low === "/setwelcome") {
       Bot.runCommand("/adminWelcome");
       return;
     }
-    if (t === "📣 Broadcast" || low === "broadcast") {
+    if (t === "📣 Broadcast" || low === "broadcast" || low === "/broadcast") {
       Bot.runCommand("/adminBroadcast");
+      return;
+    }
+    if (low === "/setstorage") {
+      Bot.runCommand("/setNewStorage");
+      return;
+    }
+    if (low === "/setforce") {
+      Bot.runCommand("/fcAdd");
       return;
     }
     if (t === "💾 CSV Export" || low.indexOf("export") !== -1) {

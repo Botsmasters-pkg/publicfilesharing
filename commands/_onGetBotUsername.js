@@ -11,8 +11,13 @@
 CMD*/
 
 if (options && options.result && options.result.username) {
-  Bot.setProperty("bot_username", options.result.username, "string");
-  Bot.setProperty("bot_id", options.result.id, "string");
-  Bot.setProperty("bot_first_name", options.result.first_name, "string");
+  var realUsername = options.result.username.replace("@", "").trim();
+  Bot.setProperty("bot_username", realUsername, "string");
+  Bot.setProperty("bot_id", options.result.id.toString(), "string");
+  if (options.result.first_name) {
+    Bot.setProperty("bot_first_name", options.result.first_name, "string");
+  }
+  if (bot && bot.id) {
+    Bot.setProperty("bb_bot_id", bot.id, "integer");
+  }
 }
-

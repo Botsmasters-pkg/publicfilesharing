@@ -22,7 +22,7 @@ function escapeHtml(str) {
 
 var uniqueId = params.trim();
 var file = Bot.getProperty("file_" + uniqueId) || Bot.getProperty(user.telegramid + "" + uniqueId);
-var botUsername = (Bot.getProperty("bot_username") || bot.name || "toxicfighterobot").replace("@", "");
+var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
 
 var shareLink = (file && file.uniqueLink) ? file.uniqueLink : ("https://t.me/" + botUsername + "?start=" + uniqueId);
 

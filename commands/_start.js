@@ -16,13 +16,25 @@
   group: 
 CMD*/
 
-// Auto-detect Bot's own Telegram username dynamically from Telegram API if not cached
-if (!Bot.getProperty("bot_username")) {
-  Bot.setProperty("bot_username", "toxicfighterobot", "string");
-  Api.getMe({
-    on_result: "/onGetBotUsername"
-  });
+// Auto-detect Bot's own Telegram username dynamically from Telegram API
+var currentBotId = (bot && bot.id) ? bot.id : 0;
+var savedBotId = Bot.getProperty("bb_bot_id");
+var currentCachedUser = Bot.getProperty("bot_username");
+
+// If cloned bot instance or parent username is stuck in a clone:
+if (currentBotId && (currentBotId != 1793554159 || savedBotId !== currentBotId)) {
+  if (currentCachedUser === "toxicfighterobot" || savedBotId !== currentBotId) {
+    Bot.setProperty("bb_bot_id", currentBotId, "integer");
+    Bot.setProperty("bot_username", null);
+    Bot.setProperty("bot_id", null);
+    Bot.setProperty("bot_first_name", null);
+  }
 }
+
+// Always query Telegram API using this bot instance's own token
+Api.getMe({
+  on_result: "/onGetBotUsername"
+});
 
 // Save user to allBotUsers
 var allUsers = Bot.getProperty("allBotUsers", []);

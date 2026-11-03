@@ -26,7 +26,7 @@ if (!isAdmin) {
 Bot.setProperty("admin_state_" + user.telegramid, "", "string");
 Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
 
-var botUsername = (Bot.getProperty("bot_username") || bot.name || "toxicfighterobot").replace("@", "");
+var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
 
 function escapeHtml(str) {
   if (!str) return "";

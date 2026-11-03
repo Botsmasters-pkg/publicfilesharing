@@ -20,6 +20,13 @@ if (request && request.chat_join_request) {
 
 if (!user) return;
 
+// Auto-detect Bot username dynamically from Telegram API if not cached
+if (!Bot.getProperty("bot_username")) {
+  Api.getMe({
+    on_result: "/onGetBotUsername"
+  });
+}
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 var adminState = Bot.getProperty("admin_state_" + user.telegramid, "");
 

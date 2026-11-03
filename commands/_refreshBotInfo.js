@@ -15,13 +15,21 @@ if (!user) return;
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || (Bot.getProperty("admin_" + user.telegramid) == true) || user.is_admin;
 if (!isAdmin) return;
 
-var current = Bot.getProperty("bot_username") || bot.name || "toxicfighterobot";
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
 
 Api.getMe({
   on_result: "/onGetBotUsername"
 });
 
+var current = Bot.getProperty("bot_username") || (bot && bot.name) || "Detecting...";
+
 Api.sendMessage({
-  text: "🔄 <b>Detecting Bot Username...</b>\nCurrent: @" + current.replace("@", "") + "\n\n<i>Refreshed from Telegram API!</i>",
+  text: "🔄 <b>Detecting Bot Username...</b>\n\n• Current: <b>@" + escapeHtml(current.replace("@", "")) + "</b>\n• Querying live Telegram API...\n\n<i>Bot username, ID, and identity refreshed directly from Telegram API!</i>",
   parse_mode: "HTML"
 });

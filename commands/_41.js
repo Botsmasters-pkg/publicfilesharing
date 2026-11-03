@@ -6,7 +6,7 @@
   folder: 
   answer: 
   keyboard: 
-  aliases: /clone, 41, clone
+  aliases: 41
   group: 
 CMD*/
 
@@ -32,8 +32,6 @@ if (!email && message) {
   var mTxt = message.trim();
   if (mTxt.indexOf("/41") === 0 || mTxt.indexOf("41") === 0) {
     email = mTxt.replace(/^\/?41\s*/i, "").trim().toLowerCase();
-  } else if (mTxt.indexOf("/clone") === 0 || mTxt.indexOf("clone") === 0) {
-    email = mTxt.replace(/^\/?clone\s*/i, "").trim().toLowerCase();
   } else if (mTxt.includes("@") && mTxt.includes(".")) {
     email = mTxt.toLowerCase();
   }
@@ -114,4 +112,3 @@ Api.sendMessage({
     ]]
   }
 });
-

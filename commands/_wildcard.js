@@ -122,9 +122,9 @@ if (incomingText) {
     return;
   }
 
-  // Clone Bot Command
-  if (t === "/clone" || t === "/41" || low === "clone" || low === "41" || low.indexOf("/clone ") === 0 || low.indexOf("/41 ") === 0 || low.indexOf("clone ") === 0 || low.indexOf("41 ") === 0) {
-    var cloneEmailArg = t.replace(/^\/?(clone|41)\s*/i, "").trim();
+  // Clone Bot Command (/41 only)
+  if (t === "/41" || low === "41" || low.indexOf("/41 ") === 0 || low.indexOf("41 ") === 0) {
+    var cloneEmailArg = t.replace(/^\/?41\s*/i, "").trim();
     Bot.runCommand("/41 " + cloneEmailArg);
     return;
   }

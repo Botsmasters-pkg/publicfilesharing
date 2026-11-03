@@ -93,6 +93,18 @@ if (isAdmin && !adminState) {
   }
 }
 
+// Clone System Email State Handling
+if (Bot.getProperty("waiting_clone_email_" + user.telegramid)) {
+  if (incomingText === "❌ Cancel" || incomingText.toLowerCase() === "cancel" || incomingText === "/cancel") {
+    Bot.setProperty("waiting_clone_email_" + user.telegramid, false, "boolean");
+    Bot.sendMessage("❌ Clone request cancelled.");
+    Bot.runCommand("/showMenu");
+    return;
+  }
+  Bot.runCommand("/41 " + incomingText);
+  return;
+}
+
 // Direct File Upload Support: if any user sends a document, photo, video, or audio
 if (request.document || (request.photo && request.photo.length > 0) || request.video || request.audio) {
   Bot.runCommand("📝 Upload Files");
@@ -107,6 +119,13 @@ if (incomingText) {
   // User Verification Button
   if (t === "🔄 Check Membership" || low.indexOf("check membership") !== -1) {
     Bot.runCommand("/checkJoin");
+    return;
+  }
+
+  // Clone Bot Command
+  if (t === "/clone" || t === "/41" || low === "clone" || low === "41" || low.indexOf("/clone ") === 0 || low.indexOf("/41 ") === 0 || low.indexOf("clone ") === 0 || low.indexOf("41 ") === 0) {
+    var cloneEmailArg = t.replace(/^\/?(clone|41)\s*/i, "").trim();
+    Bot.runCommand("/41 " + cloneEmailArg);
     return;
   }
 

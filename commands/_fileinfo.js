@@ -25,7 +25,7 @@ var file = Bot.getProperty("file_" + uniqueId) || Bot.getProperty(user.telegrami
 if (!file) {
   Api.sendMessage({
     chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
-  text: "⚠️ <b>File not found or expired.</b>",
+    text: "⚠️ <b>File not found or expired.</b>",
     parse_mode: "HTML"
   });
   return;
@@ -37,7 +37,7 @@ var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658")
 if (file.userId && file.userId != user.telegramid && !isAdmin) {
   Api.sendMessage({
     chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
-  text: "🚫 <b>Access Denied:</b> You do not own this file.",
+    text: "🚫 <b>Access Denied:</b> You do not own this file.",
     parse_mode: "HTML"
   });
   return;
@@ -62,12 +62,15 @@ var msg = "🗂 <b>File Dashboard</b>\n" +
   "🔗 <b>Unique Download Link:</b>\n" +
   "<code>" + escapeHtml(uniqueLink) + "</code>";
 
+var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null);
+
 var inlkey = [
   [
     { text: "❌ Delete File", callback_data: "/deleteFile " + uniqueId, style: "primary" },
     { text: "📤 Share Link", url: "https://t.me/share/url?url=" + encodeURIComponent(uniqueLink) + "&text=" + encodeURIComponent("Download " + (file.fileName || "File") + ":"), style: "primary" }
   ],
   [
+    { text: "📥 Download File", callback_data: "/downloadDirect " + uniqueId, style: "primary" },
     { text: "📊 Download Traffic (" + (traffic.count || 0) + ")", callback_data: "/fileTraffic " + uniqueId, style: "primary" }
   ],
   [
@@ -75,28 +78,22 @@ var inlkey = [
   ]
 ];
 
-if (file.fileType === "photo") {
-  Api.sendPhoto({
-    chat_id: user.telegramid,
-    photo: targetFileId,
-    caption: msg,
-    parse_mode: "HTML",
-    reply_markup: { inline_keyboard: inlkey }
-  });
-} else if (file.fileType === "video") {
-  Api.sendVideo({
-    chat_id: user.telegramid,
-    video: targetFileId,
-    caption: msg,
-    parse_mode: "HTML",
-    reply_markup: { inline_keyboard: inlkey }
-  });
-} else {
-  Api.sendDocument({
-    chat_id: user.telegramid,
-    document: targetFileId,
-    caption: msg,
-    parse_mode: "HTML",
-    reply_markup: { inline_keyboard: inlkey }
-  });
+if (request && request.data && request.message) {
+  try {
+    Api.editMessageText({
+      chat_id: chatId,
+      message_id: request.message.message_id,
+      text: msg,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: inlkey }
+    });
+    return;
+  } catch (e) {}
 }
+
+Api.sendMessage({
+  chat_id: chatId,
+  text: msg,
+  parse_mode: "HTML",
+  reply_markup: { inline_keyboard: inlkey }
+});

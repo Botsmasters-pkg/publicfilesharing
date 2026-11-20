@@ -17,6 +17,27 @@
 CMD*/
 
 var userFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
+if (!userFiles || userFiles.length === 0) {
+  var uList = User.getProperty("userFileList", []);
+  if (uList && uList.length > 0) {
+    userFiles = [];
+    var botU = (Bot.getProperty("bot_username") || "bot").replace("@", "");
+    for (var u = 0; u < uList.length; u++) {
+      var itemKey = uList[u].file_unique_id || uList[u].uniqueKey || uList[u].fileUniqueId;
+      var fileObj = Bot.getProperty("file_" + itemKey) || Bot.getProperty(user.telegramid + "" + itemKey) || {
+        fileName: uList[u].file_name || "File",
+        fileType: uList[u].file_type || "document",
+        fileSize: "N/A",
+        uniqueKey: itemKey,
+        fileUniqueId: itemKey,
+        userId: user.telegramid,
+        status: "successful",
+        uniqueLink: uList[u].uniqueLink || ("https://t.me/" + botU + "?start=" + itemKey)
+      };
+      userFiles.push(fileObj);
+    }
+  }
+}
 
 // Strict User Ownership: Only show successful uploads belonging to THIS user
 var myFiles = [];

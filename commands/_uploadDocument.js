@@ -60,13 +60,24 @@ var fileEntry = {
   file_type: result.file_type || "document"
 };
 userFileList.push(fileEntry);
-User.setProperty("userFileList", userFileList, "json");
+if (userFileList.length > 30) {
+  userFileList = userFileList.slice(-30);
+}
+try {
+  User.setProperty("userFileList", userFileList, "json");
+} catch (e) {}
 
 // Add to global files list
 var allBotFiles = Bot.getProperty("allBotFiles", []);
+if (!Array.isArray(allBotFiles)) { allBotFiles = []; }
 if (allBotFiles.indexOf(result.file_unique_id) === -1) {
   allBotFiles.push(result.file_unique_id);
-  Bot.setProperty("allBotFiles", allBotFiles, "json");
+  if (allBotFiles.length > 500) {
+    allBotFiles = allBotFiles.slice(-500);
+  }
+  try {
+    Bot.setProperty("allBotFiles", allBotFiles, "json");
+  } catch (e) {}
 }
 var totalCount = (Bot.getProperty("totalFilesCount", 0) || 0) + 1;
 Bot.setProperty("totalFilesCount", totalCount, "integer");

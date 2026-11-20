@@ -18,7 +18,10 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-var userFileList = User.getProperty("userFileList", []);
+var userFileList = Bot.getProperty("userFiles_" + user.telegramid, []);
+if (!userFileList || userFileList.length === 0) {
+  userFileList = User.getProperty("userFileList", []) || [];
+}
 
 var totalUserUploads = userFileList ? userFileList.length : 0;
 var totalUserDownloads = 0;
@@ -27,8 +30,9 @@ var lines = [];
 var inlkey = [];
 
 for (var i = 0; i < totalUserUploads; i++) {
-  var itemKey = userFileList[i].file_unique_id;
-  var fileInfo = Bot.getProperty(user.telegramid + "" + itemKey) || Bot.getProperty("file_" + itemKey);
+  var item = userFileList[i];
+  var itemKey = item.uniqueKey || item.fileUniqueId || item.file_unique_id;
+  var fileInfo = Bot.getProperty("file_" + itemKey) || Bot.getProperty(user.telegramid + "" + itemKey) || item;
   var traffic = Bot.getProperty("traffic_" + itemKey, { count: 0 });
   var dlCount = traffic.count || 0;
   totalUserDownloads += dlCount;

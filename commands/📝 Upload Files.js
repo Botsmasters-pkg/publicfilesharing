@@ -100,8 +100,15 @@ if (!storageChannelId || storageChannelId === "@https:" || storageChannelId.inde
   storageChannelId = "-1004304151228";
 }
 
+var totalUploads = (Bot.getProperty("total_uploads_count", 0) || 0) + 1;
+Bot.setProperty("total_uploads_count", totalUploads, "integer");
+
+var totalSuccessful = (Bot.getProperty("total_successful_uploads", 0) || 0) + 1;
+Bot.setProperty("total_successful_uploads", totalSuccessful, "integer");
+
 var uploads = Bot.getProperty("uploads", []);
-var newId = uploads.length > 0 ? (uploads[uploads.length - 1].id + 1) : 1;
+if (!Array.isArray(uploads)) { uploads = []; }
+var newId = totalUploads > uploads.length ? totalUploads : (uploads.length > 0 ? (uploads[uploads.length - 1].id + 1) : 1);
 
 // Unique Link with the fresh generated ID:
 var uniqueLink = "https://t.me/" + botUsername + "?start=" + generatedId;
@@ -148,22 +155,54 @@ if (storageChannelId) {
   } catch (e) {}
 }
 
+// Keep uploads array capped to latest 20 items so it NEVER exceeds Bots.Business 20KB limit
 uploads.push(uploadRecord);
-Bot.setProperty("uploads", uploads, "json");
+if (uploads.length > 20) {
+  uploads = uploads.slice(-20);
+}
+try {
+  Bot.setProperty("uploads", uploads, "json");
+} catch (e) {}
 
 // Save under the generated fresh unique key
-Bot.setProperty("file_" + generatedId, uploadRecord, "json");
-Bot.setProperty("file_" + fileId, uploadRecord, "json");
-Bot.setProperty("file_" + uniqueId, uploadRecord, "json");
+try {
+  Bot.setProperty("file_" + generatedId, uploadRecord, "json");
+  Bot.setProperty("file_" + fileId, uploadRecord, "json");
+  Bot.setProperty("file_" + uniqueId, uploadRecord, "json");
+} catch (e) {}
 
-// Save to user specific list for My Files
+// Save to user specific list for My Files (capped to 30 items)
 var userFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
+if (!Array.isArray(userFiles)) { userFiles = []; }
 userFiles.push(uploadRecord);
-Bot.setProperty("userFiles_" + user.telegramid, userFiles, "json");
+if (userFiles.length > 30) {
+  userFiles = userFiles.slice(-30);
+}
+try {
+  Bot.setProperty("userFiles_" + user.telegramid, userFiles, "json");
+} catch (e) {}
+
+// Sync to User property for Traffic dashboard
+try {
+  var uList = User.getProperty("userFileList", []);
+  if (!Array.isArray(uList)) { uList = []; }
+  uList.push({
+    file_unique_id: generatedId,
+    file_name: fileName,
+    file_type: fileType,
+    uniqueLink: uniqueLink
+  });
+  if (uList.length > 30) {
+    uList = uList.slice(-30);
+  }
+  User.setProperty("userFileList", uList, "json");
+} catch (e) {}
 
 // Legacy compatibility
-Bot.setProperty(user.telegramid + "" + generatedId, uploadRecord, "json");
-Bot.setProperty(user.telegramid + "" + uniqueId, uploadRecord, "json");
+try {
+  Bot.setProperty(user.telegramid + "" + generatedId, uploadRecord, "json");
+  Bot.setProperty(user.telegramid + "" + uniqueId, uploadRecord, "json");
+} catch (e) {}
 
 var keyb = [
   [{ text: "📂 View in My Files", callback_data: "/myfiles", style: "primary" }],

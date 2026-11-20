@@ -53,14 +53,22 @@ traffic.downloaders.push({
   username: user.username || "",
   date: now
 });
-Bot.setProperty("traffic_" + trafficKey, traffic, "json");
-// Also save under targetId if different
-if (targetId !== trafficKey) {
-  Bot.setProperty("traffic_" + targetId, traffic, "json");
+if (traffic.downloaders.length > 30) {
+  traffic.downloaders = traffic.downloaders.slice(-30);
 }
+try {
+  Bot.setProperty("traffic_" + trafficKey, traffic, "json");
+  if (targetId !== trafficKey) {
+    Bot.setProperty("traffic_" + targetId, traffic, "json");
+  }
+} catch (e) {}
 
 // Save to global downloadLogs for stats and CSV export
+var totalDownloads = (Bot.getProperty("total_downloads_count", 0) || 0) + 1;
+Bot.setProperty("total_downloads_count", totalDownloads, "integer");
+
 var downloadLogs = Bot.getProperty("downloadLogs", []);
+if (!Array.isArray(downloadLogs)) { downloadLogs = []; }
 downloadLogs.push({
   fileId: (file && file.id) ? file.id : 0,
   fileUniqueId: targetUniqueId,
@@ -69,7 +77,12 @@ downloadLogs.push({
   downloaderUsername: user.username || "",
   timestamp: new Date().toISOString()
 });
-Bot.setProperty("downloadLogs", downloadLogs, "json");
+if (downloadLogs.length > 30) {
+  downloadLogs = downloadLogs.slice(-30);
+}
+try {
+  Bot.setProperty("downloadLogs", downloadLogs, "json");
+} catch (e) {}
 
 var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
 

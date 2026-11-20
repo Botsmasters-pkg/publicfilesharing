@@ -28,29 +28,29 @@ var uploads = Bot.getProperty("uploads", []);
 var downloadLogs = Bot.getProperty("downloadLogs", []);
 var storageChannel = Bot.getProperty("storageChannel", "-1004304151228");
 
-var totalAttempts = uploads.length;
-var successfulUploads = 0;
-var failedUploads = 0;
+var totalRegisteredUsers = Bot.getProperty("total_users_count", (allUsers ? allUsers.length : 0));
+var totalAttempts = Bot.getProperty("total_uploads_count", (uploads ? uploads.length : 0));
+var successfulUploads = Bot.getProperty("total_successful_uploads", (uploads ? uploads.length : 0));
+var failedUploads = Bot.getProperty("total_failed_uploads", 0);
+var totalDownloads = Bot.getProperty("total_downloads_count", (downloadLogs ? downloadLogs.length : 0));
 var successfulUserSet = {};
 var failedUserSet = {};
 
-for (var i = 0; i < uploads.length; i++) {
-  var item = uploads[i];
-  if (item.status === "successful") {
-    successfulUploads++;
-    if (item.userId) successfulUserSet[item.userId] = true;
-  } else if (item.status === "failed") {
-    failedUploads++;
-    if (item.userId) failedUserSet[item.userId] = true;
-  } else {
-    successfulUploads++;
-    if (item.userId) successfulUserSet[item.userId] = true;
+if (Array.isArray(uploads)) {
+  for (var i = 0; i < uploads.length; i++) {
+    var item = uploads[i];
+    if (item.status === "successful") {
+      if (item.userId) successfulUserSet[item.userId] = true;
+    } else if (item.status === "failed") {
+      if (item.userId) failedUserSet[item.userId] = true;
+    } else {
+      if (item.userId) successfulUserSet[item.userId] = true;
+    }
   }
 }
 
 var totalSuccessfulUsers = Object.keys(successfulUserSet).length;
 var totalFailedUsers = Object.keys(failedUserSet).length;
-var totalDownloads = downloadLogs.length;
 
 var msg = "📊 <b>File Store Real-Time Statistics</b>\n" +
   "<code>———————————————————————</code>\n\n" +

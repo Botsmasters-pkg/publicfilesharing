@@ -36,11 +36,19 @@ Api.getMe({
   on_result: "/onGetBotUsername"
 });
 
-// Save user to allBotUsers
+// Save user to allBotUsers safely capped
 var allUsers = Bot.getProperty("allBotUsers", []);
+if (!Array.isArray(allUsers)) { allUsers = []; }
 if (allUsers.indexOf(user.telegramid) === -1) {
   allUsers.push(user.telegramid);
-  Bot.setProperty("allBotUsers", allUsers, "json");
+  if (allUsers.length > 500) {
+    allUsers = allUsers.slice(-500);
+  }
+  try {
+    Bot.setProperty("allBotUsers", allUsers, "json");
+  } catch (e) {}
+  var totalUsers = (Bot.getProperty("total_users_count", 0) || 0) + 1;
+  Bot.setProperty("total_users_count", totalUsers, "integer");
 }
 
 // Full Name & Username Auto-Detection
@@ -50,14 +58,16 @@ var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
 var uHandle = user.username ? ("@" + user.username) : "";
 
 // Save comprehensive user info
-Bot.setProperty("userInfo_" + user.telegramid, {
-  id: user.telegramid,
-  first_name: uFirst,
-  last_name: uLast,
-  full_name: uFull,
-  username: uHandle,
-  joined_at: new Date().toISOString()
-}, "json");
+try {
+  Bot.setProperty("userInfo_" + user.telegramid, {
+    id: user.telegramid,
+    first_name: uFirst,
+    last_name: uLast,
+    full_name: uFull,
+    username: uHandle,
+    joined_at: new Date().toISOString()
+  }, "json");
+} catch (e) {}
 
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 

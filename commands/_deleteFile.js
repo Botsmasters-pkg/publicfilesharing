@@ -27,16 +27,34 @@ var filtered = [];
 var found = false;
 
 for (var i = 0; i < userFiles.length; i++) {
-  if (userFiles[i].fileUniqueId === uniqueId || userFiles[i].file_unique_id === uniqueId) {
+  var item = userFiles[i];
+  if (item.fileUniqueId === uniqueId || item.uniqueKey === uniqueId || item.file_unique_id === uniqueId) {
     found = true;
   } else {
-    filtered.push(userFiles[i]);
+    filtered.push(item);
   }
 }
 
-Bot.setProperty("userFiles_" + user.telegramid, filtered, "json");
-// Legacy
-User.setProperty("userFileList", filtered, "json");
+try {
+  Bot.setProperty("userFiles_" + user.telegramid, filtered, "json");
+} catch (e) {}
+
+// Also sync User.setProperty
+var uList = User.getProperty("userFileList", []);
+if (Array.isArray(uList)) {
+  var filteredU = [];
+  for (var j = 0; j < uList.length; j++) {
+    var uj = uList[j];
+    if (uj.fileUniqueId === uniqueId || uj.uniqueKey === uniqueId || uj.file_unique_id === uniqueId) {
+      found = true;
+    } else {
+      filteredU.push(uj);
+    }
+  }
+  try {
+    User.setProperty("userFileList", filteredU, "json");
+  } catch (e) {}
+}
 
 var backKey = [
   [{ text: "📂 Go to My Files", callback_data: "/myfiles", style: "primary" }]

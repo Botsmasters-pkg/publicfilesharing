@@ -87,9 +87,11 @@ try {
 var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
 
 // Send File according to media type with safe HTML parse mode and clickable bot username link
-var caption = "📥 <b>File Download Complete!</b>\n" +
-  "<code>———————————————————————</code>\n" +
-  "📦 <b>Name:</b> <code>" + escapeHtml(targetFileName) + "</code>\n" +
+var caption = "";
+if (file && file.caption && file.caption.trim() !== "") {
+  caption += escapeHtml(file.caption.trim()) + "\n\n<code>———————————————————————</code>\n";
+}
+caption += "📦 <b>Name:</b> <code>" + escapeHtml(targetFileName) + "</code>\n" +
   (file && file.fileSize ? ("📊 <b>Size:</b> " + escapeHtml(file.fileSize) + "\n\n") : "\n") +
   "🤖 <i>Downloaded via <a href=\"https://t.me/" + escapeHtml(botUsername) + "\">@" + escapeHtml(botUsername) + "</a></i>";
 

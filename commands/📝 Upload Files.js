@@ -20,12 +20,13 @@ function escapeHtml(str) {
 
 var hasMedia = request && (request.document || (request.photo && request.photo.length > 0) || request.video || request.audio || request.voice);
 
+var targetChat = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null);
+
 if (!hasMedia) {
-  // User tapped "📝 Upload Files" button on keyboard
-  var promptChatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null);
+  // User clicked "📝 Upload Files" button on keyboard
   Api.sendMessage({
-    chat_id: promptChatId,
-    text: "📤 <b>Send any file, photo, video, document, or audio to upload:</b>",
+    chat_id: targetChat,
+    text: "📤 <b>Send or forward any file, photo, video, document, or audio to upload:</b>\n\n<i>You can also forward posts with captions directly from any channel!</i>",
     parse_mode: "HTML"
   });
   return;
@@ -37,6 +38,9 @@ var fileName = "File";
 var fileSize = "N/A";
 var fileType = "document";
 var mimeType = "application/octet-stream";
+
+// Extract caption if forwarded with text or sent with caption
+var incomingCaption = request.caption || (request.message && request.message.caption) || "";
 
 if (request.document) {
   fileId = request.document.file_id;
@@ -76,163 +80,63 @@ if (request.document) {
   mimeType = "audio/ogg";
 } else {
   Api.sendMessage({
-    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
-  text: "⚠️ <b>Please send a valid file, photo, video, or audio to upload!</b>",
+    chat_id: targetChat,
+    text: "⚠️ <b>Please send a valid file, photo, video, or audio to upload!</b>",
     parse_mode: "HTML"
   });
   return;
 }
 
-// Generate brand-new unique ID every single upload (Har baar ID change)
-function generateUniqueFileId() {
-  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  var res = "BQADAQAD";
-  for (var i = 0; i < 24; i++) {
-    res += chars.charAt(Math.floor(Math.random() * chars.length));
+// If it is a video/photo and has caption, smart auto-title from first line of caption
+if (incomingCaption && (fileName.indexOf("Video_") === 0 || fileName.indexOf("Photo_") === 0)) {
+  var firstLine = incomingCaption.split("\n")[0].trim().replace(/[<>:"/\\|?*]/g, "");
+  if (firstLine.length > 0) {
+    var ext = fileType === "video" ? ".mp4" : ".jpg";
+    fileName = (firstLine.length > 45 ? firstLine.slice(0, 45) : firstLine) + ext;
   }
-  return res;
 }
 
-var generatedId = generateUniqueFileId();
-while (Bot.getProperty("file_" + generatedId)) {
-  generatedId = generateUniqueFileId();
-}
-
-// User Full Name & Username Auto-Detection
-var uFirst = user.first_name || "";
-var uLast = user.last_name || "";
-var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
-var uHandle = user.username ? ("@" + user.username) : "None";
-
-// Auto-detected Bot Username
-var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
-
-// Storage Channel Config (Default: -1004304151228)
-var storageChannelId = Bot.getProperty("storageChannel", "-1004304151228");
-if (!storageChannelId || storageChannelId === "@https:" || storageChannelId.indexOf("https:") !== -1) {
-  storageChannelId = "-1004304151228";
-}
-
-var totalUploads = (Bot.getProperty("total_uploads_count", 0) || 0) + 1;
-Bot.setProperty("total_uploads_count", totalUploads, "integer");
-
-var totalSuccessful = (Bot.getProperty("total_successful_uploads", 0) || 0) + 1;
-Bot.setProperty("total_successful_uploads", totalSuccessful, "integer");
-
-var uploads = Bot.getProperty("uploads", []);
-if (!Array.isArray(uploads)) { uploads = []; }
-var newId = totalUploads > uploads.length ? totalUploads : (uploads.length > 0 ? (uploads[uploads.length - 1].id + 1) : 1);
-
-// Unique Link with the fresh generated ID:
-var uniqueLink = "https://t.me/" + botUsername + "?start=" + generatedId;
-
-var uploadRecord = {
-  id: newId,
-  uniqueKey: generatedId,
-  fileUniqueId: generatedId,
-  telegramUniqueId: uniqueId,
+// Save as temporary draft for confirmation / caption editing
+var draft = {
   fileId: fileId,
+  uniqueId: uniqueId,
   fileName: fileName,
   fileSize: fileSize,
   fileType: fileType,
   mimeType: mimeType,
-  userId: user.telegramid,
-  ownerName: uFull,
-  ownerUsername: user.username || "",
-  storageChannelId: storageChannelId,
-  status: "successful",
-  uniqueLink: uniqueLink,
-  timestamp: new Date().toISOString()
+  caption: incomingCaption ? incomingCaption.trim() : "",
+  userId: user.telegramid
 };
 
-// Backup to Storage Channel in HTML mode
-if (storageChannelId) {
-  try {
-    var caption = "📦 <b>New Storage Backup</b>\n" +
-      "<code>———————————————————————</code>\n" +
-      "📁 <b>Name:</b> " + escapeHtml(fileName) + "\n" +
-      "📊 <b>Size:</b> " + escapeHtml(fileSize) + "\n" +
-      "🏷️ <b>Type:</b> " + escapeHtml(fileType.toUpperCase()) + "\n" +
-      "👤 <b>Owner:</b> " + escapeHtml(uFull) + " (<code>" + user.telegramid + "</code> | " + escapeHtml(uHandle) + ")\n" +
-      "🔗 <b>Link:</b> " + escapeHtml(uniqueLink);
+Bot.setProperty("temp_upload_" + user.telegramid, draft, "json");
+Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
 
-    if (fileType === "photo") {
-      Api.sendPhoto({ chat_id: storageChannelId, photo: fileId, caption: caption, parse_mode: "HTML" });
-    } else if (fileType === "video") {
-      Api.sendVideo({ chat_id: storageChannelId, video: fileId, caption: caption, parse_mode: "HTML" });
-    } else if (fileType === "audio" || fileType === "voice") {
-      Api.sendAudio({ chat_id: storageChannelId, audio: fileId, caption: caption, parse_mode: "HTML" });
-    } else {
-      Api.sendDocument({ chat_id: storageChannelId, document: fileId, caption: caption, parse_mode: "HTML" });
-    }
-  } catch (e) {}
-}
+var captionBox = draft.caption && draft.caption.length > 0 ?
+  ("📝 <b>Current Caption:</b>\n<blockquote>" + escapeHtml(draft.caption) + "</blockquote>\n") :
+  ("📝 <b>Current Caption:</b> <i>(No caption attached)</i>\n");
 
-// Keep uploads array capped to latest 20 items so it NEVER exceeds Bots.Business 20KB limit
-uploads.push(uploadRecord);
-if (uploads.length > 20) {
-  uploads = uploads.slice(-20);
-}
-try {
-  Bot.setProperty("uploads", uploads, "json");
-} catch (e) {}
-
-// Save under the generated fresh unique key
-try {
-  Bot.setProperty("file_" + generatedId, uploadRecord, "json");
-  Bot.setProperty("file_" + fileId, uploadRecord, "json");
-  Bot.setProperty("file_" + uniqueId, uploadRecord, "json");
-} catch (e) {}
-
-// Save to user specific list for My Files (capped to 30 items)
-var userFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
-if (!Array.isArray(userFiles)) { userFiles = []; }
-userFiles.push(uploadRecord);
-if (userFiles.length > 30) {
-  userFiles = userFiles.slice(-30);
-}
-try {
-  Bot.setProperty("userFiles_" + user.telegramid, userFiles, "json");
-} catch (e) {}
-
-// Sync to User property for Traffic dashboard
-try {
-  var uList = User.getProperty("userFileList", []);
-  if (!Array.isArray(uList)) { uList = []; }
-  uList.push({
-    file_unique_id: generatedId,
-    file_name: fileName,
-    file_type: fileType,
-    uniqueLink: uniqueLink
-  });
-  if (uList.length > 30) {
-    uList = uList.slice(-30);
-  }
-  User.setProperty("userFileList", uList, "json");
-} catch (e) {}
-
-// Legacy compatibility
-try {
-  Bot.setProperty(user.telegramid + "" + generatedId, uploadRecord, "json");
-  Bot.setProperty(user.telegramid + "" + uniqueId, uploadRecord, "json");
-} catch (e) {}
+var previewMsg = "📦 <b>File Received & Ready!</b>\n" +
+  "<code>———————————————————————</code>\n" +
+  "📁 <b>Name:</b> <code>" + escapeHtml(draft.fileName) + "</code>\n" +
+  "📊 <b>Size:</b> <code>" + escapeHtml(draft.fileSize) + "</code>\n" +
+  "🏷️ <b>Type:</b> <code>" + escapeHtml(draft.fileType.toUpperCase()) + "</code>\n\n" +
+  captionBox + "\n" +
+  "👉 <i>Caption yahi rakhna hai ya edit karna chahte hain?</i>\n" +
+  "Click <b>Done & Upload</b> to proceed, or <b>Edit Caption</b> to change it:";
 
 var keyb = [
-  [{ text: "📂 View in My Files", callback_data: "/myfiles", style: "primary" }],
-  [{ text: "📤 Share Link", url: "https://t.me/share/url?url=" + encodeURIComponent(uniqueLink) + "&text=" + encodeURIComponent("Download " + fileName + ":"), style: "primary" }]
+  [
+    { text: "✏️ Edit Caption", callback_data: "/editCaption" },
+    { text: "✅ Done & Upload", callback_data: "/confirmUpload" }
+  ],
+  [
+    { text: "❌ Cancel", callback_data: "/cancelUpload" }
+  ]
 ];
 
 Api.sendMessage({
-  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
-  text: "✅ <b>Upload Successful!</b>\n" +
-    "<code>———————————————————————</code>\n" +
-    "📦 <b>File Name:</b> <code>" + escapeHtml(fileName) + "</code>\n" +
-    "📊 <b>File Size:</b> <code>" + escapeHtml(fileSize) + "</code>\n" +
-    "📁 <b>File Type:</b> <code>" + escapeHtml(fileType.toUpperCase()) + "</code>\n" +
-    "🏷️ <b>Storage Backup:</b> <code>Saved</code>\n\n" +
-    "🔗 <b>Your Unique File Link:</b>\n" +
-    "<code>" + escapeHtml(uniqueLink) + "</code>\n\n" +
-    "<i>Anyone with this link can download your file!</i>",
+  chat_id: targetChat,
+  text: previewMsg,
   parse_mode: "HTML",
   reply_markup: { inline_keyboard: keyb }
 });

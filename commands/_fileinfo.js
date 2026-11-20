@@ -49,13 +49,16 @@ var targetFileId = file.fileId || file.file_id || uniqueId;
 var uniqueLink = file.uniqueLink || ("https://t.me/" + botUsername + "?start=" + uniqueId);
 var fType = (file.fileType || file.mimeType || "document").toUpperCase();
 
+var captionDisplay = (file.caption && file.caption.trim() !== "") ?
+  ("\n\n📝 <b>Caption:</b>\n<blockquote>" + escapeHtml(file.caption.trim()) + "</blockquote>") : "";
+
 var msg = "🗂 <b>File Dashboard</b>\n" +
   "<code>———————————————————————</code>\n" +
   "📦 <b>Name:</b> <code>" + escapeHtml(file.fileName || "File") + "</code>\n" +
   "📊 <b>Size:</b> <code>" + escapeHtml(file.fileSize || "N/A") + "</code>\n" +
   "🏷️ <b>Type:</b> <code>" + escapeHtml(fType) + "</code>\n" +
   "📈 <b>Total Downloads:</b> <b>" + (traffic.count || 0) + "</b>\n" +
-  "📅 <b>Uploaded At:</b> <i>" + escapeHtml(file.timestamp ? file.timestamp.slice(0, 19).replace('T', ' ') : "N/A") + "</i>\n\n" +
+  "📅 <b>Uploaded At:</b> <i>" + escapeHtml(file.timestamp ? file.timestamp.slice(0, 19).replace('T', ' ') : "N/A") + "</i>" + captionDisplay + "\n\n" +
   "🔗 <b>Unique Download Link:</b>\n" +
   "<code>" + escapeHtml(uniqueLink) + "</code>";
 

@@ -112,6 +112,25 @@ if (Bot.getProperty("waiting_clone_email_" + user.telegramid)) {
   return;
 }
 
+// User Caption Editing State Handling
+var captionState = Bot.getProperty("user_caption_state_" + user.telegramid, "");
+if (captionState === "waiting_new_caption" && incomingText) {
+  if (incomingText === "❌ Cancel" || incomingText.toLowerCase() === "cancel" || incomingText === "/cancel") {
+    Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
+    Bot.runCommand("/keepCaption");
+    return;
+  }
+  // User sent new custom caption
+  var draft = Bot.getProperty("temp_upload_" + user.telegramid);
+  if (draft) {
+    draft.caption = incomingText;
+    Bot.setProperty("temp_upload_" + user.telegramid, draft, "json");
+  }
+  Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
+  Bot.runCommand("/keepCaption");
+  return;
+}
+
 // Direct File Upload Support: if any user sends a document, photo, video, audio, or voice
 if (request.document || (request.photo && request.photo.length > 0) || request.video || request.audio || request.voice) {
   Bot.runCommand("📝 Upload Files");

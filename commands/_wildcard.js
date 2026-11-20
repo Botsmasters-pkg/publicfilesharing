@@ -89,15 +89,23 @@ if (isAdmin && adminState) {
   }
 }
 
-// Smart Admin Shortcut: If admin sends a channel ID or forwards a channel post directly
-if (isAdmin && !adminState) {
-  var isChannelForward = (request && request.message && request.message.forward_from_chat && request.message.forward_from_chat.id);
-  var isChannelIdText = incomingText && (incomingText.match(/^-100\d{8,}$/) || incomingText.match(/^100\d{8,}$/));
-  if (isChannelForward || isChannelIdText) {
-    var directChannelInput = isChannelForward ? request.message.forward_from_chat.id.toString() : incomingText;
-    Bot.runCommand("/onSetStorage " + directChannelInput);
-    return;
+// Media Upload Check: If user sends or forwards any document, photo, video, audio, or voice
+var reqMsg = (request && request.message) ? request.message : request;
+var hasMedia = false;
+if (reqMsg) {
+  if (reqMsg.document || (reqMsg.photo && reqMsg.photo.length > 0) || reqMsg.video || reqMsg.audio || reqMsg.voice || reqMsg.video_note) {
+    hasMedia = true;
   }
+}
+if (!hasMedia && request) {
+  if (request.document || (request.photo && request.photo.length > 0) || request.video || request.audio || request.voice || request.video_note) {
+    hasMedia = true;
+  }
+}
+
+if (hasMedia) {
+  Bot.runCommand("📝 Upload Files");
+  return;
 }
 
 // Clone System Email State Handling
@@ -156,12 +164,6 @@ if (batchCapState === "waiting_batch_caption" && incomingText) {
   return;
 }
 
-// Direct File Upload Support: if any user sends a document, photo, video, audio, or voice
-if (request.document || (request.photo && request.photo.length > 0) || request.video || request.audio || request.voice) {
-  Bot.runCommand("📝 Upload Files");
-  return;
-}
-
 // Primary Keyboard Button Handling
 if (incomingText) {
   var t = incomingText;
@@ -192,10 +194,18 @@ if (incomingText) {
 
   // User Primary Keyboard
   if (t === "📝 Upload Files" || low === "upload files") {
+    Bot.setProperty("user_batch_state_" + user.telegramid, "", "string");
+    Bot.setProperty("batch_temp_" + user.telegramid, [], "json");
+    Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
+    Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
     Bot.runCommand("📝 Upload Files");
     return;
   }
   if (t === "🗂 My Files" || low === "my files") {
+    Bot.setProperty("user_batch_state_" + user.telegramid, "", "string");
+    Bot.setProperty("batch_temp_" + user.telegramid, [], "json");
+    Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
+    Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
     Bot.runCommand("🗂 My Files");
     return;
   }

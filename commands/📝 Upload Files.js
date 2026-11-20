@@ -18,16 +18,52 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-var hasMedia = request && (request.document || (request.photo && request.photo.length > 0) || request.video || request.audio || request.voice);
+var reqMsg = (request && request.message) ? request.message : request;
+
+var reqDoc = (reqMsg && reqMsg.document) || (request && request.document);
+var reqPhoto = (reqMsg && reqMsg.photo) || (request && request.photo);
+var reqVideo = (reqMsg && reqMsg.video) || (request && request.video);
+var reqAudio = (reqMsg && reqMsg.audio) || (request && request.audio);
+var reqVoice = (reqMsg && reqMsg.voice) || (request && request.voice);
+var reqVideoNote = (reqMsg && reqMsg.video_note) || (request && request.video_note);
+
+var hasMedia = !!(reqDoc || (reqPhoto && reqPhoto.length > 0) || reqVideo || reqAudio || reqVoice || reqVideoNote);
 
 var targetChat = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null);
 
 if (!hasMedia) {
   // User clicked "📝 Upload Files" button on keyboard
+  // Clear any lingering bulk/batch upload states so single upload is clean
+  Bot.setProperty("user_batch_state_" + user.telegramid, "", "string");
+  Bot.setProperty("batch_temp_" + user.telegramid, [], "json");
+  Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
+  Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
+
+  var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
+  var primaryKeyboard = [
+    [
+      { text: "📝 Upload Files", style: "primary" },
+      { text: "🗂 My Files", style: "primary" }
+    ],
+    [
+      { text: "📦 Bulk Upload", style: "primary" },
+      { text: "📊 Traffic", style: "primary" }
+    ],
+    [
+      { text: "🆘 Support", style: "primary" }
+    ]
+  ];
+  if (isAdmin) {
+    primaryKeyboard.push([
+      { text: "🛠 Admin Panel", style: "primary" }
+    ]);
+  }
+
   Api.sendMessage({
     chat_id: targetChat,
     text: "📤 <b>Send or forward any file, photo, video, document, or audio to upload:</b>\n\n<i>You can also forward posts with captions directly from any channel!</i>",
-    parse_mode: "HTML"
+    parse_mode: "HTML",
+    reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
   });
   return;
 }
@@ -40,44 +76,51 @@ var fileType = "document";
 var mimeType = "application/octet-stream";
 
 // Extract caption if forwarded with text or sent with caption
-var incomingCaption = request.caption || (request.message && request.message.caption) || "";
+var incomingCaption = (reqMsg && reqMsg.caption) || (request && request.caption) || "";
 
-if (request.document) {
-  fileId = request.document.file_id;
-  uniqueId = request.document.file_unique_id;
-  fileName = request.document.file_name || "Document";
-  fileSize = request.document.file_size ? (Math.round(request.document.file_size / 1024) + " KB") : "N/A";
+if (reqDoc) {
+  fileId = reqDoc.file_id;
+  uniqueId = reqDoc.file_unique_id;
+  fileName = reqDoc.file_name || "Document";
+  fileSize = reqDoc.file_size ? (Math.round(reqDoc.file_size / 1024) + " KB") : "N/A";
   fileType = "document";
-  mimeType = request.document.mime_type || "application/octet-stream";
-} else if (request.photo && request.photo.length > 0) {
-  var p = request.photo[request.photo.length - 1];
+  mimeType = reqDoc.mime_type || "application/octet-stream";
+} else if (reqPhoto && reqPhoto.length > 0) {
+  var p = reqPhoto[reqPhoto.length - 1];
   fileId = p.file_id;
   uniqueId = p.file_unique_id;
   fileName = "Photo_" + uniqueId.slice(0, 8) + ".jpg";
   fileSize = p.file_size ? (Math.round(p.file_size / 1024) + " KB") : "N/A";
   fileType = "photo";
   mimeType = "image/jpeg";
-} else if (request.video) {
-  fileId = request.video.file_id;
-  uniqueId = request.video.file_unique_id;
-  fileName = request.video.file_name || ("Video_" + uniqueId.slice(0, 8) + ".mp4");
-  fileSize = request.video.file_size ? (Math.round(request.video.file_size / 1024) + " KB") : "N/A";
+} else if (reqVideo) {
+  fileId = reqVideo.file_id;
+  uniqueId = reqVideo.file_unique_id;
+  fileName = reqVideo.file_name || ("Video_" + uniqueId.slice(0, 8) + ".mp4");
+  fileSize = reqVideo.file_size ? (Math.round(reqVideo.file_size / 1024) + " KB") : "N/A";
   fileType = "video";
-  mimeType = request.video.mime_type || "video/mp4";
-} else if (request.audio) {
-  fileId = request.audio.file_id;
-  uniqueId = request.audio.file_unique_id;
-  fileName = request.audio.file_name || request.audio.title || ("Audio_" + uniqueId.slice(0, 8) + ".mp3");
-  fileSize = request.audio.file_size ? (Math.round(request.audio.file_size / 1024) + " KB") : "N/A";
+  mimeType = reqVideo.mime_type || "video/mp4";
+} else if (reqAudio) {
+  fileId = reqAudio.file_id;
+  uniqueId = reqAudio.file_unique_id;
+  fileName = reqAudio.file_name || reqAudio.title || ("Audio_" + uniqueId.slice(0, 8) + ".mp3");
+  fileSize = reqAudio.file_size ? (Math.round(reqAudio.file_size / 1024) + " KB") : "N/A";
   fileType = "audio";
-  mimeType = request.audio.mime_type || "audio/mpeg";
-} else if (request.voice) {
-  fileId = request.voice.file_id;
-  uniqueId = request.voice.file_unique_id;
+  mimeType = reqAudio.mime_type || "audio/mpeg";
+} else if (reqVoice) {
+  fileId = reqVoice.file_id;
+  uniqueId = reqVoice.file_unique_id;
   fileName = "Voice_" + uniqueId.slice(0, 8) + ".ogg";
-  fileSize = request.voice.file_size ? (Math.round(request.voice.file_size / 1024) + " KB") : "N/A";
+  fileSize = reqVoice.file_size ? (Math.round(reqVoice.file_size / 1024) + " KB") : "N/A";
   fileType = "voice";
   mimeType = "audio/ogg";
+} else if (reqVideoNote) {
+  fileId = reqVideoNote.file_id;
+  uniqueId = reqVideoNote.file_unique_id;
+  fileName = "VideoNote_" + uniqueId.slice(0, 8) + ".mp4";
+  fileSize = reqVideoNote.file_size ? (Math.round(reqVideoNote.file_size / 1024) + " KB") : "N/A";
+  fileType = "video";
+  mimeType = "video/mp4";
 } else {
   Api.sendMessage({
     chat_id: targetChat,

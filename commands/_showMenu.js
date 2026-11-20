@@ -21,6 +21,12 @@ if (params && params.trim() !== "" && params.trim() !== "none") {
   return;
 }
 
+// Reset any lingering batch or upload edit states when entering menu
+Bot.setProperty("user_batch_state_" + user.telegramid, "", "string");
+Bot.setProperty("batch_temp_" + user.telegramid, [], "json");
+Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
+Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
+
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 
 // Primary Keyboard with style: "primary"

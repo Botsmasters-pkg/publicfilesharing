@@ -57,12 +57,14 @@ var batchId = "batch_" + bCount + "_" + rand;
 
 var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
 var batchLink = "https://t.me/" + botUsername + "?start=" + batchId;
+var batchCaption = Bot.getProperty("batch_caption_" + user.telegramid, "");
 
 var batchObj = {
   batchId: batchId,
   userId: user.telegramid,
   fileIds: bTemp,
   count: bTemp.length,
+  caption: batchCaption ? batchCaption.trim() : "",
   timestamp: new Date().toISOString(),
   uniqueLink: batchLink
 };
@@ -78,14 +80,21 @@ if (userBatches.length > 20) {
 }
 Bot.setProperty("userBatches_" + user.telegramid, userBatches, "json");
 
-// Clear batch state
+// Clear all batch temporary states
 Bot.setProperty("user_batch_state_" + user.telegramid, "", "string");
 Bot.setProperty("batch_temp_" + user.telegramid, [], "json");
+Bot.setProperty("batch_caption_" + user.telegramid, "", "string");
+Bot.setProperty("batch_msg_id_" + user.telegramid, null);
+Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
+
+var captionBox = batchObj.caption && batchObj.caption.length > 0 ?
+  ("📝 <b>Caption:</b>\n<blockquote>" + escapeHtml(batchObj.caption) + "</blockquote>\n\n") : "\n";
 
 var successMsg = "🎉 <b>Batch Link Created Successfully!</b>\n" +
   "<code>———————————————————————</code>\n" +
   "📦 <b>Total Files in Batch:</b> <b>" + bTemp.length + "</b>\n" +
-  "📅 <b>Created At:</b> <i>" + batchObj.timestamp.slice(0, 19).replace('T', ' ') + "</i>\n\n" +
+  "📅 <b>Created At:</b> <i>" + batchObj.timestamp.slice(0, 19).replace('T', ' ') + "</i>\n" +
+  captionBox +
   "🔗 <b>Shareable Batch Link:</b>\n" +
   "<code>" + escapeHtml(batchLink) + "</code>\n\n" +
   "👉 <i>Anyone opening this single link will automatically receive all " + bTemp.length + " files in sequence!</i>";

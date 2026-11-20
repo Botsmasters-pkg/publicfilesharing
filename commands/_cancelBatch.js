@@ -14,6 +14,9 @@ if (!user) return;
 
 Bot.setProperty("user_batch_state_" + user.telegramid, "", "string");
 Bot.setProperty("batch_temp_" + user.telegramid, [], "json");
+Bot.setProperty("batch_caption_" + user.telegramid, "", "string");
+Bot.setProperty("batch_msg_id_" + user.telegramid, null);
+Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
 
 var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : user.telegramid;
 

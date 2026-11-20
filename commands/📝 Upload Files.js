@@ -176,29 +176,52 @@ if (isBatchActive) {
   bTemp.push(genFileId);
   Bot.setProperty("batch_temp_" + user.telegramid, bTemp, "json");
 
+  // If first file has a caption and batch caption is empty, save it
+  var existingBatchCap = Bot.getProperty("batch_caption_" + user.telegramid, "");
+  if (!existingBatchCap && incomingCaption && incomingCaption.trim().length > 0) {
+    Bot.setProperty("batch_caption_" + user.telegramid, incomingCaption.trim(), "string");
+  }
+
   var batchCount = bTemp.length;
-  var batchCard = "➕ <b>File Added to Batch! (Total: " + batchCount + ")</b>\n" +
+  var batchCard = "📦 <b>Batch Mode: ACTIVE</b>\n" +
     "<code>———————————————————————</code>\n" +
-    "📁 <b>Name:</b> <code>" + escapeHtml(fileName) + "</code>\n" +
-    "📊 <b>Size:</b> <code>" + escapeHtml(fileSize) + "</code>\n" +
-    "🏷️ <b>Type:</b> <code>" + escapeHtml(fileType.toUpperCase()) + "</code>\n\n" +
-    "👉 <i>Send more files, or click <b>Finish & Generate Link</b> below when ready!</i>";
+    "📊 <b>Files Collected:</b> <b>" + batchCount + "</b>\n" +
+    "📁 <i>Last added: " + escapeHtml(fileName) + " (" + escapeHtml(fileSize) + ")</i>\n\n" +
+    "👉 <i>Aap aur files bhej sakte hain.\nJab sabhi files bhej lein, to neeche <b>Done</b> par click karein:</i>";
 
   var bKey = [
     [
-      { text: "✅ Finish & Generate Link (" + batchCount + ")", callback_data: "/finishBatch", style: "primary" }
+      { text: "✅ Done (" + batchCount + " Files)", callback_data: "/batchDonePrompt", style: "primary" }
     ],
     [
       { text: "❌ Cancel Batch", callback_data: "/cancelBatch", style: "primary" }
     ]
   ];
 
-  Api.sendMessage({
-    chat_id: targetChat,
-    text: batchCard,
-    parse_mode: "HTML",
-    reply_markup: { inline_keyboard: bKey }
-  });
+  var savedMsgId = Bot.getProperty("batch_msg_id_" + user.telegramid);
+  var updated = false;
+
+  if (savedMsgId) {
+    try {
+      Api.editMessageText({
+        chat_id: targetChat,
+        message_id: savedMsgId,
+        text: batchCard,
+        parse_mode: "HTML",
+        reply_markup: { inline_keyboard: bKey }
+      });
+      updated = true;
+    } catch (e) {}
+  }
+
+  if (!updated) {
+    Api.sendMessage({
+      chat_id: targetChat,
+      text: batchCard,
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: bKey }
+    });
+  }
   return;
 }
 

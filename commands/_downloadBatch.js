@@ -62,11 +62,15 @@ Bot.setProperty("total_downloads_count", totalD, "integer");
 
 var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
 
+var capHeader = (batchObj.caption && batchObj.caption.trim().length > 0) ?
+  ("📝 <b>" + escapeHtml(batchObj.caption.trim()) + "</b>\n\n") : "";
+
 // Send banner
 Api.sendMessage({
   chat_id: chatId,
   text: "📦 <b>Sending Batch Files (Total: " + batchObj.fileIds.length + ")</b>\n" +
     "<code>———————————————————————</code>\n" +
+    capHeader +
     "<i>Please wait while all files are being delivered to your chat...</i>",
   parse_mode: "HTML"
 });

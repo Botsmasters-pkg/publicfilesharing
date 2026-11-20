@@ -14,18 +14,21 @@ if (!user) return;
 
 Bot.setProperty("user_batch_state_" + user.telegramid, "active", "string");
 Bot.setProperty("batch_temp_" + user.telegramid, [], "json");
+Bot.setProperty("batch_caption_" + user.telegramid, "", "string");
+Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
 
 var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : user.telegramid;
 
-var msg = "📦 <b>Batch Link Creator Mode: ACTIVE</b>\n" +
-  "<code>———————————————————————</code>\n\n" +
-  "You can now send or forward multiple files (Photos, Videos, Documents, Audio) one by one!\n\n" +
-  "📊 <b>Files in this batch:</b> <b>0</b>\n\n" +
-  "👉 <i>Send your files now. When you have sent all files, click <b>✅ Finish & Generate Batch Link</b> below:</i>";
+var msg = "📦 <b>Batch Mode: ACTIVE</b>\n" +
+  "<code>———————————————————————</code>\n" +
+  "Send or forward all the files (Photos, Videos, Documents, Audio) you want in this batch.\n\n" +
+  "📊 <b>Files Added:</b> <b>0</b>\n\n" +
+  "👉 <i>Aap ek sath 5, 10 ya kitni bhi files bhej sakte hain.\n" +
+  "Sabhi files bhejne ke baad neeche <b>Done</b> par click karein:</i>";
 
 var inlkey = [
   [
-    { text: "✅ Finish & Generate Link (0)", callback_data: "/finishBatch", style: "primary" }
+    { text: "✅ Done (0 Files)", callback_data: "/batchDonePrompt", style: "primary" }
   ],
   [
     { text: "❌ Cancel Batch", callback_data: "/cancelBatch", style: "primary" }
@@ -41,6 +44,7 @@ if (request && request.data && request.message) {
       parse_mode: "HTML",
       reply_markup: { inline_keyboard: inlkey }
     });
+    Bot.setProperty("batch_msg_id_" + user.telegramid, request.message.message_id, "integer");
     return;
   } catch (e) {}
 }

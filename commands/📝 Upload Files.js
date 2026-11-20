@@ -96,7 +96,113 @@ if (incomingCaption && (fileName.indexOf("Video_") === 0 || fileName.indexOf("Ph
   }
 }
 
-// Save as temporary draft for confirmation / caption editing
+// 📦 BATCH MODE HANDLER
+var isBatchActive = (Bot.getProperty("user_batch_state_" + user.telegramid) === "active");
+
+if (isBatchActive) {
+  // Generate unique file key for database
+  function genId() {
+    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    var res = "BQADAQAD";
+    for (var i = 0; i < 24; i++) {
+      res += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return res;
+  }
+  var genFileId = genId();
+  while (Bot.getProperty("file_" + genFileId)) {
+    genFileId = genId();
+  }
+
+  var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
+  var storageChannelId = Bot.getProperty("storageChannel", "-1004304151228");
+  if (!storageChannelId || storageChannelId === "@https:" || storageChannelId.indexOf("https:") !== -1) {
+    storageChannelId = "-1004304151228";
+  }
+
+  // Backup to storage channel
+  var storageCaption = "📦 <b>Batch Item Backup</b>\n" +
+    "<code>———————————————————————</code>\n" +
+    "📁 <b>Name:</b> <code>" + escapeHtml(fileName) + "</code>\n" +
+    "📊 <b>Size:</b> <code>" + escapeHtml(fileSize) + "</code>\n" +
+    "🏷️ <b>Type:</b> <code>" + escapeHtml(fileType.toUpperCase()) + "</code>\n" +
+    "👤 <b>Uploaded by:</b> <code>#" + user.telegramid + "</code>\n" +
+    "🔑 <b>Key:</b> <code>" + escapeHtml(genFileId) + "</code>";
+
+  try {
+    if (fileType === "photo") {
+      Api.sendPhoto({ chat_id: storageChannelId, photo: fileId, caption: storageCaption, parse_mode: "HTML" });
+    } else if (fileType === "video") {
+      Api.sendVideo({ chat_id: storageChannelId, video: fileId, caption: storageCaption, parse_mode: "HTML" });
+    } else if (fileType === "audio" || fileType === "voice") {
+      Api.sendAudio({ chat_id: storageChannelId, audio: fileId, caption: storageCaption, parse_mode: "HTML" });
+    } else {
+      Api.sendDocument({ chat_id: storageChannelId, document: fileId, caption: storageCaption, parse_mode: "HTML" });
+    }
+  } catch (err) {}
+
+  var fileObj = {
+    fileId: fileId,
+    file_id: fileId,
+    fileUniqueId: genFileId,
+    file_unique_id: genFileId,
+    uniqueKey: genFileId,
+    fileName: fileName,
+    file_name: fileName,
+    fileSize: fileSize,
+    file_size: fileSize,
+    fileType: fileType,
+    mimeType: mimeType,
+    caption: incomingCaption ? incomingCaption.trim() : "",
+    userId: user.telegramid,
+    status: "successful",
+    timestamp: new Date().toISOString(),
+    uniqueLink: "https://t.me/" + botUsername + "?start=" + genFileId
+  };
+
+  Bot.setProperty("file_" + genFileId, fileObj, "json");
+  Bot.setProperty(user.telegramid + "" + genFileId, fileObj, "json");
+
+  // Save to userFiles
+  var uFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
+  if (!Array.isArray(uFiles)) uFiles = [];
+  uFiles.unshift(fileObj);
+  if (uFiles.length > 20) uFiles = uFiles.slice(0, 20);
+  Bot.setProperty("userFiles_" + user.telegramid, uFiles, "json");
+
+  // Add to batch temp list
+  var bTemp = Bot.getProperty("batch_temp_" + user.telegramid, []);
+  if (!Array.isArray(bTemp)) bTemp = [];
+  bTemp.push(genFileId);
+  Bot.setProperty("batch_temp_" + user.telegramid, bTemp, "json");
+
+  var batchCount = bTemp.length;
+  var batchCard = "➕ <b>File Added to Batch! (Total: " + batchCount + ")</b>\n" +
+    "<code>———————————————————————</code>\n" +
+    "📁 <b>Name:</b> <code>" + escapeHtml(fileName) + "</code>\n" +
+    "📊 <b>Size:</b> <code>" + escapeHtml(fileSize) + "</code>\n" +
+    "🏷️ <b>Type:</b> <code>" + escapeHtml(fileType.toUpperCase()) + "</code>\n\n" +
+    "👉 <i>Send more files, or click <b>Finish & Generate Link</b> below when ready!</i>";
+
+  var bKey = [
+    [
+      { text: "✅ Finish & Generate Link (" + batchCount + ")", callback_data: "/finishBatch", style: "primary" }
+    ],
+    [
+      { text: "❌ Cancel Batch", callback_data: "/cancelBatch", style: "primary" }
+    ]
+  ];
+
+  Api.sendMessage({
+    chat_id: targetChat,
+    text: batchCard,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: bKey }
+  });
+  return;
+}
+
+// 📄 SINGLE UPLOAD CONFIRMATION FLOW
 var draft = {
   fileId: fileId,
   uniqueId: uniqueId,

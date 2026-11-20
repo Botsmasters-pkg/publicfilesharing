@@ -112,6 +112,18 @@ if (Bot.getProperty("waiting_clone_email_" + user.telegramid)) {
   return;
 }
 
+// User Search State Handling
+var searchState = Bot.getProperty("user_search_state_" + user.telegramid, "");
+if (searchState === "waiting_search" && incomingText) {
+  Bot.setProperty("user_search_state_" + user.telegramid, "", "string");
+  if (incomingText === "❌ Cancel" || incomingText.toLowerCase() === "cancel" || incomingText === "/cancel") {
+    Bot.runCommand("🗂 My Files");
+    return;
+  }
+  Bot.runCommand("/search " + incomingText);
+  return;
+}
+
 // User Caption Editing State Handling
 var captionState = Bot.getProperty("user_caption_state_" + user.telegramid, "");
 if (captionState === "waiting_new_caption" && incomingText) {
@@ -162,6 +174,19 @@ if (incomingText) {
   }
   if (t === "🗂 My Files" || low === "my files") {
     Bot.runCommand("🗂 My Files");
+    return;
+  }
+  if (t === "📦 Batch Link" || low === "batch link" || t === "/batch" || low === "batch") {
+    Bot.runCommand("/createBatch");
+    return;
+  }
+  if (t === "/mybatches" || low === "my batches") {
+    Bot.runCommand("/mybatches");
+    return;
+  }
+  if (t.indexOf("/search") === 0) {
+    var q = t.replace(/^\/search\s*/i, "").trim();
+    Bot.runCommand("/search " + q);
     return;
   }
   if (t === "📊 Traffic" || low === "traffic") {
@@ -348,4 +373,3 @@ if (incomingText) {
     return;
   }
 }
-

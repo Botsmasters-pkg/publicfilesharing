@@ -13,7 +13,11 @@ CMD*/
 if (!user) return;
 
 if (params && params.trim() !== "" && params.trim() !== "none") {
-  Bot.runCommand("/downloadDirect " + params.trim());
+  if (params.trim().indexOf("batch_") === 0) {
+    Bot.runCommand("/downloadBatch " + params.trim());
+  } else {
+    Bot.runCommand("/downloadDirect " + params.trim());
+  }
   return;
 }
 
@@ -26,7 +30,10 @@ var primaryKeyboard = [
     { text: "🗂 My Files", style: "primary" }
   ],
   [
-    { text: "📊 Traffic", style: "primary" },
+    { text: "📦 Batch Link", style: "primary" },
+    { text: "📊 Traffic", style: "primary" }
+  ],
+  [
     { text: "🆘 Support", style: "primary" }
   ]
 ];

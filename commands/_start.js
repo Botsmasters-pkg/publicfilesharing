@@ -4,14 +4,8 @@
   need_reply: false
   auto_retry_time: 
   folder: 
-
-  <<ANSWER
-
-  ANSWER
-
-  <<KEYBOARD
-
-  KEYBOARD
+  answer: 
+  keyboard: 
   aliases: 
   group: 
 CMD*/
@@ -143,7 +137,7 @@ if (activeChannels.length > 0 && !allJoined && !isAdmin) {
 
   Api.sendMessage({
     chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
-  text: alertMsg,
+    text: alertMsg,
     parse_mode: "HTML",
     reply_markup: { inline_keyboard: grid }
   });
@@ -152,7 +146,11 @@ if (activeChannels.length > 0 && !allJoined && !isAdmin) {
 
 // User is verified or admin! If file parameter present, download directly with NO interruption!
 if (params && params.trim() !== "" && params.trim() !== "none") {
-  Bot.runCommand("/downloadDirect " + params.trim());
+  if (params.trim().indexOf("batch_") === 0) {
+    Bot.runCommand("/downloadBatch " + params.trim());
+  } else {
+    Bot.runCommand("/downloadDirect " + params.trim());
+  }
 } else {
   Bot.runCommand("/showMenu");
 }

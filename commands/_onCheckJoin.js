@@ -66,12 +66,16 @@ if (nextIndex < queue.length) {
 
     Api.sendMessage({
       chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
-  text: successMsg,
+      text: successMsg,
       parse_mode: "HTML"
     });
 
     if (checkParam !== "none") {
-      Bot.runCommand("/downloadDirect " + checkParam);
+      if (checkParam.indexOf("batch_") === 0) {
+        Bot.runCommand("/downloadBatch " + checkParam);
+      } else {
+        Bot.runCommand("/downloadDirect " + checkParam);
+      }
     } else {
       Bot.runCommand("/showMenu");
     }
@@ -112,7 +116,7 @@ if (nextIndex < queue.length) {
 
     Api.sendMessage({
       chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
-  text: msg,
+      text: msg,
       parse_mode: "HTML",
       reply_markup: { inline_keyboard: grid }
     });

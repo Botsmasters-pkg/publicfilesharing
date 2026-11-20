@@ -88,7 +88,7 @@ if (request && request.data && request.message) {
       reply_markup: { inline_keyboard: inlkey }
     });
     return;
-  } catch (e) {}
+  } catch (e) { }
 }
 
 Api.sendMessage({

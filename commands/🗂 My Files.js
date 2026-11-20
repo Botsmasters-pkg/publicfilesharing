@@ -54,12 +54,12 @@ var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid 
 if (!myFiles || myFiles.length === 0) {
   var emptyMsg = "📂 <b>My Files Dashboard</b>\n<code>———————————————————————</code>\n\n" +
     "You haven't uploaded any files yet.\n\n" +
-    "👉 Click <b>📝 Upload Files</b> to upload single files, or <b>📦 Batch Link</b> to share multiple files at once!\n\n" +
+    "👉 Click <b>📝 Upload Files</b> to upload single files, or <b>📦 Bulk Upload</b> to share multiple files at once!\n\n" +
     "<i>Every file you upload will appear here with its Unique Link and Personal Traffic Tracking.</i>";
 
   var emptyKey = [
     [
-      { text: "📦 Create Batch Link", callback_data: "/createBatch", style: "primary" }
+      { text: "📦 Bulk Upload", callback_data: "/createBatch", style: "primary" }
     ]
   ];
 
@@ -142,13 +142,13 @@ if (totalPages > 1) {
   inlkey.push(navRow);
 }
 
-// Action Bar: Search, Batches & Create Batch
+// Action Bar: Search, Batches & Bulk Upload
 inlkey.push([
   { text: "🔍 Search Files", callback_data: "/searchFilesPrompt", style: "primary" },
   { text: "📦 My Batches", callback_data: "/mybatches", style: "primary" }
 ]);
 inlkey.push([
-  { text: "➕ Create Batch Link", callback_data: "/createBatch", style: "primary" }
+  { text: "➕ Bulk Upload", callback_data: "/createBatch", style: "primary" }
 ]);
 
 if (request && request.data && request.message) {

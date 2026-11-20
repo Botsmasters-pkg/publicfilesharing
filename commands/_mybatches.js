@@ -26,12 +26,12 @@ var userBatches = Bot.getProperty("userBatches_" + user.telegramid, []);
 if (!userBatches || userBatches.length === 0) {
   var emptyMsg = "📦 <b>My Batches Dashboard</b>\n" +
     "<code>———————————————————————</code>\n\n" +
-    "You haven't created any Batch Links yet.\n\n" +
-    "👉 A <b>Batch Link</b> lets you bundle multiple files (episodes, PDFs, photos) into a single download link!\n\n" +
-    "Click below to create your first Batch Link:";
+    "You haven't created any Bulk Uploads yet.\n\n" +
+    "👉 A <b>Bulk Upload</b> lets you bundle multiple files (episodes, PDFs, photos) into a single download link!\n\n" +
+    "Click below to create your first Bulk Upload:";
 
   var emptyKey = [
-    [{ text: "➕ Create Batch Link", callback_data: "/createBatch", style: "primary" }],
+    [{ text: "➕ Bulk Upload", callback_data: "/createBatch", style: "primary" }],
     [{ text: "📂 Back to My Files", callback_data: "/myfiles 1", style: "primary" }]
   ];
 
@@ -79,13 +79,13 @@ for (var i = 0; i < userBatches.length; i++) {
     },
     {
       text: "📤 Share",
-      url: "https://t.me/share/url?url=" + encodeURIComponent(b.uniqueLink) + "&text=" + encodeURIComponent("Download " + b.count + " files batch:")
+      url: "https://t.me/share/url?url=" + encodeURIComponent(b.uniqueLink) + "&text=" + encodeURIComponent("Download " + b.count + " files bulk upload:")
     }
   ]);
 }
 
 inlkey.push([
-  { text: "➕ Create New Batch", callback_data: "/createBatch", style: "primary" },
+  { text: "➕ Bulk Upload", callback_data: "/createBatch", style: "primary" },
   { text: "📂 Back to My Files", callback_data: "/myfiles 1", style: "primary" }
 ]);
 

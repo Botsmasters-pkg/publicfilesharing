@@ -24,9 +24,9 @@ var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid 
 var bTemp = Bot.getProperty("batch_temp_" + user.telegramid, []);
 
 if (!bTemp || bTemp.length === 0) {
-  var emptyMsg = "⚠️ <b>No files added to batch yet!</b>\n\nPlease send or forward at least 1 file first before clicking Done.";
+  var emptyMsg = "⚠️ <b>No files added yet!</b>\n\nPlease send or forward at least 1 file first before clicking Done.";
   var emptyKey = [
-    [{ text: "❌ Cancel Batch", callback_data: "/cancelBatch", style: "primary" }]
+    [{ text: "❌ Cancel Bulk Upload", callback_data: "/cancelBatch", style: "primary" }]
   ];
 
   if (request && request.data && request.message) {
@@ -53,10 +53,10 @@ if (!bTemp || bTemp.length === 0) {
 var currentCaption = Bot.getProperty("batch_caption_" + user.telegramid, "");
 
 var captionSection = currentCaption && currentCaption.trim().length > 0 ?
-  ("📝 <b>Batch Caption:</b>\n<blockquote>" + escapeHtml(currentCaption.trim()) + "</blockquote>\n") :
-  ("📝 <b>Batch Caption:</b> <i>(No caption set - click Edit Caption to add one)</i>\n");
+  ("📝 <b>Caption:</b>\n<blockquote>" + escapeHtml(currentCaption.trim()) + "</blockquote>\n") :
+  ("📝 <b>Caption:</b> <i>(No caption set - click Edit Caption to add one)</i>\n");
 
-var promptMsg = "📦 <b>Batch Ready to Finalize!</b>\n" +
+var promptMsg = "📦 <b>Bulk Upload Ready to Finalize!</b>\n" +
   "<code>———————————————————————</code>\n" +
   "📊 <b>Total Files Collected:</b> <b>" + bTemp.length + " files</b>\n\n" +
   captionSection + "\n" +

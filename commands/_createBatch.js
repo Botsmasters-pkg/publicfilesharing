@@ -19,9 +19,9 @@ Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
 
 var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : user.telegramid;
 
-var msg = "📦 <b>Batch Mode: ACTIVE</b>\n" +
+var msg = "📦 <b>Bulk Upload Mode: ACTIVE</b>\n" +
   "<code>———————————————————————</code>\n" +
-  "Send or forward all the files (Photos, Videos, Documents, Audio) you want in this batch.\n\n" +
+  "Send or forward all the files (Photos, Videos, Documents, Audio) you want in this bulk upload.\n\n" +
   "📊 <b>Files Added:</b> <b>0</b>\n\n" +
   "👉 <i>Aap ek sath 5, 10 ya kitni bhi files bhej sakte hain.\n" +
   "Sabhi files bhejne ke baad neeche <b>Done</b> par click karein:</i>";
@@ -31,7 +31,7 @@ var inlkey = [
     { text: "✅ Done (0 Files)", callback_data: "/batchDonePrompt", style: "primary" }
   ],
   [
-    { text: "❌ Cancel Batch", callback_data: "/cancelBatch", style: "primary" }
+    { text: "❌ Cancel Bulk Upload", callback_data: "/cancelBatch", style: "primary" }
   ]
 ];
 

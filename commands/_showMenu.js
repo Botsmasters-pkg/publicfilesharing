@@ -30,7 +30,7 @@ var primaryKeyboard = [
     { text: "🗂 My Files", style: "primary" }
   ],
   [
-    { text: "📦 Batch Link", style: "primary" },
+    { text: "📦 Bulk Upload", style: "primary" },
     { text: "📊 Traffic", style: "primary" }
   ],
   [

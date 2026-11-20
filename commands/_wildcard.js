@@ -189,7 +189,7 @@ if (incomingText) {
     Bot.runCommand("🗂 My Files");
     return;
   }
-  if (t === "📦 Batch Link" || low === "batch link" || t === "/batch" || low === "batch") {
+  if (t === "📦 Bulk Upload" || low === "bulk upload" || t === "/bulk" || low === "bulk" || t === "📦 Batch Link" || low === "batch link" || t === "/batch" || low === "batch") {
     Bot.runCommand("/createBatch");
     return;
   }

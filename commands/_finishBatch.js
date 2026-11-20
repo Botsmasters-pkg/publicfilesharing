@@ -24,9 +24,9 @@ var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid 
 var bTemp = Bot.getProperty("batch_temp_" + user.telegramid, []);
 
 if (!bTemp || bTemp.length === 0) {
-  var emptyAlert = "⚠️ <b>No files in batch!</b>\n\nPlease send or forward at least 1 file first before finishing.";
+  var emptyAlert = "⚠️ <b>No files in bulk upload!</b>\n\nPlease send or forward at least 1 file first before finishing.";
   var emptyKey = [
-    [{ text: "❌ Cancel Batch", callback_data: "/cancelBatch", style: "primary" }]
+    [{ text: "❌ Cancel", callback_data: "/cancelBatch", style: "primary" }]
   ];
   if (request && request.data && request.message) {
     try {
@@ -90,18 +90,18 @@ Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
 var captionBox = batchObj.caption && batchObj.caption.length > 0 ?
   ("📝 <b>Caption:</b>\n<blockquote>" + escapeHtml(batchObj.caption) + "</blockquote>\n\n") : "\n";
 
-var successMsg = "🎉 <b>Batch Link Created Successfully!</b>\n" +
+var successMsg = "🎉 <b>Bulk Upload Link Created Successfully!</b>\n" +
   "<code>———————————————————————</code>\n" +
-  "📦 <b>Total Files in Batch:</b> <b>" + bTemp.length + "</b>\n" +
+  "📦 <b>Total Files:</b> <b>" + bTemp.length + "</b>\n" +
   "📅 <b>Created At:</b> <i>" + batchObj.timestamp.slice(0, 19).replace('T', ' ') + "</i>\n" +
   captionBox +
-  "🔗 <b>Shareable Batch Link:</b>\n" +
+  "🔗 <b>Shareable Bulk Download Link:</b>\n" +
   "<code>" + escapeHtml(batchLink) + "</code>\n\n" +
   "👉 <i>Anyone opening this single link will automatically receive all " + bTemp.length + " files in sequence!</i>";
 
 var inlkey = [
   [
-    { text: "📤 Share Batch Link", url: "https://t.me/share/url?url=" + encodeURIComponent(batchLink) + "&text=" + encodeURIComponent("Download " + bTemp.length + " files batch:"), style: "primary" }
+    { text: "📤 Share Bulk Link", url: "https://t.me/share/url?url=" + encodeURIComponent(batchLink) + "&text=" + encodeURIComponent("Download " + bTemp.length + " files bulk upload:"), style: "primary" }
   ],
   [
     { text: "📦 View My Batches", callback_data: "/mybatches", style: "primary" },

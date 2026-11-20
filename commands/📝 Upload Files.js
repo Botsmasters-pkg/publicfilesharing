@@ -96,7 +96,7 @@ if (incomingCaption && (fileName.indexOf("Video_") === 0 || fileName.indexOf("Ph
   }
 }
 
-// 📦 BATCH MODE HANDLER
+// 📦 BULK UPLOAD MODE HANDLER (Silent collection without spamming messages!)
 var isBatchActive = (Bot.getProperty("user_batch_state_" + user.telegramid) === "active");
 
 if (isBatchActive) {
@@ -121,7 +121,7 @@ if (isBatchActive) {
   }
 
   // Backup to storage channel
-  var storageCaption = "📦 <b>Batch Item Backup</b>\n" +
+  var storageCaption = "📦 <b>Bulk Item Backup</b>\n" +
     "<code>———————————————————————</code>\n" +
     "📁 <b>Name:</b> <code>" + escapeHtml(fileName) + "</code>\n" +
     "📊 <b>Size:</b> <code>" + escapeHtml(fileSize) + "</code>\n" +
@@ -176,52 +176,14 @@ if (isBatchActive) {
   bTemp.push(genFileId);
   Bot.setProperty("batch_temp_" + user.telegramid, bTemp, "json");
 
-  // If first file has a caption and batch caption is empty, save it
+  // If first file has a caption and batch caption is empty, save it as default
   var existingBatchCap = Bot.getProperty("batch_caption_" + user.telegramid, "");
   if (!existingBatchCap && incomingCaption && incomingCaption.trim().length > 0) {
     Bot.setProperty("batch_caption_" + user.telegramid, incomingCaption.trim(), "string");
   }
 
-  var batchCount = bTemp.length;
-  var batchCard = "📦 <b>Batch Mode: ACTIVE</b>\n" +
-    "<code>———————————————————————</code>\n" +
-    "📊 <b>Files Collected:</b> <b>" + batchCount + "</b>\n" +
-    "📁 <i>Last added: " + escapeHtml(fileName) + " (" + escapeHtml(fileSize) + ")</i>\n\n" +
-    "👉 <i>Aap aur files bhej sakte hain.\nJab sabhi files bhej lein, to neeche <b>Done</b> par click karein:</i>";
-
-  var bKey = [
-    [
-      { text: "✅ Done (" + batchCount + " Files)", callback_data: "/batchDonePrompt", style: "primary" }
-    ],
-    [
-      { text: "❌ Cancel Batch", callback_data: "/cancelBatch", style: "primary" }
-    ]
-  ];
-
-  var savedMsgId = Bot.getProperty("batch_msg_id_" + user.telegramid);
-  var updated = false;
-
-  if (savedMsgId) {
-    try {
-      Api.editMessageText({
-        chat_id: targetChat,
-        message_id: savedMsgId,
-        text: batchCard,
-        parse_mode: "HTML",
-        reply_markup: { inline_keyboard: bKey }
-      });
-      updated = true;
-    } catch (e) {}
-  }
-
-  if (!updated) {
-    Api.sendMessage({
-      chat_id: targetChat,
-      text: batchCard,
-      parse_mode: "HTML",
-      reply_markup: { inline_keyboard: bKey }
-    });
-  }
+  // Silent upload: do NOT send any intermediate message in chat!
+  // User will click the big [✅ Done] button on bottom keyboard when finished.
   return;
 }
 

@@ -23,29 +23,17 @@ function escapeHtml(str) {
 var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : user.telegramid;
 var bTemp = Bot.getProperty("batch_temp_" + user.telegramid, []);
 
-if (!bTemp || bTemp.length === 0) {
-  var emptyMsg = "⚠️ <b>No files added yet!</b>\n\nPlease send or forward at least 1 file first before clicking Done.";
-  var emptyKey = [
-    [{ text: "❌ Cancel Bulk Upload", callback_data: "/cancelBatch", style: "primary" }]
-  ];
+var bulkKeyboard = [
+  [{ text: "✅ Done", style: "primary" }],
+  [{ text: "❌ Cancel Bulk Upload", style: "primary" }]
+];
 
-  if (request && request.data && request.message) {
-    try {
-      Api.editMessageText({
-        chat_id: chatId,
-        message_id: request.message.message_id,
-        text: emptyMsg,
-        parse_mode: "HTML",
-        reply_markup: { inline_keyboard: emptyKey }
-      });
-      return;
-    } catch (e) {}
-  }
+if (!bTemp || bTemp.length === 0) {
   Api.sendMessage({
     chat_id: chatId,
-    text: emptyMsg,
+    text: "⚠️ <b>Abhi tak koi file upload nahi hui hai!</b>\n\nPehle files bhejein, uske baad <b>Done</b> dabayein.",
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: emptyKey }
+    reply_markup: { keyboard: bulkKeyboard, resize_keyboard: true }
   });
   return;
 }
@@ -53,15 +41,15 @@ if (!bTemp || bTemp.length === 0) {
 var currentCaption = Bot.getProperty("batch_caption_" + user.telegramid, "");
 
 var captionSection = currentCaption && currentCaption.trim().length > 0 ?
-  ("📝 <b>Caption:</b>\n<blockquote>" + escapeHtml(currentCaption.trim()) + "</blockquote>\n") :
-  ("📝 <b>Caption:</b> <i>(No caption set - click Edit Caption to add one)</i>\n");
+  ("📝 <b>Current Caption:</b>\n<blockquote>" + escapeHtml(currentCaption.trim()) + "</blockquote>\n") :
+  ("📝 <b>Current Caption:</b> <i>(No caption set)</i>\n");
 
-var promptMsg = "📦 <b>Bulk Upload Ready to Finalize!</b>\n" +
+var promptMsg = "📦 <b>Bulk Upload (" + bTemp.length + " Files) Ready!</b>\n" +
   "<code>———————————————————————</code>\n" +
   "📊 <b>Total Files Collected:</b> <b>" + bTemp.length + " files</b>\n\n" +
   captionSection + "\n" +
-  "👉 <i>Caption yahi rakhna hai ya edit karna chahte hain?</i>\n" +
-  "Click <b>Edit Caption</b> to change/write caption, or <b>Done & Generate Link</b> to finish:";
+  "👉 <i>Caption edit karna chahte hain ya direct link generate karein?</i>\n" +
+  "Agar caption likhna hai to <b>Edit Caption</b> dabayein, ya direct <b>Done & Generate Link</b> par click karein:";
 
 var inlkey = [
   [
@@ -69,7 +57,6 @@ var inlkey = [
     { text: "✅ Done & Generate Link", callback_data: "/finishBatch", style: "primary" }
   ],
   [
-    { text: "➕ Add More Files", callback_data: "/createBatchResume", style: "primary" },
     { text: "❌ Cancel", callback_data: "/cancelBatch", style: "primary" }
   ]
 ];

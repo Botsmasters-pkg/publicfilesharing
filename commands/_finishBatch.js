@@ -23,28 +23,32 @@ function escapeHtml(str) {
 var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : user.telegramid;
 var bTemp = Bot.getProperty("batch_temp_" + user.telegramid, []);
 
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
+var primaryKeyboard = [
+  [
+    { text: "📝 Upload Files", style: "primary" },
+    { text: "🗂 My Files", style: "primary" }
+  ],
+  [
+    { text: "📦 Bulk Upload", style: "primary" },
+    { text: "📊 Traffic", style: "primary" }
+  ],
+  [
+    { text: "🆘 Support", style: "primary" }
+  ]
+];
+if (isAdmin) {
+  primaryKeyboard.push([
+    { text: "🛠 Admin Panel", style: "primary" }
+  ]);
+}
+
 if (!bTemp || bTemp.length === 0) {
-  var emptyAlert = "⚠️ <b>No files in bulk upload!</b>\n\nPlease send or forward at least 1 file first before finishing.";
-  var emptyKey = [
-    [{ text: "❌ Cancel", callback_data: "/cancelBatch", style: "primary" }]
-  ];
-  if (request && request.data && request.message) {
-    try {
-      Api.editMessageText({
-        chat_id: chatId,
-        message_id: request.message.message_id,
-        text: emptyAlert,
-        parse_mode: "HTML",
-        reply_markup: { inline_keyboard: emptyKey }
-      });
-      return;
-    } catch (e) {}
-  }
   Api.sendMessage({
     chat_id: chatId,
-    text: emptyAlert,
+    text: "⚠️ <b>No files in bulk upload!</b>",
     parse_mode: "HTML",
-    reply_markup: { inline_keyboard: emptyKey }
+    reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
   });
   return;
 }
@@ -109,19 +113,15 @@ var inlkey = [
   ]
 ];
 
-if (request && request.data && request.message) {
-  try {
-    Api.editMessageText({
-      chat_id: chatId,
-      message_id: request.message.message_id,
-      text: successMsg,
-      parse_mode: "HTML",
-      reply_markup: { inline_keyboard: inlkey }
-    });
-    return;
-  } catch (e) {}
-}
+// Restore bottom keyboard
+Api.sendMessage({
+  chat_id: chatId,
+  text: "🟢 <b>Bulk Upload Processed!</b>",
+  parse_mode: "HTML",
+  reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
+});
 
+// Deliver the link card with inline buttons
 Api.sendMessage({
   chat_id: chatId,
   text: successMsg,

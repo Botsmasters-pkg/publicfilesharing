@@ -147,12 +147,12 @@ if (captionState === "waiting_new_caption" && incomingText) {
 var batchCapState = Bot.getProperty("user_batch_caption_state_" + user.telegramid, "");
 if (batchCapState === "waiting_batch_caption" && incomingText) {
   Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
-  if (incomingText === "❌ Cancel" || incomingText.toLowerCase() === "cancel" || incomingText === "/cancel") {
-    Bot.runCommand("/batchDonePrompt");
+  if (incomingText === "❌ Cancel" || incomingText.toLowerCase() === "cancel" || incomingText === "/cancel" || incomingText.toLowerCase() === "skip") {
+    Bot.runCommand("/finishBatch");
     return;
   }
   Bot.setProperty("batch_caption_" + user.telegramid, incomingText, "string");
-  Bot.runCommand("/batchDonePrompt");
+  Bot.runCommand("/finishBatch");
   return;
 }
 
@@ -177,6 +177,16 @@ if (incomingText) {
   if (t === "/41" || low === "41" || low.indexOf("/41 ") === 0 || low.indexOf("41 ") === 0) {
     var cloneEmailArg = t.replace(/^\/?41\s*/i, "").trim();
     Bot.runCommand("/41 " + cloneEmailArg);
+    return;
+  }
+
+  // Bulk Upload Control Buttons (from bottom keyboard)
+  if (t === "✅ Done" || low === "done" || t === "/done") {
+    Bot.runCommand("/batchDonePrompt");
+    return;
+  }
+  if (t === "❌ Cancel Bulk Upload" || low === "cancel bulk upload") {
+    Bot.runCommand("/cancelBatch");
     return;
   }
 

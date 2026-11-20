@@ -16,14 +16,15 @@ Bot.setProperty("user_batch_caption_state_" + user.telegramid, "waiting_batch_ca
 
 var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : user.telegramid;
 
-var msg = "✏️ <b>Enter Batch Caption / Description</b>\n" +
+var msg = "✏️ <b>Enter Bulk Upload Caption / Description</b>\n" +
   "<code>———————————————————————</code>\n\n" +
-  "Send the text, title, or caption you want to attach to this entire batch.\n\n" +
+  "Send the text, title, or caption you want to attach to this bulk upload.\n\n" +
   "<i>Example:</i> <code>Mirzapur Season 3 [All Episodes Complete 720p]</code>\n\n" +
-  "👉 <b>Send your text now in chat:</b>";
+  "👉 <b>Send your text now in chat:</b>\n" +
+  "<i>(Ya skip/cancel karke bina caption link generate karne ke liye neeche click karein)</i>";
 
 var inlkey = [
-  [{ text: "❌ Cancel & Keep Current", callback_data: "/batchDonePrompt", style: "primary" }]
+  [{ text: "⏩ Skip & Generate Link", callback_data: "/finishBatch", style: "primary" }]
 ];
 
 if (request && request.data && request.message) {

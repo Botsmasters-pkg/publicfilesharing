@@ -69,7 +69,8 @@ if (request.data) {
   });
 } else {
   Api.sendMessage({
-    text: msg,
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: msg,
     parse_mode: "HTML",
     reply_markup: { keyboard: storagePrimaryKeyboard, resize_keyboard: true }
   });

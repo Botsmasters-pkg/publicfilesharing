@@ -47,7 +47,8 @@ for (var i = 0; i < userFileList.length; i++) {
 
 if (exists) {
   Api.sendMessage({
-    text: "📦 <b>File already exists in your list.</b>",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "📦 <b>File already exists in your list.</b>",
     parse_mode: "HTML"
   });
   return;
@@ -114,6 +115,7 @@ var keyb = [
 ];
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: "✅ <b>File Successfully Saved To Database!</b>",
   parse_mode: "HTML",
   reply_markup: { inline_keyboard: keyb }

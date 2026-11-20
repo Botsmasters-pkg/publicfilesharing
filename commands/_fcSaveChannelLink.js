@@ -52,7 +52,8 @@ if (text === "/cancel" || text === "❌ Cancel" || text.toLowerCase() === "cance
 
 if (text.indexOf("/fc") === 0 || text.indexOf("/") === 0) {
   Api.sendMessage({
-    text: "⚠️ <b>Invalid link!</b>\n\nPlease send the invite link starting with <code>https://t.me/</code> (or tap ❌ Cancel).",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "⚠️ <b>Invalid link!</b>\n\nPlease send the invite link starting with <code>https://t.me/</code> (or tap ❌ Cancel).",
     parse_mode: "HTML",
     reply_markup: { keyboard: [[{ text: "❌ Cancel", style: "primary" }]], resize_keyboard: true }
   });
@@ -75,7 +76,8 @@ if (!id || id.indexOf("/fc") === 0) {
 var isLink = (text.indexOf("t.me/") !== -1 || text.indexOf("telegram.me/") !== -1 || text.indexOf("http://") === 0 || text.indexOf("https://") === 0);
 if (!isLink || text.match(/^-?100\d+$/) || text.match(/^-\d+$/)) {
   Api.sendMessage({
-    text: "⚠️ <b>Invalid Invite Link!</b>\n\nYou sent: <code>" + escapeHtml(text) + "</code>\n\nChannel ID <code>" + escapeHtml(id) + "</code> is already saved.\n\n👉 Please send the Telegram <b>Invite Link</b> (e.g. <code>https://t.me/+AbCdEfGhIjK</code> or <code>https://t.me/joinchat/...</code>).\n\n<i>Or tap ❌ Cancel below to stop.</i>",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "⚠️ <b>Invalid Invite Link!</b>\n\nYou sent: <code>" + escapeHtml(text) + "</code>\n\nChannel ID <code>" + escapeHtml(id) + "</code> is already saved.\n\n👉 Please send the Telegram <b>Invite Link</b> (e.g. <code>https://t.me/+AbCdEfGhIjK</code> or <code>https://t.me/joinchat/...</code>).\n\n<i>Or tap ❌ Cancel below to stop.</i>",
     parse_mode: "HTML",
     reply_markup: { keyboard: [[{ text: "❌ Cancel", style: "primary" }]], resize_keyboard: true }
   });
@@ -140,6 +142,7 @@ var successKeyboard = [
 ];
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: successMsg,
   parse_mode: "HTML",
   reply_markup: { keyboard: successKeyboard, resize_keyboard: true }

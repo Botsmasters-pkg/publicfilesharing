@@ -60,7 +60,8 @@ if (chatType && chatType !== "channel") {
   ];
 
   Api.sendMessage({
-    text: invalidTypeMsg,
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: invalidTypeMsg,
     parse_mode: "HTML",
     reply_markup: { keyboard: errorKeyboard, resize_keyboard: true }
   });
@@ -102,6 +103,7 @@ var primaryKeyboard = [
 ];
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: successMsg,
   parse_mode: "HTML",
   reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }

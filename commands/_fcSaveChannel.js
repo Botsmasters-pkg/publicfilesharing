@@ -115,7 +115,8 @@ if (hasForward) {
         "<i>(Telegram requires the numeric Chat ID so the bot can verify members)</i>";
 
       Api.sendMessage({
-        text: promptChatIdMsg,
+        chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: promptChatIdMsg,
         parse_mode: "HTML",
         reply_markup: {
           keyboard: [[{ text: "❌ Cancel", style: "primary" }]],
@@ -151,7 +152,8 @@ if (!id) {
     "Please send a valid numeric Chat ID (starting with <code>-100...</code>, e.g. <code>-1004307092136</code>) or forward any post from that channel.\n\n" +
     "<i>Or tap ❌ Cancel below to stop.</i>";
   Api.sendMessage({
-    text: errorMsg,
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: errorMsg,
     parse_mode: "HTML",
     reply_markup: {
       keyboard: [[{ text: "❌ Cancel", style: "primary" }]],
@@ -180,7 +182,8 @@ if (type === "private" || type === "request") {
     ];
 
     Api.sendMessage({
-      text: askLinkMsg,
+      chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: askLinkMsg,
       parse_mode: "HTML",
       reply_markup: { keyboard: cancelPrimaryKeyboard, resize_keyboard: true }
     });
@@ -242,6 +245,7 @@ var successKeyboard = [
 ];
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: successMsg,
   parse_mode: "HTML",
   reply_markup: { keyboard: successKeyboard, resize_keyboard: true }

@@ -24,7 +24,8 @@ var uniqueId = params.trim();
 var file = Bot.getProperty("file_" + uniqueId) || Bot.getProperty(user.telegramid + "" + uniqueId);
 if (!file) {
   Api.sendMessage({
-    text: "⚠️ <b>File not found or expired.</b>",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "⚠️ <b>File not found or expired.</b>",
     parse_mode: "HTML"
   });
   return;
@@ -35,7 +36,8 @@ var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658")
 // Strict User Ownership: Only owner or admin can inspect this file dashboard
 if (file.userId && file.userId != user.telegramid && !isAdmin) {
   Api.sendMessage({
-    text: "🚫 <b>Access Denied:</b> You do not own this file.",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "🚫 <b>Access Denied:</b> You do not own this file.",
     parse_mode: "HTML"
   });
   return;

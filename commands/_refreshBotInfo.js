@@ -30,6 +30,7 @@ Api.getMe({
 var current = Bot.getProperty("bot_username") || (bot && bot.name) || "Detecting...";
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: "🔄 <b>Detecting Bot Username...</b>\n\n• Current: <b>@" + escapeHtml(current.replace("@", "")) + "</b>\n• Querying live Telegram API...\n\n<i>Bot username, ID, and identity refreshed directly from Telegram API!</i>",
   parse_mode: "HTML"
 });

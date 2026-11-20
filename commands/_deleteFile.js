@@ -62,13 +62,15 @@ var backKey = [
 
 if (found) {
   Api.sendMessage({
-    text: "🗑️ <b>File Deleted!</b>\n\nThe file has been permanently removed from your My Files dashboard.",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "🗑️ <b>File Deleted!</b>\n\nThe file has been permanently removed from your My Files dashboard.",
     parse_mode: "HTML",
     reply_markup: { inline_keyboard: backKey }
   });
 } else {
   Api.sendMessage({
-    text: "⚠️ <b>File was not found in your list.</b>",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "⚠️ <b>File was not found in your list.</b>",
     parse_mode: "HTML",
     reply_markup: { inline_keyboard: backKey }
   });

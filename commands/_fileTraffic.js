@@ -29,7 +29,8 @@ var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658")
 // Strict User Ownership & Privacy: Only file owner or admin can view this file's traffic
 if (file && file.userId && file.userId != user.telegramid && !isAdmin) {
   Api.sendMessage({
-    text: "🚫 <b>Access Denied:</b> You cannot view traffic for files you do not own.",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "🚫 <b>Access Denied:</b> You cannot view traffic for files you do not own.",
     parse_mode: "HTML"
   });
   return;
@@ -71,7 +72,8 @@ if (request.data) {
   });
 } else {
   Api.sendMessage({
-    text: txt,
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: txt,
     parse_mode: "HTML",
     reply_markup: { inline_keyboard: backKey }
   });

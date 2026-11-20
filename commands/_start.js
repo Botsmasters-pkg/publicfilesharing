@@ -142,7 +142,8 @@ if (activeChannels.length > 0 && !allJoined && !isAdmin) {
     "👉 Click <b>JOIN</b> below, join the channel(s), and then click <b>Check Membership</b>:";
 
   Api.sendMessage({
-    text: alertMsg,
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: alertMsg,
     parse_mode: "HTML",
     reply_markup: { inline_keyboard: grid }
   });

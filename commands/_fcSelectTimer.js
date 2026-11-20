@@ -85,6 +85,7 @@ if (request.data) {
 }
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: msg,
   parse_mode: "HTML",
   reply_markup: { keyboard: primaryTimerKeyboard, resize_keyboard: true }

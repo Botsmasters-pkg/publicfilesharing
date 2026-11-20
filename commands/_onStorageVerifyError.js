@@ -58,6 +58,7 @@ var failKeyboard = [
 ];
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: failMsg,
   parse_mode: "HTML",
   reply_markup: { keyboard: failKeyboard, resize_keyboard: true }

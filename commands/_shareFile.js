@@ -31,6 +31,7 @@ var shareButton = [
 ];
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: "<b>🔗 Shareable Link Generated!</b>\n" +
     "<code>———————————————————————</code>\n" +
     "Anyone with this link can download your file:\n\n" +

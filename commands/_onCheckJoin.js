@@ -65,7 +65,8 @@ if (nextIndex < queue.length) {
       "Thank you! You now have full access to use the bot.";
 
     Api.sendMessage({
-      text: successMsg,
+      chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: successMsg,
       parse_mode: "HTML"
     });
 
@@ -110,7 +111,8 @@ if (nextIndex < queue.length) {
     ]);
 
     Api.sendMessage({
-      text: msg,
+      chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: msg,
       parse_mode: "HTML",
       reply_markup: { inline_keyboard: grid }
     });

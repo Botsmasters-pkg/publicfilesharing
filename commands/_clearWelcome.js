@@ -17,6 +17,7 @@ if (!isAdmin) return;
 
 Bot.setProperty("welcomeMessage", null);
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: "✅ <b>Welcome message reset to default!</b>",
   parse_mode: "HTML"
 });

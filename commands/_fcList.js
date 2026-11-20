@@ -47,7 +47,8 @@ if (!forceChannels || forceChannels.length === 0) {
   if (request.data) {
     try { Api.deleteMessage({ message_id: request.message.message_id }); } catch (e) {}
   }
-  Api.sendMessage({ text: emptyMsg, parse_mode: "HTML", reply_markup: { keyboard: emptyKey, resize_keyboard: true } });
+  Api.sendMessage({ chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: emptyMsg, parse_mode: "HTML", reply_markup: { keyboard: emptyKey, resize_keyboard: true } });
   return;
 }
 
@@ -125,6 +126,7 @@ if (request.data) {
 }
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: txt,
   parse_mode: "HTML",
   reply_markup: { keyboard: fcListPrimaryKeyboard, resize_keyboard: true }

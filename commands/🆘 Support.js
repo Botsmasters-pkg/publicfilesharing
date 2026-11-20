@@ -41,6 +41,7 @@ var keyb = [
 ];
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: txt,
   parse_mode: "HTML",
   reply_markup: { inline_keyboard: keyb }

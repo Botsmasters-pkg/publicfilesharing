@@ -16,7 +16,8 @@ var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658")
 
 if (!isAdmin) {
   Api.sendMessage({
-    text: "🚫 <b>Access Denied: Admins Only.</b>",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "🚫 <b>Access Denied: Admins Only.</b>",
     parse_mode: "HTML"
   });
   return;
@@ -93,7 +94,8 @@ if (request.data) {
   });
 } else {
   Api.sendMessage({
-    text: msg,
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: msg,
     parse_mode: "HTML",
     reply_markup: { keyboard: adminPrimaryKeyboard, resize_keyboard: true }
   });

@@ -62,7 +62,8 @@ if (channelsToCheck.length === 0) {
     "Thank you! You now have full access to use the bot.";
 
   Api.sendMessage({
-    text: successMsg,
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: successMsg,
     parse_mode: "HTML"
   });
 

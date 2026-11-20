@@ -114,6 +114,7 @@ var keyb = [
 ];
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: "✅ <b>Broadcast Completed!</b>\n<code>———————————————————————</code>\n\n" +
     "• Delivered successfully: <b>" + successCount + "</b>\n" +
     "• Failed deliveries: <b>" + failedCount + "</b>\n" +

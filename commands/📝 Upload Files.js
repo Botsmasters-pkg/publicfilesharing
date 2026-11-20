@@ -1,11 +1,10 @@
 /*CMD
   command: 📝 Upload Files
   help: 
-  need_reply: true
+  need_reply: false
   auto_retry_time: 
   folder: 
-  answer: 📤 *Send any file, photo, video, document, or audio to upload:*
-
+  answer: 
   keyboard: 
   aliases: 
   group: 
@@ -17,6 +16,19 @@ function escapeHtml(str) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
+}
+
+var hasMedia = request && (request.document || (request.photo && request.photo.length > 0) || request.video || request.audio || request.voice);
+
+if (!hasMedia) {
+  // User tapped "📝 Upload Files" button on keyboard
+  var promptChatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null);
+  Api.sendMessage({
+    chat_id: promptChatId,
+    text: "📤 <b>Send any file, photo, video, document, or audio to upload:</b>",
+    parse_mode: "HTML"
+  });
+  return;
 }
 
 var fileId = "";
@@ -64,7 +76,8 @@ if (request.document) {
   mimeType = "audio/ogg";
 } else {
   Api.sendMessage({
-    text: "⚠️ <b>Please send a valid file, photo, video, or audio to upload!</b>",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "⚠️ <b>Please send a valid file, photo, video, or audio to upload!</b>",
     parse_mode: "HTML"
   });
   return;
@@ -210,6 +223,7 @@ var keyb = [
 ];
 
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: "✅ <b>Upload Successful!</b>\n" +
     "<code>———————————————————————</code>\n" +
     "📦 <b>File Name:</b> <code>" + escapeHtml(fileName) + "</code>\n" +

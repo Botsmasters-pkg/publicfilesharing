@@ -43,7 +43,8 @@ if (text === "❌ Cancel" || text === "/cancel" || text.toLowerCase() === "cance
   Bot.setProperty("admin_state_" + user.telegramid, "", "string");
   Bot.setProperty("temp_last_text_" + user.telegramid, "", "string");
   Api.sendMessage({
-    text: "❌ <b>Channel configuration cancelled.</b>\nActive storage channel remains unchanged.",
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: "❌ <b>Channel configuration cancelled.</b>\nActive storage channel remains unchanged.",
     parse_mode: "HTML"
   });
   Bot.runCommand("/adminStorage");
@@ -90,7 +91,8 @@ if (!candidateId) {
     "<i>Please send a valid channel ID or tap ❌ Cancel below.</i>";
 
   Api.sendMessage({
-    text: rejectMsg,
+    chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
+  text: rejectMsg,
     parse_mode: "HTML",
     reply_markup: {
       keyboard: [[{ text: "❌ Cancel", style: "primary" }]],
@@ -102,6 +104,7 @@ if (!candidateId) {
 
 // Notify admin that live verification is starting
 Api.sendMessage({
+  chat_id: (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null),
   text: "🔍 <b>Verifying Channel Destination...</b>\n\n" +
     "• Testing target: <code>" + escapeHtml(candidateId) + "</code>\n" +
     "• Verifying bot administrator access &amp; posting permissions...",

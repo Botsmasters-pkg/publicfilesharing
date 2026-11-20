@@ -112,8 +112,8 @@ if (Bot.getProperty("waiting_clone_email_" + user.telegramid)) {
   return;
 }
 
-// Direct File Upload Support: if any user sends a document, photo, video, or audio
-if (request.document || (request.photo && request.photo.length > 0) || request.video || request.audio) {
+// Direct File Upload Support: if any user sends a document, photo, video, audio, or voice
+if (request.document || (request.photo && request.photo.length > 0) || request.video || request.audio || request.voice) {
   Bot.runCommand("📝 Upload Files");
   return;
 }

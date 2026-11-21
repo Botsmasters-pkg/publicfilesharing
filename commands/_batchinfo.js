@@ -94,7 +94,16 @@ if (batchObj.userId && batchObj.userId != user.telegramid && !isAdmin) {
   return;
 }
 
-var bTraffic = Bot.getProperty("traffic_" + batchId, { count: 0 });
+var bTraffic = Bot.getProperty("traffic_" + batchId, { count: 0, downloaders: [] });
+var bDlCount = (bTraffic.downloaders && bTraffic.downloaders.length > 0) ? (function() {
+  var s = {}; var c = 0;
+  for (var bi = 0; bi < bTraffic.downloaders.length; bi++) {
+    if (bTraffic.downloaders[bi] && bTraffic.downloaders[bi].id && !s[bTraffic.downloaders[bi].id]) {
+      s[bTraffic.downloaders[bi].id] = true; c++;
+    }
+  }
+  return c;
+})() : (bTraffic.count || 0);
 
 var cleanCaption = balanceTelegramHtml(batchObj.caption, false);
 var captionDisplay = (cleanCaption && cleanCaption.trim().length > 0) ?
@@ -104,7 +113,7 @@ var msg = "📦 <b>Batch Dashboard</b>\n" +
   "<code>———————————————————————</code>\n" +
   "🆔 <b>Batch ID:</b> <code>" + escapeHtml(batchObj.batchId) + "</code>\n" +
   "📁 <b>Total Files:</b> <b>" + (batchObj.count || (batchObj.fileIds ? batchObj.fileIds.length : 0)) + "</b>\n" +
-  "📈 <b>Total Downloads:</b> <b>" + (bTraffic.count || 0) + "</b>\n" +
+  "📈 <b>Unique Downloads:</b> <b>" + bDlCount + "</b>\n" +
   "📅 <b>Created At:</b> <i>" + escapeHtml(batchObj.timestamp ? batchObj.timestamp.slice(0, 19).replace('T', ' ') : "N/A") + "</i>" + captionDisplay + "\n\n" +
   "<b>📄 Files in this Batch:</b>\n";
 

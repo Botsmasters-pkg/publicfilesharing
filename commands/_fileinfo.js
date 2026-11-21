@@ -94,7 +94,16 @@ if (file.userId && file.userId != user.telegramid && !isAdmin) {
   return;
 }
 
-var traffic = Bot.getProperty("traffic_" + uniqueId, { count: 0 });
+var traffic = Bot.getProperty("traffic_" + uniqueId, { count: 0, downloaders: [] });
+var dlCount = (traffic.downloaders && traffic.downloaders.length > 0) ? (function() {
+  var s = {}; var c = 0;
+  for (var i = 0; i < traffic.downloaders.length; i++) {
+    if (traffic.downloaders[i] && traffic.downloaders[i].id && !s[traffic.downloaders[i].id]) {
+      s[traffic.downloaders[i].id] = true; c++;
+    }
+  }
+  return c;
+})() : (traffic.count || 0);
 var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
 var targetFileId = file.fileId || file.file_id || uniqueId;
 var uniqueLink = file.uniqueLink || ("https://t.me/" + botUsername + "?start=" + uniqueId);
@@ -109,7 +118,7 @@ var msg = "🗂 <b>File Dashboard</b>\n" +
   "📦 <b>Name:</b> <code>" + escapeHtml(file.fileName || "File") + "</code>\n" +
   "📊 <b>Size:</b> <code>" + escapeHtml(file.fileSize || "N/A") + "</code>\n" +
   "🏷️ <b>Type:</b> <code>" + escapeHtml(fType) + "</code>\n" +
-  "📈 <b>Total Downloads:</b> <b>" + (traffic.count || 0) + "</b>\n" +
+  "📈 <b>Unique Downloads:</b> <b>" + dlCount + "</b>\n" +
   "📅 <b>Uploaded At:</b> <i>" + escapeHtml(file.timestamp ? file.timestamp.slice(0, 19).replace('T', ' ') : "N/A") + "</i>" + captionDisplay + "\n\n" +
   "🔗 <b>Unique Download Link:</b>\n" +
   "<code>" + escapeHtml(uniqueLink) + "</code>";
@@ -123,7 +132,7 @@ var inlkey = [
   ],
   [
     { text: "📥 Download File", callback_data: "/downloadDirect " + uniqueId, style: "primary" },
-    { text: "📊 Download Traffic (" + (traffic.count || 0) + ")", callback_data: "/fileTraffic " + uniqueId, style: "primary" }
+    { text: "📊 Download Traffic (" + dlCount + ")", callback_data: "/fileTraffic " + uniqueId, style: "primary" }
   ],
   [
     { text: "⬅️ Back to My Files", callback_data: "/myfiles", style: "primary" }

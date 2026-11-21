@@ -91,22 +91,47 @@ var uLast = user.last_name || "";
 var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
 var uHandle = user.username ? ("@" + user.username) : "";
 
-// Log download traffic for file owner
+// Log unique download traffic for file owner (No duplicate user records!)
 var trafficKey = targetUniqueId;
 var traffic = Bot.getProperty("traffic_" + trafficKey, { count: 0, downloaders: [] });
-traffic.count = (traffic.count || 0) + 1;
+if (!traffic || typeof traffic !== "object") { traffic = { count: 0, downloaders: [] }; }
 traffic.downloaders = traffic.downloaders || [];
 
+var cleanDownloaders = [];
+var seenIds = {};
+var alreadyDownloaded = false;
 var now = new Date().toISOString().slice(0, 19).replace("T", " ");
-traffic.downloaders.push({
-  id: user.telegramid,
-  name: uFull,
-  username: user.username || "",
-  date: now
-});
-if (traffic.downloaders.length > 30) {
-  traffic.downloaders = traffic.downloaders.slice(-30);
+
+for (var k = 0; k < traffic.downloaders.length; k++) {
+  var entry = traffic.downloaders[k];
+  if (entry && entry.id) {
+    if (!seenIds[entry.id]) {
+      seenIds[entry.id] = true;
+      if (entry.id == user.telegramid) {
+        alreadyDownloaded = true;
+        entry.date = now;
+        entry.name = uFull;
+        entry.username = user.username || "";
+      }
+      cleanDownloaders.push(entry);
+    }
+  }
 }
+traffic.downloaders = cleanDownloaders;
+
+if (!alreadyDownloaded) {
+  traffic.downloaders.push({
+    id: user.telegramid,
+    name: uFull,
+    username: user.username || "",
+    date: now
+  });
+}
+if (traffic.downloaders.length > 50) {
+  traffic.downloaders = traffic.downloaders.slice(-50);
+}
+traffic.count = traffic.downloaders.length;
+
 try {
   Bot.setProperty("traffic_" + trafficKey, traffic, "json");
   if (targetId !== trafficKey) {

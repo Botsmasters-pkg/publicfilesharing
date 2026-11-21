@@ -90,19 +90,46 @@ var uFirst = user.first_name || "";
 var uLast = user.last_name || "";
 var uFull = (uFirst + (uLast ? (" " + uLast) : "")).trim() || "User";
 
-// Track download traffic for batch
+// Track unique download traffic for batch (No duplicate user records!)
 var bTraffic = Bot.getProperty("traffic_" + batchId, { count: 0, downloaders: [] });
-bTraffic.count = (bTraffic.count || 0) + 1;
+if (!bTraffic || typeof bTraffic !== "object") { bTraffic = { count: 0, downloaders: [] }; }
 bTraffic.downloaders = bTraffic.downloaders || [];
-bTraffic.downloaders.push({
-  id: user.telegramid,
-  name: uFull,
-  username: user.username || "",
-  date: new Date().toISOString().slice(0, 19).replace("T", " ")
-});
-if (bTraffic.downloaders.length > 30) {
-  bTraffic.downloaders = bTraffic.downloaders.slice(-30);
+
+var cleanBDownloaders = [];
+var seenBIds = {};
+var alreadyDownloadedBatch = false;
+var now = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+for (var bk = 0; bk < bTraffic.downloaders.length; bk++) {
+  var bEntry = bTraffic.downloaders[bk];
+  if (bEntry && bEntry.id) {
+    if (!seenBIds[bEntry.id]) {
+      seenBIds[bEntry.id] = true;
+      if (bEntry.id == user.telegramid) {
+        alreadyDownloadedBatch = true;
+        bEntry.date = now;
+        bEntry.name = uFull;
+        bEntry.username = user.username || "";
+      }
+      cleanBDownloaders.push(bEntry);
+    }
+  }
 }
+bTraffic.downloaders = cleanBDownloaders;
+
+if (!alreadyDownloadedBatch) {
+  bTraffic.downloaders.push({
+    id: user.telegramid,
+    name: uFull,
+    username: user.username || "",
+    date: now
+  });
+}
+if (bTraffic.downloaders.length > 50) {
+  bTraffic.downloaders = bTraffic.downloaders.slice(-50);
+}
+bTraffic.count = bTraffic.downloaders.length;
+
 try {
   Bot.setProperty("traffic_" + batchId, bTraffic, "json");
 } catch (e) {}

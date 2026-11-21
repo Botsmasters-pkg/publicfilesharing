@@ -33,8 +33,16 @@ for (var i = 0; i < totalUserUploads; i++) {
   var item = userFileList[i];
   var itemKey = item.uniqueKey || item.fileUniqueId || item.file_unique_id;
   var fileInfo = Bot.getProperty("file_" + itemKey) || Bot.getProperty(user.telegramid + "" + itemKey) || item;
-  var traffic = Bot.getProperty("traffic_" + itemKey, { count: 0 });
-  var dlCount = traffic.count || 0;
+  var traffic = Bot.getProperty("traffic_" + itemKey, { count: 0, downloaders: [] });
+  var dlCount = (traffic.downloaders && traffic.downloaders.length > 0) ? (function() {
+    var s = {}; var c = 0;
+    for (var k = 0; k < traffic.downloaders.length; k++) {
+      if (traffic.downloaders[k] && traffic.downloaders[k].id && !s[traffic.downloaders[k].id]) {
+        s[traffic.downloaders[k].id] = true; c++;
+      }
+    }
+    return c;
+  })() : (traffic.count || 0);
   totalUserDownloads += dlCount;
 
   var fName = (fileInfo && (fileInfo.fileName || fileInfo.file_name)) ? (fileInfo.fileName || fileInfo.file_name) : ("File " + (i + 1));
@@ -50,7 +58,7 @@ var txt = "📊 <b>Personal Download Traffic Dashboard</b>\n" +
   "<code>———————————————————————</code>\n\n" +
   "👤 <b>Account:</b> " + escapeHtml(user.first_name || "User") + " (<code>#" + user.telegramid + "</code>)\n" +
   "📦 <b>Total Uploaded Files:</b> <b>" + totalUserUploads + "</b>\n" +
-  "📈 <b>Total File Downloads:</b> <b>" + totalUserDownloads + "</b>\n\n";
+  "📈 <b>Total Unique Downloads:</b> <b>" + totalUserDownloads + "</b>\n\n";
 
 if (totalUserUploads === 0) {
   txt += "<i>You have not uploaded any files yet.</i>\n\nClick <b>Upload Files</b> below to start sharing and tracking your downloads!";

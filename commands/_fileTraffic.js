@@ -37,18 +37,41 @@ if (file && file.userId && file.userId != user.telegramid && !isAdmin) {
 }
 
 var fileName = (file && file.fileName) ? file.fileName : ("File " + uniqueId);
-var totalDownloads = traffic.count || 0;
-var downloaders = traffic.downloaders || [];
+
+// Deduplicate downloaders to ensure every user ID appears exactly once
+var rawDownloaders = traffic.downloaders || [];
+var uniqueDownloaders = [];
+var seenUsers = {};
+
+for (var k = 0; k < rawDownloaders.length; k++) {
+  var dEntry = rawDownloaders[k];
+  if (dEntry && dEntry.id && !seenUsers[dEntry.id]) {
+    seenUsers[dEntry.id] = true;
+    uniqueDownloaders.push(dEntry);
+  }
+}
+
+// Auto-clean database if older repeated entries existed
+if (rawDownloaders.length !== uniqueDownloaders.length) {
+  traffic.downloaders = uniqueDownloaders;
+  traffic.count = uniqueDownloaders.length;
+  try {
+    Bot.setProperty("traffic_" + uniqueId, traffic, "json");
+  } catch (e) {}
+}
+
+var downloaders = uniqueDownloaders;
+var totalDownloads = downloaders.length;
 
 var txt = "📊 <b>Personal Download Traffic Report</b>\n" +
   "<code>———————————————————————</code>\n" +
   "📦 <b>File:</b> <code>" + escapeHtml(fileName) + "</code>\n" +
-  "📈 <b>Total Successful Downloads:</b> <b>" + totalDownloads + "</b>\n\n";
+  "📈 <b>Unique Downloads:</b> <b>" + totalDownloads + " users</b>\n\n";
 
 if (downloaders.length === 0) {
   txt += "<i>No one has downloaded this file yet.</i>\n\nShare your Unique Link to get downloads!";
 } else {
-  txt += "<b>👥 Download History (Who Downloaded):</b>\n";
+  txt += "<b>👥 Unique Downloaders:</b>\n";
   var start = Math.max(0, downloaders.length - 30);
   for (var i = downloaders.length - 1; i >= start; i--) {
     var d = downloaders[i];

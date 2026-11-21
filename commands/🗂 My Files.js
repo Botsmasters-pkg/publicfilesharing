@@ -142,13 +142,10 @@ if (totalPages > 1) {
   inlkey.push(navRow);
 }
 
-// Action Bar: Search, Batches & Bulk Upload
+// Action Bar: Search & Batches
 inlkey.push([
   { text: "🔍 Search Files", callback_data: "/searchFilesPrompt", style: "primary" },
   { text: "📦 My Batches", callback_data: "/mybatches", style: "primary" }
-]);
-inlkey.push([
-  { text: "➕ Bulk Upload", callback_data: "/createBatch", style: "primary" }
 ]);
 
 if (request && request.data && request.message) {

@@ -32,51 +32,8 @@ var hasMedia = !!(reqDoc || (reqPhoto && reqPhoto.length > 0) || reqVideo || req
 var targetChat = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null);
 
 if (!hasMedia) {
-  // User clicked "📝 Upload Files" button on keyboard without sending a file
-  var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
-  var primaryKeyboard = [
-    [
-      { text: "📝 Upload Files", style: "primary" },
-      { text: "🗂 My Files", style: "primary" }
-    ],
-    [
-      { text: "📦 Bulk Upload", style: "primary" },
-      { text: "📊 Traffic", style: "primary" }
-    ],
-    [
-      { text: "🆘 Support", style: "primary" }
-    ]
-  ];
-  if (isAdmin) {
-    primaryKeyboard.push([
-      { text: "🛠 Admin Panel", style: "primary" }
-    ]);
-  }
-
-  var promptText = "📤 <b>Upload Options</b>\n" +
-    "<code>———————————————————————</code>\n" +
-    "Kripya select karein aap kaise upload karna chahte hain:\n\n" +
-    "📄 <b>Single Upload:</b>\n" +
-    "• Ek ya multiple files upload karein.\n" +
-    "• Har file ka turant apna alag unique link banega.\n\n" +
-    "📦 <b>Bulk Upload:</b>\n" +
-    "• Multiple files (10, 20, 50+) ko ek sath bhejein.\n" +
-    "• Sabhi files ka 1 single batch link banega.\n\n" +
-    "👉 <i>Neeche diye gaye option par click karein:</i>";
-
-  var inlKeyb = [
-    [
-      { text: "📄 Single Upload", callback_data: "/setUploadSingle" },
-      { text: "📦 Bulk Upload", callback_data: "/createBatch" }
-    ]
-  ];
-
-  Api.sendMessage({
-    chat_id: targetChat,
-    text: promptText,
-    parse_mode: "HTML",
-    reply_markup: { inline_keyboard: inlKeyb }
-  });
+  // If user calls upload without sending media, activate Single Upload mode directly
+  Bot.runCommand("/setUploadSingle");
   return;
 }
 

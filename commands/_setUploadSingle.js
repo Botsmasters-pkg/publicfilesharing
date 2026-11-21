@@ -36,8 +36,29 @@ if (request && request.data && request.message) {
   } catch (e) {}
 }
 
+var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
+var primaryKeyboard = [
+  [
+    { text: "📄 Single Upload", style: "primary" },
+    { text: "📦 Bulk Upload", style: "primary" }
+  ],
+  [
+    { text: "🗂 My Files", style: "primary" },
+    { text: "📊 Traffic", style: "primary" }
+  ],
+  [
+    { text: "🆘 Support", style: "primary" }
+  ]
+];
+if (isAdmin) {
+  primaryKeyboard.push([
+    { text: "🛠 Admin Panel", style: "primary" }
+  ]);
+}
+
 Api.sendMessage({
   chat_id: targetChat,
   text: msg,
-  parse_mode: "HTML"
+  parse_mode: "HTML",
+  reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
 });

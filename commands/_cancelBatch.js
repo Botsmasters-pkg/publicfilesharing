@@ -23,11 +23,11 @@ var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid 
 var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
 var primaryKeyboard = [
   [
-    { text: "📝 Upload Files", style: "primary" },
-    { text: "🗂 My Files", style: "primary" }
+    { text: "📄 Single Upload", style: "primary" },
+    { text: "📦 Bulk Upload", style: "primary" }
   ],
   [
-    { text: "📦 Bulk Upload", style: "primary" },
+    { text: "🗂 My Files", style: "primary" },
     { text: "📊 Traffic", style: "primary" }
   ],
   [

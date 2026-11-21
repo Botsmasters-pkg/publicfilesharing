@@ -85,7 +85,6 @@ for (var i = 0; i < userBatches.length; i++) {
 }
 
 inlkey.push([
-  { text: "➕ Bulk Upload", callback_data: "/createBatch", style: "primary" },
   { text: "📂 Back to My Files", callback_data: "/myfiles 1", style: "primary" }
 ]);
 

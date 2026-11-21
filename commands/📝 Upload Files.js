@@ -18,69 +18,158 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
+function balanceTelegramHtml(html, isMedia) {
+  if (!html) return "";
+  var str = html.toString();
+  if (isMedia) {
+    str = str.replace(/<\/?(?:blockquote|expandable_blockquote)[^>]*>/gi, "");
+  }
+  var tagRegex = /<\/?([a-z0-9_-]+)(?:\s+[^>]*)?>/gi;
+  var result = "";
+  var lastIndex = 0;
+  var stack = [];
+  var match;
+  var allowedTags = isMedia 
+    ? ["b", "strong", "i", "em", "u", "ins", "s", "strike", "del", "code", "pre", "tg-spoiler", "a"]
+    : ["b", "strong", "i", "em", "u", "ins", "s", "strike", "del", "code", "pre", "tg-spoiler", "a", "blockquote", "expandable_blockquote"];
+
+  while ((match = tagRegex.exec(str)) !== null) {
+    var fullTag = match[0];
+    var tagName = match[1].toLowerCase();
+    var isClose = fullTag.charAt(1) === '/';
+
+    result += str.slice(lastIndex, match.index);
+    lastIndex = tagRegex.lastIndex;
+
+    if (allowedTags.indexOf(tagName) === -1) {
+      continue;
+    }
+
+    if (!isClose) {
+      stack.push(tagName);
+      result += fullTag;
+    } else {
+      var stackIdx = stack.lastIndexOf(tagName);
+      if (stackIdx !== -1) {
+        while (stack.length - 1 > stackIdx) {
+          var unclosed = stack.pop();
+          result += "</" + unclosed + ">";
+        }
+        stack.pop();
+        result += "</" + tagName + ">";
+      }
+    }
+  }
+
+  result += str.slice(lastIndex);
+  while (stack.length > 0) {
+    var rem = stack.pop();
+    result += "</" + rem + ">";
+  }
+  return result;
+}
+
 function formatCaptionWithLinks(text, entities) {
   if (!text) return "";
 
-  // 1. Process Telegram entities focusing on links and safe inline styles
   if (entities && Array.isArray(entities) && entities.length > 0) {
-    var tags = [];
+    var tagMap = {
+      "bold": ["<b>", "</b>"],
+      "italic": ["<i>", "</i>"],
+      "code": ["<code>", "</code>"],
+      "pre": ["<pre>", "</pre>"],
+      "underline": ["<u>", "</u>"],
+      "strikethrough": ["<s>", "</s>"],
+      "spoiler": ["<tg-spoiler>", "</tg-spoiler>"]
+    };
+
+    var events = [];
     for (var i = 0; i < entities.length; i++) {
       var ent = entities[i];
       var openTag = "";
       var closeTag = "";
 
-      if (ent.type === "text_link" && ent.url) {
+      if (tagMap[ent.type]) {
+        openTag = tagMap[ent.type][0];
+        closeTag = tagMap[ent.type][1];
+      } else if (ent.type === "text_link" && ent.url) {
         openTag = '<a href="' + ent.url.replace(/"/g, '&quot;') + '">';
         closeTag = "</a>";
-      } else if (ent.type === "bold") {
-        openTag = "<b>"; closeTag = "</b>";
-      } else if (ent.type === "italic") {
-        openTag = "<i>"; closeTag = "</i>";
-      } else if (ent.type === "code") {
-        openTag = "<code>"; closeTag = "</code>";
-      } else if (ent.type === "pre") {
-        openTag = "<pre>"; closeTag = "</pre>";
-      } else if (ent.type === "underline") {
-        openTag = "<u>"; closeTag = "</u>";
-      } else if (ent.type === "strikethrough") {
-        openTag = "<s>"; closeTag = "</s>";
-      } else if (ent.type === "spoiler") {
-        openTag = "<tg-spoiler>"; closeTag = "</tg-spoiler>";
       } else if (ent.type === "text_mention" && ent.user) {
         openTag = '<a href="tg://user?id=' + ent.user.id + '">';
         closeTag = "</a>";
       }
-      // Note: Deliberately exclude <blockquote> because Telegram media captions
-      // reject blockquotes with a 400 error!
 
       if (openTag && closeTag) {
-        tags.push({ pos: ent.offset, kind: "open", tag: openTag, len: ent.length });
-        tags.push({ pos: ent.offset + ent.length, kind: "close", tag: closeTag, len: ent.length });
+        var start = ent.offset;
+        var len = ent.length;
+        events.push({
+          id: i,
+          start: start,
+          end: start + len,
+          len: len,
+          open: openTag,
+          close: closeTag
+        });
       }
     }
 
-    if (tags.length > 0) {
-      tags.sort(function(a, b) {
-        if (a.pos !== b.pos) return a.pos - b.pos;
-        if (a.kind !== b.kind) return a.kind === "close" ? -1 : 1;
-        if (a.kind === "close") return a.len - b.len;
-        return b.len - a.len;
-      });
-
-      var result = "";
-      var lastPos = 0;
-      for (var j = 0; j < tags.length; j++) {
-        var t = tags[j];
-        if (t.pos > lastPos) {
-          result += escapeHtml(text.slice(lastPos, t.pos));
-          lastPos = t.pos;
+    if (events.length > 0) {
+      var points = [0, text.length];
+      for (var p = 0; p < events.length; p++) {
+        points.push(events[p].start);
+        points.push(events[p].end);
+      }
+      points.sort(function(a, b) { return a - b; });
+      var uniquePoints = [];
+      for (var u = 0; u < points.length; u++) {
+        if (u === 0 || points[u] !== points[u - 1]) {
+          uniquePoints.push(points[u]);
         }
-        result += t.tag;
       }
-      if (lastPos < text.length) {
-        result += escapeHtml(text.slice(lastPos));
+
+      var res = "";
+      var stack = [];
+
+      for (var s = 0; s < uniquePoints.length - 1; s++) {
+        var pStart = uniquePoints[s];
+        var pEnd = uniquePoints[s + 1];
+        if (pStart >= text.length) break;
+
+        var activeCovering = [];
+        for (var e = 0; e < events.length; e++) {
+          if (events[e].start <= pStart && events[e].end >= pEnd) {
+            activeCovering.push(events[e]);
+          }
+        }
+        activeCovering.sort(function(a, b) {
+          if (a.len !== b.len) return b.len - a.len;
+          return a.id - b.id;
+        });
+
+        var matchLen = 0;
+        while (matchLen < stack.length && matchLen < activeCovering.length && stack[matchLen].id === activeCovering[matchLen].id) {
+          matchLen++;
+        }
+
+        while (stack.length > matchLen) {
+          res += stack.pop().close;
+        }
+
+        while (stack.length < activeCovering.length) {
+          var op = activeCovering[stack.length];
+          res += op.open;
+          stack.push(op);
+        }
+
+        res += escapeHtml(text.slice(pStart, pEnd));
       }
-      return result;
+
+      while (stack.length > 0) {
+        res += stack.pop().close;
+      }
+
+      return balanceTelegramHtml(res, true);
     }
   }
 
@@ -96,12 +185,12 @@ function formatCaptionWithLinks(text, entities) {
       lastIdx = regex.lastIndex;
     }
     res += escapeHtml(text.slice(lastIdx));
-    return res;
+    return balanceTelegramHtml(res, true);
   }
 
   // 3. Raw HTML with anchor tag
   if (/<a\s+href=["'][^"']+["']>.*?<\/a>/i.test(text)) {
-    return text;
+    return balanceTelegramHtml(text, true);
   }
 
   return escapeHtml(text);
@@ -327,8 +416,9 @@ if (isBatchActive) {
 // CASE 2: SINGLE UPLOAD MODE (Immediate Individual Delivery!)
 // If user sends 1 file or multiple files simultaneously in single mode:
 // Each file gets its own unique link and dashboard card immediately!
-var captionDisplay = fileRecord.caption && fileRecord.caption.length > 0 ?
-  ("📝 <b>Caption:</b>\n" + fileRecord.caption + "\n\n") : "";
+var cleanCaption = balanceTelegramHtml(fileRecord.caption, false);
+var captionDisplay = cleanCaption && cleanCaption.length > 0 ?
+  ("📝 <b>Caption:</b>\n" + cleanCaption + "\n\n") : "";
 
 var cardMsg = "✅ <b>File Uploaded Successfully!</b>\n" +
   "<code>———————————————————————</code>\n" +

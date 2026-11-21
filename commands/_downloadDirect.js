@@ -20,6 +20,57 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
+function balanceTelegramHtml(html, isMedia) {
+  if (!html) return "";
+  var str = html.toString();
+  if (isMedia) {
+    str = str.replace(/<\/?(?:blockquote|expandable_blockquote)[^>]*>/gi, "");
+  }
+  var tagRegex = /<\/?([a-z0-9_-]+)(?:\s+[^>]*)?>/gi;
+  var result = "";
+  var lastIndex = 0;
+  var stack = [];
+  var match;
+  var allowedTags = isMedia 
+    ? ["b", "strong", "i", "em", "u", "ins", "s", "strike", "del", "code", "pre", "tg-spoiler", "a"]
+    : ["b", "strong", "i", "em", "u", "ins", "s", "strike", "del", "code", "pre", "tg-spoiler", "a", "blockquote", "expandable_blockquote"];
+
+  while ((match = tagRegex.exec(str)) !== null) {
+    var fullTag = match[0];
+    var tagName = match[1].toLowerCase();
+    var isClose = fullTag.charAt(1) === '/';
+
+    result += str.slice(lastIndex, match.index);
+    lastIndex = tagRegex.lastIndex;
+
+    if (allowedTags.indexOf(tagName) === -1) {
+      continue;
+    }
+
+    if (!isClose) {
+      stack.push(tagName);
+      result += fullTag;
+    } else {
+      var stackIdx = stack.lastIndexOf(tagName);
+      if (stackIdx !== -1) {
+        while (stack.length - 1 > stackIdx) {
+          var unclosed = stack.pop();
+          result += "</" + unclosed + ">";
+        }
+        stack.pop();
+        result += "</" + tagName + ">";
+      }
+    }
+  }
+
+  result += str.slice(lastIndex);
+  while (stack.length > 0) {
+    var rem = stack.pop();
+    result += "</" + rem + ">";
+  }
+  return result;
+}
+
 var targetId = params.trim();
 var file = Bot.getProperty("file_" + targetId);
 if (!file) {
@@ -86,14 +137,19 @@ try {
 
 var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
 
-// Send File according to media type with safe HTML parse mode and clickable bot username link
+// Send File according to media type with balanced HTML and fallback
+var rawFileCap = (file && file.caption && file.caption.trim() !== "") ? file.caption.trim() : "";
+var cleanCaption = balanceTelegramHtml(rawFileCap, true);
+
 var caption = "";
-if (file && file.caption && file.caption.trim() !== "") {
-  caption += file.caption.trim() + "\n\n<code>———————————————————————</code>\n";
+if (cleanCaption) {
+  caption += cleanCaption + "\n\n<code>———————————————————————</code>\n";
 }
 caption += "📦 <b>Name:</b> <code>" + escapeHtml(targetFileName) + "</code>\n" +
   (file && file.fileSize ? ("📊 <b>Size:</b> " + escapeHtml(file.fileSize) + "\n\n") : "\n") +
   "🤖 <i>Downloaded via <a href=\"https://t.me/" + escapeHtml(botUsername) + "\">@" + escapeHtml(botUsername) + "</a></i>";
+
+caption = balanceTelegramHtml(caption, true);
 
 function sendMediaWithFallback(type, p) {
   try {

@@ -20,6 +20,57 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
+function balanceTelegramHtml(html, isMedia) {
+  if (!html) return "";
+  var str = html.toString();
+  if (isMedia) {
+    str = str.replace(/<\/?(?:blockquote|expandable_blockquote)[^>]*>/gi, "");
+  }
+  var tagRegex = /<\/?([a-z0-9_-]+)(?:\s+[^>]*)?>/gi;
+  var result = "";
+  var lastIndex = 0;
+  var stack = [];
+  var match;
+  var allowedTags = isMedia 
+    ? ["b", "strong", "i", "em", "u", "ins", "s", "strike", "del", "code", "pre", "tg-spoiler", "a"]
+    : ["b", "strong", "i", "em", "u", "ins", "s", "strike", "del", "code", "pre", "tg-spoiler", "a", "blockquote", "expandable_blockquote"];
+
+  while ((match = tagRegex.exec(str)) !== null) {
+    var fullTag = match[0];
+    var tagName = match[1].toLowerCase();
+    var isClose = fullTag.charAt(1) === '/';
+
+    result += str.slice(lastIndex, match.index);
+    lastIndex = tagRegex.lastIndex;
+
+    if (allowedTags.indexOf(tagName) === -1) {
+      continue;
+    }
+
+    if (!isClose) {
+      stack.push(tagName);
+      result += fullTag;
+    } else {
+      var stackIdx = stack.lastIndexOf(tagName);
+      if (stackIdx !== -1) {
+        while (stack.length - 1 > stackIdx) {
+          var unclosed = stack.pop();
+          result += "</" + unclosed + ">";
+        }
+        stack.pop();
+        result += "</" + tagName + ">";
+      }
+    }
+  }
+
+  result += str.slice(lastIndex);
+  while (stack.length > 0) {
+    var rem = stack.pop();
+    result += "</" + rem + ">";
+  }
+  return result;
+}
+
 var uniqueId = params.trim();
 var file = Bot.getProperty("file_" + uniqueId) || Bot.getProperty(user.telegramid + "" + uniqueId);
 if (!file) {
@@ -49,8 +100,9 @@ var targetFileId = file.fileId || file.file_id || uniqueId;
 var uniqueLink = file.uniqueLink || ("https://t.me/" + botUsername + "?start=" + uniqueId);
 var fType = (file.fileType || file.mimeType || "document").toUpperCase();
 
-var captionDisplay = (file.caption && file.caption.trim() !== "") ?
-  ("\n\n📝 <b>Caption:</b>\n" + file.caption.trim()) : "";
+var cleanCaption = balanceTelegramHtml(file.caption, false);
+var captionDisplay = (cleanCaption && cleanCaption.trim() !== "") ?
+  ("\n\n📝 <b>Caption:</b>\n" + cleanCaption.trim()) : "";
 
 var msg = "🗂 <b>File Dashboard</b>\n" +
   "<code>———————————————————————</code>\n" +
@@ -88,12 +140,32 @@ if (request && request.data && request.message) {
       reply_markup: { inline_keyboard: inlkey }
     });
     return;
-  } catch (e) { }
+  } catch (e) {
+    try {
+      var plainMsg = msg.replace(/<[^>]+>/g, "");
+      Api.editMessageText({
+        chat_id: chatId,
+        message_id: request.message.message_id,
+        text: plainMsg,
+        reply_markup: { inline_keyboard: inlkey }
+      });
+      return;
+    } catch (e2) {}
+  }
 }
 
-Api.sendMessage({
-  chat_id: chatId,
-  text: msg,
-  parse_mode: "HTML",
-  reply_markup: { inline_keyboard: inlkey }
-});
+try {
+  Api.sendMessage({
+    chat_id: chatId,
+    text: msg,
+    parse_mode: "HTML",
+    reply_markup: { inline_keyboard: inlkey }
+  });
+} catch (e3) {
+  var plainMsg2 = msg.replace(/<[^>]+>/g, "");
+  Api.sendMessage({
+    chat_id: chatId,
+    text: plainMsg2,
+    reply_markup: { inline_keyboard: inlkey }
+  });
+}

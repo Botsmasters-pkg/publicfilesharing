@@ -98,7 +98,7 @@ Bot.setProperty("batch_msg_id_" + user.telegramid, null);
 Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
 
 var captionBox = batchObj.caption && batchObj.caption.length > 0 ?
-  ("📝 <b>Caption:</b>\n<blockquote>" + escapeHtml(batchObj.caption) + "</blockquote>\n\n") : "\n";
+  ("📝 <b>Caption:</b>\n<blockquote>" + batchObj.caption + "</blockquote>\n\n") : "\n";
 
 var successMsg = "🎉 <b>Bulk Upload Link Created Successfully!</b>\n" +
   "<code>———————————————————————</code>\n" +

@@ -32,8 +32,10 @@ Bot.setProperty("caption_target_file_" + user.telegramid, targetId, "string");
 var txt = "✏️ <b>Edit File Caption</b>\n" +
   "<code>———————————————————————</code>\n\n" +
   (fileObj ? ("📁 <b>File:</b> <code>" + escapeHtml(fileObj.fileName || fileObj.file_name || "File") + "</code>\n") : "") +
-  "<b>Current Caption:</b>\n<blockquote>" + escapeHtml(currCap) + "</blockquote>\n\n" +
+  "<b>Current Caption:</b>\n<blockquote>" + (currCap === "None" ? "None" : currCap) + "</blockquote>\n\n" +
   "👉 <b>Apna naya caption neeche text message me likhkar bhejein:</b>\n\n" +
+  "💡 <i>Tips: Aap Telegram me text select karke link laga sakte hain, ya markdown format likh sakte hain:</i>\n" +
+  "<code>Setup must watch - [click here](https://t.me/example)</code>\n\n" +
   "<i>(Cancel karne ke liye '❌ Cancel' likhein)</i>";
 
 Api.sendMessage({

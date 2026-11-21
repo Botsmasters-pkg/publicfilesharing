@@ -20,6 +20,102 @@ if (request && request.chat_join_request) {
 
 if (!user) return;
 
+function escapeHtml(str) {
+  if (!str) return "";
+  return str.toString()
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function formatEntities(text, entities) {
+  if (!text) return "";
+
+  // 1. Process Telegram entities (text_link, bold, italic, code, underline, etc.)
+  if (entities && Array.isArray(entities) && entities.length > 0) {
+    var tags = [];
+    for (var i = 0; i < entities.length; i++) {
+      var ent = entities[i];
+      var openTag = "";
+      var closeTag = "";
+      if (ent.type === "bold") {
+        openTag = "<b>"; closeTag = "</b>";
+      } else if (ent.type === "italic") {
+        openTag = "<i>"; closeTag = "</i>";
+      } else if (ent.type === "code") {
+        openTag = "<code>"; closeTag = "</code>";
+      } else if (ent.type === "pre") {
+        openTag = "<pre>"; closeTag = "</pre>";
+      } else if (ent.type === "underline") {
+        openTag = "<u>"; closeTag = "</u>";
+      } else if (ent.type === "strikethrough") {
+        openTag = "<s>"; closeTag = "</s>";
+      } else if (ent.type === "spoiler") {
+        openTag = "<tg-spoiler>"; closeTag = "</tg-spoiler>";
+      } else if (ent.type === "blockquote") {
+        openTag = "<blockquote>"; closeTag = "</blockquote>";
+      } else if (ent.type === "text_link" && ent.url) {
+        openTag = '<a href="' + ent.url.replace(/"/g, '&quot;') + '">';
+        closeTag = "</a>";
+      } else if (ent.type === "text_mention" && ent.user) {
+        openTag = '<a href="tg://user?id=' + ent.user.id + '">';
+        closeTag = "</a>";
+      }
+
+      if (openTag && closeTag) {
+        tags.push({ pos: ent.offset, kind: "open", tag: openTag, len: ent.length });
+        tags.push({ pos: ent.offset + ent.length, kind: "close", tag: closeTag, len: ent.length });
+      }
+    }
+
+    if (tags.length > 0) {
+      tags.sort(function(a, b) {
+        if (a.pos !== b.pos) return a.pos - b.pos;
+        if (a.kind !== b.kind) return a.kind === "close" ? -1 : 1;
+        if (a.kind === "close") return a.len - b.len;
+        return b.len - a.len;
+      });
+
+      var result = "";
+      var lastPos = 0;
+      for (var j = 0; j < tags.length; j++) {
+        var t = tags[j];
+        if (t.pos > lastPos) {
+          result += escapeHtml(text.slice(lastPos, t.pos));
+          lastPos = t.pos;
+        }
+        result += t.tag;
+      }
+      if (lastPos < text.length) {
+        result += escapeHtml(text.slice(lastPos));
+      }
+      return result;
+    }
+  }
+
+  // 2. Process Markdown hyperlinks like [text](https://example.com)
+  if (/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/.test(text)) {
+    var lastIdx = 0;
+    var regex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    var match;
+    var res = "";
+    while ((match = regex.exec(text)) !== null) {
+      res += escapeHtml(text.slice(lastIdx, match.index));
+      res += '<a href="' + match[2].replace(/"/g, '&quot;') + '">' + escapeHtml(match[1]) + '</a>';
+      lastIdx = regex.lastIndex;
+    }
+    res += escapeHtml(text.slice(lastIdx));
+    return res;
+  }
+
+  // 3. Raw HTML with anchor tag
+  if (/<a\s+href=["'][^"']+["']>.*?<\/a>/i.test(text)) {
+    return text;
+  }
+
+  return escapeHtml(text);
+}
+
 // Auto-detect Bot username dynamically from Telegram API if not cached
 if (!Bot.getProperty("bot_username")) {
   Api.getMe({
@@ -140,11 +236,15 @@ if (captionState === "waiting_new_caption" && incomingText) {
     Bot.sendMessage("❌ Caption edit cancelled.");
     return;
   }
+  var rawCapText = (reqMsg && reqMsg.text) || incomingText;
+  var capEnts = (reqMsg && reqMsg.entities) || (request && request.entities) || [];
+  var formattedCaption = formatEntities(rawCapText, capEnts);
+
   var targetFileKey = Bot.getProperty("caption_target_file_" + user.telegramid, "");
   if (targetFileKey) {
     var fRec = Bot.getProperty("file_" + targetFileKey);
     if (fRec) {
-      fRec.caption = incomingText;
+      fRec.caption = formattedCaption;
       Bot.setProperty("file_" + targetFileKey, fRec, "json");
       if (fRec.fileId) Bot.setProperty("file_" + fRec.fileId, fRec, "json");
       if (fRec.telegramUniqueId) Bot.setProperty("file_" + fRec.telegramUniqueId, fRec, "json");
@@ -154,7 +254,7 @@ if (captionState === "waiting_new_caption" && incomingText) {
       if (Array.isArray(uFiles)) {
         for (var fi = 0; fi < uFiles.length; fi++) {
           if (uFiles[fi].uniqueKey === targetFileKey || uFiles[fi].fileUniqueId === targetFileKey) {
-            uFiles[fi].caption = incomingText;
+            uFiles[fi].caption = formattedCaption;
             break;
           }
         }
@@ -163,7 +263,7 @@ if (captionState === "waiting_new_caption" && incomingText) {
     }
     Bot.setProperty("caption_target_file_" + user.telegramid, "", "string");
   }
-  Bot.sendMessage("✅ <b>Caption updated successfully!</b>\n\n<b>New Caption:</b>\n<blockquote>" + incomingText + "</blockquote>", { parse_mode: "HTML" });
+  Bot.sendMessage("✅ <b>Caption updated successfully!</b>\n\n<b>New Caption:</b>\n<blockquote>" + formattedCaption + "</blockquote>", { parse_mode: "HTML" });
   return;
 }
 
@@ -175,7 +275,10 @@ if (batchCapState === "waiting_batch_caption" && incomingText) {
     Bot.runCommand("/finishBatch");
     return;
   }
-  Bot.setProperty("batch_caption_" + user.telegramid, incomingText, "string");
+  var rawBatchText = (reqMsg && reqMsg.text) || incomingText;
+  var batchEnts = (reqMsg && reqMsg.entities) || (request && request.entities) || [];
+  var formattedBatchCap = formatEntities(rawBatchText, batchEnts);
+  Bot.setProperty("batch_caption_" + user.telegramid, formattedBatchCap, "string");
   Bot.runCommand("/finishBatch");
   return;
 }

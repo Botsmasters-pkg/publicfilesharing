@@ -18,6 +18,94 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
+function formatEntities(text, entities) {
+  if (!text) return "";
+
+  // 1. Process Telegram entities (text_link, bold, italic, code, underline, etc.)
+  if (entities && Array.isArray(entities) && entities.length > 0) {
+    var tags = [];
+    for (var i = 0; i < entities.length; i++) {
+      var ent = entities[i];
+      var openTag = "";
+      var closeTag = "";
+      if (ent.type === "bold") {
+        openTag = "<b>"; closeTag = "</b>";
+      } else if (ent.type === "italic") {
+        openTag = "<i>"; closeTag = "</i>";
+      } else if (ent.type === "code") {
+        openTag = "<code>"; closeTag = "</code>";
+      } else if (ent.type === "pre") {
+        openTag = "<pre>"; closeTag = "</pre>";
+      } else if (ent.type === "underline") {
+        openTag = "<u>"; closeTag = "</u>";
+      } else if (ent.type === "strikethrough") {
+        openTag = "<s>"; closeTag = "</s>";
+      } else if (ent.type === "spoiler") {
+        openTag = "<tg-spoiler>"; closeTag = "</tg-spoiler>";
+      } else if (ent.type === "blockquote") {
+        openTag = "<blockquote>"; closeTag = "</blockquote>";
+      } else if (ent.type === "text_link" && ent.url) {
+        openTag = '<a href="' + ent.url.replace(/"/g, '&quot;') + '">';
+        closeTag = "</a>";
+      } else if (ent.type === "text_mention" && ent.user) {
+        openTag = '<a href="tg://user?id=' + ent.user.id + '">';
+        closeTag = "</a>";
+      }
+
+      if (openTag && closeTag) {
+        tags.push({ pos: ent.offset, kind: "open", tag: openTag, len: ent.length });
+        tags.push({ pos: ent.offset + ent.length, kind: "close", tag: closeTag, len: ent.length });
+      }
+    }
+
+    if (tags.length > 0) {
+      tags.sort(function(a, b) {
+        if (a.pos !== b.pos) return a.pos - b.pos;
+        if (a.kind !== b.kind) return a.kind === "close" ? -1 : 1;
+        if (a.kind === "close") return a.len - b.len;
+        return b.len - a.len;
+      });
+
+      var result = "";
+      var lastPos = 0;
+      for (var j = 0; j < tags.length; j++) {
+        var t = tags[j];
+        if (t.pos > lastPos) {
+          result += escapeHtml(text.slice(lastPos, t.pos));
+          lastPos = t.pos;
+        }
+        result += t.tag;
+      }
+      if (lastPos < text.length) {
+        result += escapeHtml(text.slice(lastPos));
+      }
+      return result;
+    }
+  }
+
+  // 2. Process Markdown hyperlinks like [text](https://example.com)
+  if (/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/.test(text)) {
+    var lastIdx = 0;
+    var regex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+    var match;
+    var res = "";
+    while ((match = regex.exec(text)) !== null) {
+      res += escapeHtml(text.slice(lastIdx, match.index));
+      res += '<a href="' + match[2].replace(/"/g, '&quot;') + '">' + escapeHtml(match[1]) + '</a>';
+      lastIdx = regex.lastIndex;
+    }
+    res += escapeHtml(text.slice(lastIdx));
+    return res;
+  }
+
+  // 3. Raw HTML with anchor tag
+  if (/<a\s+href=["'][^"']+["']>.*?<\/a>/i.test(text)) {
+    return text;
+  }
+
+  return escapeHtml(text);
+}
+
 var reqMsg = (request && request.message) ? request.message : request;
 
 var reqDoc = (reqMsg && reqMsg.document) || (request && request.document);
@@ -45,8 +133,10 @@ var fileSize = "N/A";
 var fileType = "document";
 var mimeType = "application/octet-stream";
 
-// Extract caption if forwarded with text or sent with caption
-var incomingCaption = (reqMsg && reqMsg.caption) || (request && request.caption) || "";
+// Extract caption and entities preserving embedded hyperlinks (text_link)
+var rawCaption = (reqMsg && reqMsg.caption) || (request && request.caption) || "";
+var captionEntities = (reqMsg && reqMsg.caption_entities) || (request && request.caption_entities) || [];
+var incomingCaption = formatEntities(rawCaption, captionEntities);
 
 if (reqDoc) {
   fileId = reqDoc.file_id;

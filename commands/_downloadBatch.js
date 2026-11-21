@@ -63,7 +63,7 @@ Bot.setProperty("total_downloads_count", totalD, "integer");
 var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
 
 var capHeader = (batchObj.caption && batchObj.caption.trim().length > 0) ?
-  ("📝 <b>" + escapeHtml(batchObj.caption.trim()) + "</b>\n\n") : "";
+  ("📝 <b>" + batchObj.caption.trim() + "</b>\n\n") : "";
 
 // Send banner
 Api.sendMessage({
@@ -87,7 +87,7 @@ for (var i = 0; i < batchObj.fileIds.length; i++) {
 
   var caption = "";
   if (file.caption && file.caption.trim() !== "") {
-    caption += escapeHtml(file.caption.trim()) + "\n\n<code>———————————————————————</code>\n";
+    caption += file.caption.trim() + "\n\n<code>———————————————————————</code>\n";
   }
   caption += "📦 <b>Name:</b> <code>" + escapeHtml(targetFileName) + "</code> (" + (i + 1) + "/" + batchObj.fileIds.length + ")\n" +
     (file.fileSize ? ("📊 <b>Size:</b> " + escapeHtml(file.fileSize) + "\n\n") : "\n") +

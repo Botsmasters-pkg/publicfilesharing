@@ -46,7 +46,7 @@ if (batchObj.userId && batchObj.userId != user.telegramid && !isAdmin) {
 var bTraffic = Bot.getProperty("traffic_" + batchId, { count: 0 });
 
 var captionDisplay = (batchObj.caption && batchObj.caption.trim().length > 0) ?
-  ("\n📝 <b>Caption:</b>\n<blockquote>" + escapeHtml(batchObj.caption.trim()) + "</blockquote>") : "";
+  ("\n📝 <b>Caption:</b>\n<blockquote>" + batchObj.caption.trim() + "</blockquote>") : "";
 
 var msg = "📦 <b>Batch Dashboard</b>\n" +
   "<code>———————————————————————</code>\n" +

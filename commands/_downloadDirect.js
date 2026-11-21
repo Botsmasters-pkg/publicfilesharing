@@ -89,7 +89,7 @@ var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot"
 // Send File according to media type with safe HTML parse mode and clickable bot username link
 var caption = "";
 if (file && file.caption && file.caption.trim() !== "") {
-  caption += escapeHtml(file.caption.trim()) + "\n\n<code>———————————————————————</code>\n";
+  caption += file.caption.trim() + "\n\n<code>———————————————————————</code>\n";
 }
 caption += "📦 <b>Name:</b> <code>" + escapeHtml(targetFileName) + "</code>\n" +
   (file && file.fileSize ? ("📊 <b>Size:</b> " + escapeHtml(file.fileSize) + "\n\n") : "\n") +

@@ -50,7 +50,7 @@ var uniqueLink = file.uniqueLink || ("https://t.me/" + botUsername + "?start=" +
 var fType = (file.fileType || file.mimeType || "document").toUpperCase();
 
 var captionDisplay = (file.caption && file.caption.trim() !== "") ?
-  ("\n\n📝 <b>Caption:</b>\n<blockquote>" + escapeHtml(file.caption.trim()) + "</blockquote>") : "";
+  ("\n\n📝 <b>Caption:</b>\n<blockquote>" + file.caption.trim() + "</blockquote>") : "";
 
 var msg = "🗂 <b>File Dashboard</b>\n" +
   "<code>———————————————————————</code>\n" +

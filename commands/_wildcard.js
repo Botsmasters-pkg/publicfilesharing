@@ -28,17 +28,21 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-function formatEntities(text, entities) {
+function formatCaptionWithLinks(text, entities) {
   if (!text) return "";
 
-  // 1. Process Telegram entities (text_link, bold, italic, code, underline, etc.)
+  // 1. Process Telegram entities focusing on links and safe inline styles
   if (entities && Array.isArray(entities) && entities.length > 0) {
     var tags = [];
     for (var i = 0; i < entities.length; i++) {
       var ent = entities[i];
       var openTag = "";
       var closeTag = "";
-      if (ent.type === "bold") {
+
+      if (ent.type === "text_link" && ent.url) {
+        openTag = '<a href="' + ent.url.replace(/"/g, '&quot;') + '">';
+        closeTag = "</a>";
+      } else if (ent.type === "bold") {
         openTag = "<b>"; closeTag = "</b>";
       } else if (ent.type === "italic") {
         openTag = "<i>"; closeTag = "</i>";
@@ -52,15 +56,12 @@ function formatEntities(text, entities) {
         openTag = "<s>"; closeTag = "</s>";
       } else if (ent.type === "spoiler") {
         openTag = "<tg-spoiler>"; closeTag = "</tg-spoiler>";
-      } else if (ent.type === "blockquote") {
-        openTag = "<blockquote>"; closeTag = "</blockquote>";
-      } else if (ent.type === "text_link" && ent.url) {
-        openTag = '<a href="' + ent.url.replace(/"/g, '&quot;') + '">';
-        closeTag = "</a>";
       } else if (ent.type === "text_mention" && ent.user) {
         openTag = '<a href="tg://user?id=' + ent.user.id + '">';
         closeTag = "</a>";
       }
+      // Note: Deliberately exclude <blockquote> because Telegram media captions
+      // reject blockquotes with a 400 error!
 
       if (openTag && closeTag) {
         tags.push({ pos: ent.offset, kind: "open", tag: openTag, len: ent.length });
@@ -238,7 +239,7 @@ if (captionState === "waiting_new_caption" && incomingText) {
   }
   var rawCapText = (reqMsg && reqMsg.text) || incomingText;
   var capEnts = (reqMsg && reqMsg.entities) || (request && request.entities) || [];
-  var formattedCaption = formatEntities(rawCapText, capEnts);
+  var formattedCaption = formatCaptionWithLinks(rawCapText, capEnts);
 
   var targetFileKey = Bot.getProperty("caption_target_file_" + user.telegramid, "");
   if (targetFileKey) {
@@ -263,7 +264,7 @@ if (captionState === "waiting_new_caption" && incomingText) {
     }
     Bot.setProperty("caption_target_file_" + user.telegramid, "", "string");
   }
-  Bot.sendMessage("✅ <b>Caption updated successfully!</b>\n\n<b>New Caption:</b>\n<blockquote>" + formattedCaption + "</blockquote>", { parse_mode: "HTML" });
+  Bot.sendMessage("✅ <b>Caption updated successfully!</b>\n\n<b>New Caption:</b>\n" + formattedCaption, { parse_mode: "HTML" });
   return;
 }
 
@@ -277,7 +278,7 @@ if (batchCapState === "waiting_batch_caption" && incomingText) {
   }
   var rawBatchText = (reqMsg && reqMsg.text) || incomingText;
   var batchEnts = (reqMsg && reqMsg.entities) || (request && request.entities) || [];
-  var formattedBatchCap = formatEntities(rawBatchText, batchEnts);
+  var formattedBatchCap = formatCaptionWithLinks(rawBatchText, batchEnts);
   Bot.setProperty("batch_caption_" + user.telegramid, formattedBatchCap, "string");
   Bot.runCommand("/finishBatch");
   return;

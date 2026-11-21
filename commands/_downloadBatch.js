@@ -103,7 +103,20 @@ for (var i = 0; i < batchObj.fileIds.length; i++) {
     } else {
       Api.sendDocument({ chat_id: user.telegramid, document: targetFileId, caption: caption, parse_mode: "HTML" });
     }
-  } catch (err) {}
+  } catch (err) {
+    try {
+      var plainCaption = caption.replace(/<[^>]+>/g, "");
+      if (targetFileType === "photo") {
+        Api.sendPhoto({ chat_id: user.telegramid, photo: targetFileId, caption: plainCaption });
+      } else if (targetFileType === "video") {
+        Api.sendVideo({ chat_id: user.telegramid, video: targetFileId, caption: plainCaption });
+      } else if (targetFileType === "audio" || targetFileType === "voice") {
+        Api.sendAudio({ chat_id: user.telegramid, audio: targetFileId, caption: plainCaption });
+      } else {
+        Api.sendDocument({ chat_id: user.telegramid, document: targetFileId, caption: plainCaption });
+      }
+    } catch (err2) {}
+  }
 }
 
 Api.sendMessage({

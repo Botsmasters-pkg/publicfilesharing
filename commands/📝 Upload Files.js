@@ -18,17 +18,21 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-function formatEntities(text, entities) {
+function formatCaptionWithLinks(text, entities) {
   if (!text) return "";
 
-  // 1. Process Telegram entities (text_link, bold, italic, code, underline, etc.)
+  // 1. Process Telegram entities focusing on links and safe inline styles
   if (entities && Array.isArray(entities) && entities.length > 0) {
     var tags = [];
     for (var i = 0; i < entities.length; i++) {
       var ent = entities[i];
       var openTag = "";
       var closeTag = "";
-      if (ent.type === "bold") {
+
+      if (ent.type === "text_link" && ent.url) {
+        openTag = '<a href="' + ent.url.replace(/"/g, '&quot;') + '">';
+        closeTag = "</a>";
+      } else if (ent.type === "bold") {
         openTag = "<b>"; closeTag = "</b>";
       } else if (ent.type === "italic") {
         openTag = "<i>"; closeTag = "</i>";
@@ -42,15 +46,12 @@ function formatEntities(text, entities) {
         openTag = "<s>"; closeTag = "</s>";
       } else if (ent.type === "spoiler") {
         openTag = "<tg-spoiler>"; closeTag = "</tg-spoiler>";
-      } else if (ent.type === "blockquote") {
-        openTag = "<blockquote>"; closeTag = "</blockquote>";
-      } else if (ent.type === "text_link" && ent.url) {
-        openTag = '<a href="' + ent.url.replace(/"/g, '&quot;') + '">';
-        closeTag = "</a>";
       } else if (ent.type === "text_mention" && ent.user) {
         openTag = '<a href="tg://user?id=' + ent.user.id + '">';
         closeTag = "</a>";
       }
+      // Note: Deliberately exclude <blockquote> because Telegram media captions
+      // reject blockquotes with a 400 error!
 
       if (openTag && closeTag) {
         tags.push({ pos: ent.offset, kind: "open", tag: openTag, len: ent.length });
@@ -136,7 +137,7 @@ var mimeType = "application/octet-stream";
 // Extract caption and entities preserving embedded hyperlinks (text_link)
 var rawCaption = (reqMsg && reqMsg.caption) || (request && request.caption) || "";
 var captionEntities = (reqMsg && reqMsg.caption_entities) || (request && request.caption_entities) || [];
-var incomingCaption = formatEntities(rawCaption, captionEntities);
+var incomingCaption = formatCaptionWithLinks(rawCaption, captionEntities);
 
 if (reqDoc) {
   fileId = reqDoc.file_id;
@@ -233,7 +234,7 @@ try {
     "📁 <b>Name:</b> <code>" + escapeHtml(fileName) + "</code>\n" +
     "📊 <b>Size:</b> <code>" + escapeHtml(fileSize) + "</code>\n" +
     "🏷️ <b>Type:</b> <code>" + escapeHtml(fileType.toUpperCase()) + "</code>\n" +
-    (incomingCaption ? ("📝 <b>Caption:</b> " + escapeHtml(incomingCaption.slice(0, 200)) + "\n") : "") +
+    (incomingCaption ? ("📝 <b>Caption:</b> " + escapeHtml(incomingCaption.replace(/<[^>]+>/g, "").slice(0, 200)) + "\n") : "") +
     "👤 <b>Uploaded by:</b> <code>#" + user.telegramid + "</code> (@" + escapeHtml(user.username || "None") + ")\n" +
     "🔗 <b>Link:</b> " + escapeHtml(uniqueLink);
 
@@ -327,7 +328,7 @@ if (isBatchActive) {
 // If user sends 1 file or multiple files simultaneously in single mode:
 // Each file gets its own unique link and dashboard card immediately!
 var captionDisplay = fileRecord.caption && fileRecord.caption.length > 0 ?
-  ("📝 <b>Caption:</b>\n<blockquote>" + escapeHtml(fileRecord.caption) + "</blockquote>\n\n") : "";
+  ("📝 <b>Caption:</b>\n" + fileRecord.caption + "\n\n") : "";
 
 var cardMsg = "✅ <b>File Uploaded Successfully!</b>\n" +
   "<code>———————————————————————</code>\n" +

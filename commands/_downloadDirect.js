@@ -95,12 +95,47 @@ caption += "📦 <b>Name:</b> <code>" + escapeHtml(targetFileName) + "</code>\n"
   (file && file.fileSize ? ("📊 <b>Size:</b> " + escapeHtml(file.fileSize) + "\n\n") : "\n") +
   "🤖 <i>Downloaded via <a href=\"https://t.me/" + escapeHtml(botUsername) + "\">@" + escapeHtml(botUsername) + "</a></i>";
 
+function sendMediaWithFallback(type, p) {
+  try {
+    if (type === "photo") {
+      Api.sendPhoto(p);
+    } else if (type === "video") {
+      Api.sendVideo(p);
+    } else if (type === "audio" || type === "voice") {
+      Api.sendAudio(p);
+    } else {
+      Api.sendDocument(p);
+    }
+  } catch (err) {
+    // Fallback: If Telegram rejects HTML formatting in caption, send with plain caption so user ALWAYS receives the file!
+    try {
+      var plainParams = {};
+      for (var k in p) {
+        if (p.hasOwnProperty(k)) plainParams[k] = p[k];
+      }
+      delete plainParams.parse_mode;
+      if (plainParams.caption) {
+        plainParams.caption = plainParams.caption.replace(/<[^>]+>/g, "");
+      }
+      if (type === "photo") {
+        Api.sendPhoto(plainParams);
+      } else if (type === "video") {
+        Api.sendVideo(plainParams);
+      } else if (type === "audio" || type === "voice") {
+        Api.sendAudio(plainParams);
+      } else {
+        Api.sendDocument(plainParams);
+      }
+    } catch (e2) {}
+  }
+}
+
 if (targetFileType === "photo") {
-  Api.sendPhoto({ chat_id: user.telegramid, photo: targetFileId, caption: caption, parse_mode: "HTML" });
+  sendMediaWithFallback("photo", { chat_id: user.telegramid, photo: targetFileId, caption: caption, parse_mode: "HTML" });
 } else if (targetFileType === "video") {
-  Api.sendVideo({ chat_id: user.telegramid, video: targetFileId, caption: caption, parse_mode: "HTML" });
+  sendMediaWithFallback("video", { chat_id: user.telegramid, video: targetFileId, caption: caption, parse_mode: "HTML" });
 } else if (targetFileType === "audio" || targetFileType === "voice") {
-  Api.sendAudio({ chat_id: user.telegramid, audio: targetFileId, caption: caption, parse_mode: "HTML" });
+  sendMediaWithFallback("audio", { chat_id: user.telegramid, audio: targetFileId, caption: caption, parse_mode: "HTML" });
 } else {
-  Api.sendDocument({ chat_id: user.telegramid, document: targetFileId, caption: caption, parse_mode: "HTML" });
+  sendMediaWithFallback("document", { chat_id: user.telegramid, document: targetFileId, caption: caption, parse_mode: "HTML" });
 }

@@ -72,8 +72,8 @@ var msg = "📊 <b>File Store Real-Time Statistics</b>\n" +
   "<i>All statistics are calculated live from real database records.</i>";
 
 var keyb = [
-  [{ text: "🔄 Refresh Stats", callback_data: "/adminStats" }],
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
+  [{ text: "🔄 Refresh Stats", callback_data: "/adminStats", style: "primary" }],
+  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
 if (request.data) {

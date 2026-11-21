@@ -98,12 +98,10 @@ for (var j = 0; j < matches.length; j++) {
   inlkey.push([
     {
       text: "📄 " + mNum + ". " + shortTitle,
-      callback_data: "/fileinfo " + itemKey
-    },
+      callback_data: "/fileinfo " + itemKey, style: "primary" },
     {
       text: "📊 Traffic (" + (traffic.count || 0) + ")",
-      callback_data: "/fileTraffic " + itemKey
-    }
+      callback_data: "/fileTraffic " + itemKey, style: "primary" }
   ]);
 }
 

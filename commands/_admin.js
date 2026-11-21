@@ -62,20 +62,20 @@ var adminPrimaryKeyboard = [
 
 var keyb = [
   [
-    { text: "📊 Statistics Dashboard", callback_data: "/adminStats" },
-    { text: "🔧 Force Channels", callback_data: "/adminForceChannel" }
+    { text: "📊 Statistics Dashboard", callback_data: "/adminStats", style: "primary" },
+    { text: "🔧 Force Channels", callback_data: "/adminForceChannel", style: "primary" }
   ],
   [
-    { text: "🏷️ Storage Channel", callback_data: "/adminStorage" },
-    { text: "👋 Welcome Message", callback_data: "/adminWelcome" }
+    { text: "🏷️ Storage Channel", callback_data: "/adminStorage", style: "primary" },
+    { text: "👋 Welcome Message", callback_data: "/adminWelcome", style: "primary" }
   ],
   [
-    { text: "📣 Broadcast", callback_data: "/adminBroadcast" },
-    { text: "💾 CSV Export", callback_data: "/adminExport" }
+    { text: "📣 Broadcast", callback_data: "/adminBroadcast", style: "primary" },
+    { text: "💾 CSV Export", callback_data: "/adminExport", style: "primary" }
   ],
   [
-    { text: "🆘 Support Management", callback_data: "/adminSupport" },
-    { text: "🤖 Refresh Bot Info", callback_data: "/refreshBotInfo" }
+    { text: "🆘 Support Management", callback_data: "/adminSupport", style: "primary" },
+    { text: "🤖 Refresh Bot Info", callback_data: "/refreshBotInfo", style: "primary" }
   ]
 ];
 

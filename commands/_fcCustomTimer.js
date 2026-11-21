@@ -49,7 +49,7 @@ var msg = "⏳ <b>Custom Auto-Expiry Timer</b>\n" +
   "Send your desired duration now:";
 
 var keyb = [
-  [{ text: "⬅️ Cancel", callback_data: "/fcSelectTimer " + idx }]
+  [{ text: "⬅️ Cancel", callback_data: "/fcSelectTimer " + idx, style: "primary" }]
 ];
 
 if (request.data) {

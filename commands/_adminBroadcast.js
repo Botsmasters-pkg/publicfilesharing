@@ -30,7 +30,7 @@ var msg = "📣 <b>Broadcast System</b>\n" +
   "<i>(No command prefix needed, just send it directly)</i>";
 
 var keyb = [
-  [{ text: "⬅️ Cancel & Back", callback_data: "/admin" }]
+  [{ text: "⬅️ Cancel & Back", callback_data: "/admin", style: "primary" }]
 ];
 
 if (request.data) {

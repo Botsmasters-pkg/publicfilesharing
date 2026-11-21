@@ -75,12 +75,10 @@ for (var i = 0; i < userBatches.length; i++) {
   inlkey.push([
     {
       text: "📦 " + bNum + ". Batch (" + b.count + " files)",
-      callback_data: "/batchinfo " + b.batchId
-    },
+      callback_data: "/batchinfo " + b.batchId, style: "primary" },
     {
       text: "📤 Share",
-      url: "https://t.me/share/url?url=" + encodeURIComponent(b.uniqueLink) + "&text=" + encodeURIComponent("Download " + b.count + " files bulk upload:")
-    }
+      url: "https://t.me/share/url?url=" + encodeURIComponent(b.uniqueLink) + "&text=" + encodeURIComponent("Download " + b.count + " files bulk upload:"), style: "primary" }
   ]);
 }
 

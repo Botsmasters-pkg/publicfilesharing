@@ -63,7 +63,7 @@ for (var j = 0; j < uploads.length; j++) {
 var csvContent = "=== 1. BOT USERS EXPORT ===\n" + userRows.join("\n") + "\n\n=== 2. UPLOADS & TRAFFIC EXPORT ===\n" + fileRows.join("\n");
 
 var keyb = [
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
+  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
 var preview = "📑 <b>Complete Database CSV Export</b>\n" +

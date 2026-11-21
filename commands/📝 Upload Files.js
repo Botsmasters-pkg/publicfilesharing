@@ -251,15 +251,15 @@ var cardMsg = "✅ <b>File Uploaded Successfully!</b>\n" +
 
 var cardButtons = [
   [
-    { text: "📤 Share Link", url: "https://t.me/share/url?url=" + encodeURIComponent(uniqueLink) + "&text=" + encodeURIComponent("Download " + fileRecord.fileName + ":") }
+    { text: "📤 Share Link", url: "https://t.me/share/url?url=" + encodeURIComponent(uniqueLink) + "&text=" + encodeURIComponent("Download " + fileRecord.fileName + ":"), style: "primary" }
   ],
   [
-    { text: "✏️ Edit Caption", callback_data: "/editCaption " + genFileId },
-    { text: "📊 Download Traffic", callback_data: "/fileTraffic " + genFileId }
+    { text: "✏️ Edit Caption", callback_data: "/editCaption " + genFileId, style: "primary" },
+    { text: "📊 Download Traffic", callback_data: "/fileTraffic " + genFileId, style: "primary" }
   ],
   [
-    { text: "❌ Delete File", callback_data: "/deleteFile " + genFileId },
-    { text: "🗂 My Files", callback_data: "/myfiles 1" }
+    { text: "❌ Delete File", callback_data: "/deleteFile " + genFileId, style: "primary" },
+    { text: "🗂 My Files", callback_data: "/myfiles 1", style: "primary" }
   ]
 ];
 

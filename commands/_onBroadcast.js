@@ -110,7 +110,7 @@ if (request.photo && request.photo.length > 0) {
 }
 
 var keyb = [
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
+  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
 Api.sendMessage({

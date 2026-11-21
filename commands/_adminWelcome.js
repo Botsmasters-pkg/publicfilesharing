@@ -42,8 +42,8 @@ var msg = "👋 <b>Custom Welcome Message Settings</b>\n" +
   "• Send a <b>Video</b> (with optional caption) to set as Welcome Video.";
 
 var keyb = [
-  [{ text: "🔄 Reset to Default Welcome", callback_data: "/clearWelcome" }],
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
+  [{ text: "🔄 Reset to Default Welcome", callback_data: "/clearWelcome", style: "primary" }],
+  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
 if (request.data) {

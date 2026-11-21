@@ -38,7 +38,7 @@ var msg = "🆘 <b>Support Contact Settings</b>\n" +
   "👉 <b>To update:</b> Send the new Telegram Username (e.g. <code>@MySupport</code>) or Direct Link:";
 
 var keyb = [
-  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin" }]
+  [{ text: "⬅️ Back to Admin Panel", callback_data: "/admin", style: "primary" }]
 ];
 
 if (request.data) {

@@ -44,11 +44,17 @@ if (isAdmin) {
 }
 
 if (!bTemp || bTemp.length === 0) {
+  var bulkKeyboard = [
+    [
+      { text: "✅ Done", style: "primary" },
+      { text: "❌ Cancel", style: "primary" }
+    ]
+  ];
   Api.sendMessage({
     chat_id: chatId,
-    text: "⚠️ <b>No files in bulk upload!</b>",
+    text: "⚠️ <b>Abhi tak koi file upload nahi hui hai!</b>\n\nPehle files bhejein ya forward karein, phir <b>Done</b> dabayein.",
     parse_mode: "HTML",
-    reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
+    reply_markup: { keyboard: bulkKeyboard, resize_keyboard: true }
   });
   return;
 }
@@ -96,7 +102,7 @@ var captionBox = batchObj.caption && batchObj.caption.length > 0 ?
 
 var successMsg = "🎉 <b>Bulk Upload Link Created Successfully!</b>\n" +
   "<code>———————————————————————</code>\n" +
-  "📦 <b>Total Files:</b> <b>" + bTemp.length + "</b>\n" +
+  "📦 <b>Total Files:</b> <b>" + bTemp.length + " files</b>\n" +
   "📅 <b>Created At:</b> <i>" + batchObj.timestamp.slice(0, 19).replace('T', ' ') + "</i>\n" +
   captionBox +
   "🔗 <b>Shareable Bulk Download Link:</b>\n" +
@@ -108,7 +114,10 @@ var inlkey = [
     { text: "📤 Share Bulk Link", url: "https://t.me/share/url?url=" + encodeURIComponent(batchLink) + "&text=" + encodeURIComponent("Download " + bTemp.length + " files bulk upload:"), style: "primary" }
   ],
   [
-    { text: "📦 View My Batches", callback_data: "/mybatches", style: "primary" },
+    { text: "✏️ Edit Caption", callback_data: "/editBatchCaption " + batchId, style: "primary" },
+    { text: "📦 View My Batches", callback_data: "/mybatches", style: "primary" }
+  ],
+  [
     { text: "📂 Go to My Files", callback_data: "/myfiles 1", style: "primary" }
   ]
 ];
@@ -116,7 +125,7 @@ var inlkey = [
 // Restore bottom keyboard
 Api.sendMessage({
   chat_id: chatId,
-  text: "🟢 <b>Bulk Upload Processed!</b>",
+  text: "🟢 <b>Bulk Upload Complete!</b>",
   parse_mode: "HTML",
   reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
 });

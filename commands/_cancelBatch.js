@@ -42,13 +42,6 @@ if (isAdmin) {
 
 var msg = "❌ <b>Bulk upload cancelled.</b>\n\nNo link was generated.";
 
-var inlkey = [
-  [
-    { text: "📦 Bulk Upload Again", callback_data: "/createBatch", style: "primary" },
-    { text: "📂 Go to My Files", callback_data: "/myfiles 1", style: "primary" }
-  ]
-];
-
 Api.sendMessage({
   chat_id: chatId,
   text: msg,

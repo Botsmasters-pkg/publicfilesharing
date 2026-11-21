@@ -20,48 +20,24 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;");
 }
 
-var draft = Bot.getProperty("temp_upload_" + user.telegramid);
 var targetChat = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : user.telegramid;
+var targetId = params ? params.trim() : "";
 
-if (!draft) {
-  Api.sendMessage({
-    chat_id: targetChat,
-    text: "⚠️ <b>No active upload found.</b> Please send or forward your file again.",
-    parse_mode: "HTML"
-  });
-  return;
-}
+var fileObj = targetId ? (Bot.getProperty("file_" + targetId) || Bot.getProperty(user.telegramid + "" + targetId)) : null;
+var currCap = (fileObj && fileObj.caption) ? fileObj.caption : "None";
 
 Bot.setProperty("user_caption_state_" + user.telegramid, "waiting_new_caption", "string");
-
-var currCap = (draft && draft.caption && draft.caption.trim() !== "") ? draft.caption : "None";
+Bot.setProperty("caption_target_file_" + user.telegramid, targetId, "string");
 
 var txt = "✏️ <b>Edit File Caption</b>\n" +
   "<code>———————————————————————</code>\n\n" +
+  (fileObj ? ("📁 <b>File:</b> <code>" + escapeHtml(fileObj.fileName || fileObj.file_name || "File") + "</code>\n") : "") +
   "<b>Current Caption:</b>\n<blockquote>" + escapeHtml(currCap) + "</blockquote>\n\n" +
-  "👉 <b>Apna naya caption neeche text message ke roop me bhejein:</b>\n\n" +
-  "<i>(Ya neeche diye gaye button par click karke purana caption hi rakh sakte hain)</i>";
-
-var keyb = [
-  [{ text: "⬅️ Cancel & Keep Current", callback_data: "/keepCaption" }]
-];
-
-if (request.data && request.message) {
-  try {
-    Api.editMessageText({
-      chat_id: targetChat,
-      message_id: request.message.message_id,
-      text: txt,
-      parse_mode: "HTML",
-      reply_markup: { inline_keyboard: keyb }
-    });
-    return;
-  } catch (e) {}
-}
+  "👉 <b>Apna naya caption neeche text message me likhkar bhejein:</b>\n\n" +
+  "<i>(Cancel karne ke liye '❌ Cancel' likhein)</i>";
 
 Api.sendMessage({
   chat_id: targetChat,
   text: txt,
-  parse_mode: "HTML",
-  reply_markup: { inline_keyboard: keyb }
+  parse_mode: "HTML"
 });

@@ -20,14 +20,26 @@ Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
 var chatId = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : user.telegramid;
 
 var bulkKeyboard = [
-  [{ text: "✅ Done", style: "primary" }],
-  [{ text: "❌ Cancel Bulk Upload", style: "primary" }]
+  [
+    { text: "✅ Done", style: "primary" },
+    { text: "❌ Cancel", style: "primary" }
+  ]
 ];
 
 var msg = "📦 <b>Bulk Upload Mode: ACTIVE</b>\n" +
   "<code>———————————————————————</code>\n\n" +
-  "Aap ab ek sath 10, 20 ya 50 files (Photos, Videos, Documents, Audio) bhej ya forward kar sakte hain.\n\n" +
-  "👉 <b>Sabhi files bhejne ke baad neeche diye gaye '✅ Done' button par click karein:</b>";
+  "Aap ab apni sabhi files (Photos, Videos, Documents, Audio) bhej ya forward kar sakte hain.\n\n" +
+  "🤫 <i>Files upload karte samay bot shant rahega (Silent Upload).\n" +
+  "👉 <b>Sabhi files bhej lene ke baad neeche diye gaye '✅ Done' button par click karein!</b></i>";
+
+if (request && request.data && request.message) {
+  try {
+    Api.deleteMessage({
+      chat_id: chatId,
+      message_id: request.message.message_id
+    });
+  } catch (e) {}
+}
 
 Api.sendMessage({
   chat_id: chatId,

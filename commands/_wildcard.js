@@ -135,19 +135,35 @@ if (searchState === "waiting_search" && incomingText) {
 // User Caption Editing State Handling
 var captionState = Bot.getProperty("user_caption_state_" + user.telegramid, "");
 if (captionState === "waiting_new_caption" && incomingText) {
+  Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
   if (incomingText === "❌ Cancel" || incomingText.toLowerCase() === "cancel" || incomingText === "/cancel") {
-    Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
-    Bot.runCommand("/keepCaption");
+    Bot.sendMessage("❌ Caption edit cancelled.");
     return;
   }
-  // User sent new custom caption
-  var draft = Bot.getProperty("temp_upload_" + user.telegramid);
-  if (draft) {
-    draft.caption = incomingText;
-    Bot.setProperty("temp_upload_" + user.telegramid, draft, "json");
+  var targetFileKey = Bot.getProperty("caption_target_file_" + user.telegramid, "");
+  if (targetFileKey) {
+    var fRec = Bot.getProperty("file_" + targetFileKey);
+    if (fRec) {
+      fRec.caption = incomingText;
+      Bot.setProperty("file_" + targetFileKey, fRec, "json");
+      if (fRec.fileId) Bot.setProperty("file_" + fRec.fileId, fRec, "json");
+      if (fRec.telegramUniqueId) Bot.setProperty("file_" + fRec.telegramUniqueId, fRec, "json");
+      Bot.setProperty(user.telegramid + "" + targetFileKey, fRec, "json");
+
+      var uFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
+      if (Array.isArray(uFiles)) {
+        for (var fi = 0; fi < uFiles.length; fi++) {
+          if (uFiles[fi].uniqueKey === targetFileKey || uFiles[fi].fileUniqueId === targetFileKey) {
+            uFiles[fi].caption = incomingText;
+            break;
+          }
+        }
+        Bot.setProperty("userFiles_" + user.telegramid, uFiles, "json");
+      }
+    }
+    Bot.setProperty("caption_target_file_" + user.telegramid, "", "string");
   }
-  Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
-  Bot.runCommand("/keepCaption");
+  Bot.sendMessage("✅ <b>Caption updated successfully!</b>\n\n<b>New Caption:</b>\n<blockquote>" + incomingText + "</blockquote>", { parse_mode: "HTML" });
   return;
 }
 
@@ -184,16 +200,22 @@ if (incomingText) {
 
   // Bulk Upload Control Buttons (from bottom keyboard)
   if (t === "✅ Done" || low === "done" || t === "/done") {
-    Bot.runCommand("/batchDonePrompt");
+    Bot.runCommand("/finishBatch");
     return;
   }
-  if (t === "❌ Cancel Bulk Upload" || low === "cancel bulk upload") {
-    Bot.runCommand("/cancelBatch");
-    return;
+  if (t === "❌ Cancel" || low === "cancel" || t === "/cancel" || t === "❌ Cancel Bulk Upload" || low === "cancel bulk upload") {
+    if (Bot.getProperty("user_batch_state_" + user.telegramid) === "active") {
+      Bot.runCommand("/cancelBatch");
+      return;
+    }
   }
 
-  // User Primary Keyboard
-  if (t === "📝 Upload Files" || low === "upload files") {
+  // Upload Routing
+  if (t === "📄 Single Upload" || low === "single upload" || t === "/single") {
+    Bot.runCommand("/setUploadSingle");
+    return;
+  }
+  if (t === "📝 Upload Files" || low === "upload files" || t === "/upload") {
     Bot.setProperty("user_batch_state_" + user.telegramid, "", "string");
     Bot.setProperty("batch_temp_" + user.telegramid, [], "json");
     Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");

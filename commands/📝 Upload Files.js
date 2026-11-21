@@ -32,13 +32,7 @@ var hasMedia = !!(reqDoc || (reqPhoto && reqPhoto.length > 0) || reqVideo || req
 var targetChat = (typeof chat !== "undefined" && chat && chat.chatid) ? chat.chatid : (typeof user !== "undefined" && user && user.telegramid ? user.telegramid : null);
 
 if (!hasMedia) {
-  // User clicked "📝 Upload Files" button on keyboard
-  // Clear any lingering bulk/batch upload states so single upload is clean
-  Bot.setProperty("user_batch_state_" + user.telegramid, "", "string");
-  Bot.setProperty("batch_temp_" + user.telegramid, [], "json");
-  Bot.setProperty("user_batch_caption_state_" + user.telegramid, "", "string");
-  Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
-
+  // User clicked "📝 Upload Files" button on keyboard without sending a file
   var isAdmin = (user.telegramid == 8710308658 || user.telegramid == "8710308658") || (user.telegramid == Bot.getProperty("admin_id")) || user.is_admin;
   var primaryKeyboard = [
     [
@@ -59,15 +53,34 @@ if (!hasMedia) {
     ]);
   }
 
+  var promptText = "📤 <b>Upload Options</b>\n" +
+    "<code>———————————————————————</code>\n" +
+    "Kripya select karein aap kaise upload karna chahte hain:\n\n" +
+    "📄 <b>Single Upload:</b>\n" +
+    "• Ek ya multiple files upload karein.\n" +
+    "• Har file ka turant apna alag unique link banega.\n\n" +
+    "📦 <b>Bulk Upload:</b>\n" +
+    "• Multiple files (10, 20, 50+) ko ek sath bhejein.\n" +
+    "• Sabhi files ka 1 single batch link banega.\n\n" +
+    "👉 <i>Neeche diye gaye option par click karein:</i>";
+
+  var inlKeyb = [
+    [
+      { text: "📄 Single Upload", callback_data: "/setUploadSingle" },
+      { text: "📦 Bulk Upload", callback_data: "/createBatch" }
+    ]
+  ];
+
   Api.sendMessage({
     chat_id: targetChat,
-    text: "📤 <b>Send or forward any file, photo, video, document, or audio to upload:</b>\n\n<i>You can also forward posts with captions directly from any channel!</i>",
+    text: promptText,
     parse_mode: "HTML",
-    reply_markup: { keyboard: primaryKeyboard, resize_keyboard: true }
+    reply_markup: { inline_keyboard: inlKeyb }
   });
   return;
 }
 
+// Media arrived! Extract file details safely
 var fileId = "";
 var uniqueId = "";
 var fileName = "File";
@@ -130,7 +143,7 @@ if (reqDoc) {
   return;
 }
 
-// If it is a video/photo and has caption, smart auto-title from first line of caption
+// Auto-title media from first line of caption if default photo/video title
 if (incomingCaption && (fileName.indexOf("Video_") === 0 || fileName.indexOf("Photo_") === 0)) {
   var firstLine = incomingCaption.split("\n")[0].trim().replace(/[<>:"/\\|?*]/g, "");
   if (firstLine.length > 0) {
@@ -139,138 +152,163 @@ if (incomingCaption && (fileName.indexOf("Video_") === 0 || fileName.indexOf("Ph
   }
 }
 
-// 📦 BULK UPLOAD MODE HANDLER (Silent collection without spamming messages!)
+// Check Bulk Upload Mode
 var isBatchActive = (Bot.getProperty("user_batch_state_" + user.telegramid) === "active");
 
-if (isBatchActive) {
-  // Generate unique file key for database
-  function genId() {
-    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    var res = "BQADAQAD";
-    for (var i = 0; i < 24; i++) {
-      res += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return res;
+// Helper to generate unique 24-character ID
+function genUniqueKey() {
+  var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var res = "BQADAQAD";
+  for (var i = 0; i < 24; i++) {
+    res += chars.charAt(Math.floor(Math.random() * chars.length));
   }
-  var genFileId = genId();
-  while (Bot.getProperty("file_" + genFileId)) {
-    genFileId = genId();
-  }
+  return res;
+}
 
-  var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
-  var storageChannelId = Bot.getProperty("storageChannel", "-1004304151228");
-  if (!storageChannelId || storageChannelId === "@https:" || storageChannelId.indexOf("https:") !== -1) {
-    storageChannelId = "-1004304151228";
-  }
+var genFileId = genUniqueKey();
+while (Bot.getProperty("file_" + genFileId)) {
+  genFileId = genUniqueKey();
+}
 
-  // Backup to storage channel
-  var storageCaption = "📦 <b>Bulk Item Backup</b>\n" +
+var botUsername = (Bot.getProperty("bot_username") || (bot && bot.name) || "bot").replace("@", "");
+var uniqueLink = "https://t.me/" + botUsername + "?start=" + genFileId;
+
+// Storage Channel Config
+var storageChannelId = Bot.getProperty("storageChannel", "-1004304151228");
+if (!storageChannelId || storageChannelId === "@https:" || storageChannelId.indexOf("https:") !== -1) {
+  storageChannelId = "-1004304151228";
+}
+
+// Backup to Storage Channel
+try {
+  var backupCaption = (isBatchActive ? "📦 <b>Bulk Item Backup</b>\n" : "📦 <b>New File Backup</b>\n") +
     "<code>———————————————————————</code>\n" +
     "📁 <b>Name:</b> <code>" + escapeHtml(fileName) + "</code>\n" +
     "📊 <b>Size:</b> <code>" + escapeHtml(fileSize) + "</code>\n" +
     "🏷️ <b>Type:</b> <code>" + escapeHtml(fileType.toUpperCase()) + "</code>\n" +
-    "👤 <b>Uploaded by:</b> <code>#" + user.telegramid + "</code>\n" +
-    "🔑 <b>Key:</b> <code>" + escapeHtml(genFileId) + "</code>";
+    (incomingCaption ? ("📝 <b>Caption:</b> " + escapeHtml(incomingCaption.slice(0, 200)) + "\n") : "") +
+    "👤 <b>Uploaded by:</b> <code>#" + user.telegramid + "</code> (@" + escapeHtml(user.username || "None") + ")\n" +
+    "🔗 <b>Link:</b> " + escapeHtml(uniqueLink);
 
-  try {
-    if (fileType === "photo") {
-      Api.sendPhoto({ chat_id: storageChannelId, photo: fileId, caption: storageCaption, parse_mode: "HTML" });
-    } else if (fileType === "video") {
-      Api.sendVideo({ chat_id: storageChannelId, video: fileId, caption: storageCaption, parse_mode: "HTML" });
-    } else if (fileType === "audio" || fileType === "voice") {
-      Api.sendAudio({ chat_id: storageChannelId, audio: fileId, caption: storageCaption, parse_mode: "HTML" });
-    } else {
-      Api.sendDocument({ chat_id: storageChannelId, document: fileId, caption: storageCaption, parse_mode: "HTML" });
-    }
-  } catch (err) {}
+  if (fileType === "photo") {
+    Api.sendPhoto({ chat_id: storageChannelId, photo: fileId, caption: backupCaption, parse_mode: "HTML" });
+  } else if (fileType === "video") {
+    Api.sendVideo({ chat_id: storageChannelId, video: fileId, caption: backupCaption, parse_mode: "HTML" });
+  } else if (fileType === "audio" || fileType === "voice") {
+    Api.sendAudio({ chat_id: storageChannelId, audio: fileId, caption: backupCaption, parse_mode: "HTML" });
+  } else {
+    Api.sendDocument({ chat_id: storageChannelId, document: fileId, caption: backupCaption, parse_mode: "HTML" });
+  }
+} catch (err) {}
 
-  var fileObj = {
-    fileId: fileId,
-    file_id: fileId,
-    fileUniqueId: genFileId,
+// Build standard file record
+var fileRecord = {
+  fileId: fileId,
+  file_id: fileId,
+  fileUniqueId: genFileId,
+  file_unique_id: genFileId,
+  telegramUniqueId: uniqueId,
+  uniqueKey: genFileId,
+  fileName: fileName,
+  file_name: fileName,
+  fileSize: fileSize,
+  file_size: fileSize,
+  fileType: fileType,
+  mimeType: mimeType,
+  caption: incomingCaption ? incomingCaption.trim() : "",
+  userId: user.telegramid,
+  ownerName: ((user.first_name || "") + " " + (user.last_name || "")).trim() || "User",
+  ownerUsername: user.username || "",
+  status: "successful",
+  timestamp: new Date().toISOString(),
+  uniqueLink: uniqueLink
+};
+
+// Save to Database
+Bot.setProperty("file_" + genFileId, fileRecord, "json");
+Bot.setProperty("file_" + fileId, fileRecord, "json");
+Bot.setProperty("file_" + uniqueId, fileRecord, "json");
+Bot.setProperty(user.telegramid + "" + genFileId, fileRecord, "json");
+
+// Save to userFiles (capped at 30)
+var uFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
+if (!Array.isArray(uFiles)) uFiles = [];
+uFiles.unshift(fileRecord);
+if (uFiles.length > 30) uFiles = uFiles.slice(0, 30);
+Bot.setProperty("userFiles_" + user.telegramid, uFiles, "json");
+
+// Update total counters
+var totUp = (Bot.getProperty("total_uploads_count", 0) || 0) + 1;
+Bot.setProperty("total_uploads_count", totUp, "integer");
+var totSucc = (Bot.getProperty("total_successful_uploads", 0) || 0) + 1;
+Bot.setProperty("total_successful_uploads", totSucc, "integer");
+
+// Sync to User property for Traffic dashboard
+try {
+  var uList = User.getProperty("userFileList", []);
+  if (!Array.isArray(uList)) { uList = []; }
+  uList.unshift({
     file_unique_id: genFileId,
-    uniqueKey: genFileId,
-    fileName: fileName,
     file_name: fileName,
-    fileSize: fileSize,
-    file_size: fileSize,
-    fileType: fileType,
-    mimeType: mimeType,
-    caption: incomingCaption ? incomingCaption.trim() : "",
-    userId: user.telegramid,
-    status: "successful",
-    timestamp: new Date().toISOString(),
-    uniqueLink: "https://t.me/" + botUsername + "?start=" + genFileId
-  };
+    file_type: fileType,
+    uniqueLink: uniqueLink
+  });
+  if (uList.length > 30) {
+    uList = uList.slice(0, 30);
+  }
+  User.setProperty("userFileList", uList, "json");
+} catch (e) {}
 
-  Bot.setProperty("file_" + genFileId, fileObj, "json");
-  Bot.setProperty(user.telegramid + "" + genFileId, fileObj, "json");
-
-  // Save to userFiles
-  var uFiles = Bot.getProperty("userFiles_" + user.telegramid, []);
-  if (!Array.isArray(uFiles)) uFiles = [];
-  uFiles.unshift(fileObj);
-  if (uFiles.length > 20) uFiles = uFiles.slice(0, 20);
-  Bot.setProperty("userFiles_" + user.telegramid, uFiles, "json");
-
-  // Add to batch temp list
+// CASE 1: BULK UPLOAD MODE ACTIVE (Silent Upload!)
+if (isBatchActive) {
   var bTemp = Bot.getProperty("batch_temp_" + user.telegramid, []);
   if (!Array.isArray(bTemp)) bTemp = [];
   bTemp.push(genFileId);
   Bot.setProperty("batch_temp_" + user.telegramid, bTemp, "json");
 
-  // If first file has a caption and batch caption is empty, save it as default
+  // Save caption of first file as default batch caption if not set
   var existingBatchCap = Bot.getProperty("batch_caption_" + user.telegramid, "");
   if (!existingBatchCap && incomingCaption && incomingCaption.trim().length > 0) {
     Bot.setProperty("batch_caption_" + user.telegramid, incomingCaption.trim(), "string");
   }
 
-  // Silent upload: do NOT send any intermediate message in chat!
-  // User will click the big [✅ Done] button on bottom keyboard when finished.
+  // SILENT: User when uploading in bulk should receive NO messages until they tap [✅ Done]!
   return;
 }
 
-// 📄 SINGLE UPLOAD CONFIRMATION FLOW
-var draft = {
-  fileId: fileId,
-  uniqueId: uniqueId,
-  fileName: fileName,
-  fileSize: fileSize,
-  fileType: fileType,
-  mimeType: mimeType,
-  caption: incomingCaption ? incomingCaption.trim() : "",
-  userId: user.telegramid
-};
+// CASE 2: SINGLE UPLOAD MODE (Immediate Individual Delivery!)
+// If user sends 1 file or multiple files simultaneously in single mode:
+// Each file gets its own unique link and dashboard card immediately!
+var captionDisplay = fileRecord.caption && fileRecord.caption.length > 0 ?
+  ("📝 <b>Caption:</b>\n<blockquote>" + escapeHtml(fileRecord.caption) + "</blockquote>\n\n") : "";
 
-Bot.setProperty("temp_upload_" + user.telegramid, draft, "json");
-Bot.setProperty("user_caption_state_" + user.telegramid, "", "string");
-
-var captionBox = draft.caption && draft.caption.length > 0 ?
-  ("📝 <b>Current Caption:</b>\n<blockquote>" + escapeHtml(draft.caption) + "</blockquote>\n") :
-  ("📝 <b>Current Caption:</b> <i>(No caption attached)</i>\n");
-
-var previewMsg = "📦 <b>File Received & Ready!</b>\n" +
+var cardMsg = "✅ <b>File Uploaded Successfully!</b>\n" +
   "<code>———————————————————————</code>\n" +
-  "📁 <b>Name:</b> <code>" + escapeHtml(draft.fileName) + "</code>\n" +
-  "📊 <b>Size:</b> <code>" + escapeHtml(draft.fileSize) + "</code>\n" +
-  "🏷️ <b>Type:</b> <code>" + escapeHtml(draft.fileType.toUpperCase()) + "</code>\n\n" +
-  captionBox + "\n" +
-  "👉 <i>Caption yahi rakhna hai ya edit karna chahte hain?</i>\n" +
-  "Click <b>Done & Upload</b> to proceed, or <b>Edit Caption</b> to change it:";
+  "📦 <b>Name:</b> <code>" + escapeHtml(fileRecord.fileName) + "</code>\n" +
+  "📊 <b>Size:</b> <code>" + escapeHtml(fileRecord.fileSize) + "</code>\n" +
+  "🏷️ <b>Type:</b> <code>" + escapeHtml(fileRecord.fileType.toUpperCase()) + "</code>\n" +
+  "📅 <b>Uploaded At:</b> <i>" + fileRecord.timestamp.slice(0, 19).replace('T', ' ') + "</i>\n\n" +
+  captionDisplay +
+  "🔗 <b>Unique Download Link:</b>\n" +
+  "<code>" + escapeHtml(uniqueLink) + "</code>";
 
-var keyb = [
+var cardButtons = [
   [
-    { text: "✏️ Edit Caption", callback_data: "/editCaption" },
-    { text: "✅ Done & Upload", callback_data: "/confirmUpload" }
+    { text: "📤 Share Link", url: "https://t.me/share/url?url=" + encodeURIComponent(uniqueLink) + "&text=" + encodeURIComponent("Download " + fileRecord.fileName + ":") }
   ],
   [
-    { text: "❌ Cancel", callback_data: "/cancelUpload" }
+    { text: "✏️ Edit Caption", callback_data: "/editCaption " + genFileId },
+    { text: "📊 Download Traffic", callback_data: "/fileTraffic " + genFileId }
+  ],
+  [
+    { text: "❌ Delete File", callback_data: "/deleteFile " + genFileId },
+    { text: "🗂 My Files", callback_data: "/myfiles 1" }
   ]
 ];
 
 Api.sendMessage({
   chat_id: targetChat,
-  text: previewMsg,
+  text: cardMsg,
   parse_mode: "HTML",
-  reply_markup: { inline_keyboard: keyb }
+  reply_markup: { inline_keyboard: cardButtons }
 });
